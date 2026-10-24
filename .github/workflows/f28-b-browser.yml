@@ -1,7 +1,5 @@
 name: F28-B wall workspace acceptance
 on:
-  push:
-    branches: [candidate/f08-upstream-20261024]
   pull_request:
   workflow_dispatch:
 permissions:

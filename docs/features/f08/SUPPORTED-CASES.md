@@ -22,3 +22,16 @@ All supported joins require full authored wall/type rows, straight constant widt
 Follow-ups: bound curved-straight L with tangent/height/core identity rules first, then curved-curved cases; separately design opening finish wrapping; review continuous-X split identities, partial-height joins and a dedicated workspace adapter. Full F08 stays partial.
 
 New node discovery remains 1 mm. Existing explicitly saved node relations survive finish offsets within the four-width seam bound; this is retained topology, not a larger snap tolerance or imported-wall repair. Controls persist the membership when an existing join is edited.
+
+
+## Upstream compatibility update — October 24
+
+The supported physical envelope and tolerances above are unchanged. Model operations,
+record readers and straight join geometry are byte-identical to reviewed delivery
+`6aad54d`; the integration retains upstream's global six-unit display handling.
+The real F08 browser sequence now checks `ftin`, `in`, `ftdec`, `mm`, `cm`, `m` in
+`es-MX`, `id` and `en-XA`. Translated labels use the server's language-pack catalog;
+allow/cap enum values and raw geometry/records remain unchanged. Each locale also
+performs a real end edit and Undo. The dedicated live-workspace adapter is still
+deferred. Semantic MCP access remains missing and blocks full acceptance; see
+[MCP-CONTRACT.md](MCP-CONTRACT.md). No additional join case is claimed.

@@ -1,3 +1,29 @@
+# Current update — approved upstream integration, October 24, 2026
+
+Original reviewed delivery: `6aad54dafb65909f6f2585c36e8c419cbbaad4ae`.
+Approved updated main: `1afe80e78a42aa27ee9af5d1ac937cd38cd1b711`.
+Validated merge candidate: `6c0220b46af594a8b5c02a36ad1b79dab39b5d1e`.
+Draft PR #13 remains the delivery surface. The final published head and exact-head
+CI are recorded in its description and delivery response.
+
+See [upstream compatibility and conflict record](f08/UPSTREAM-ALIGNMENT.md), the
+unchanged geometry envelope in [supported cases](f08/SUPPORTED-CASES.md), and the
+[proposed semantic MCP contract](f08/MCP-CONTRACT.md).
+**MCP join/end coverage remains GAP and blocks full feature acceptance.** No new
+join tools or broad dispatcher changes were implemented. F28-C remains separate.
+No readiness, merge, deployment, default-layout or shared-roadmap change.
+
+The current candidate is isolated at `bimcraft-f08-upstream-candidate`. The original
+`bimcraft-f08` checkout and its 11 pre-existing untracked duplicate files are
+preserved. Backup ref: `backup/f08-reviewed-20261024` (local and remote). Port 8040
+was free but listener creation is still sandbox-denied; no active preview is claimed.
+The launcher is `devshell/preview-f08.command` in the isolated candidate.
+
+The historical handoff below describes the earlier delivery and its old baseline;
+it does not override the approved updated main above.
+
+---
+
 # F08-A — Straight-wall joins and ends
 
 Bounded implementation delivered for draft PM review; full F08 remains partial. Exact approved base: `3e42c21e33e642d1e07bea2fc3356344f91db00e`. Owner: this F08 feature chat; isolated `bimcraft-f08`, branch `feature/f08-wall-joins`; canonical repository `drsurfbum/bimcraft-SDH`. Repository-local author was set to DrSurfBum / 80549907+drsurfbum@users.noreply.github.com before environment loss. No global Git configuration changed.

@@ -1,0 +1,20 @@
+{
+  "status": "GAP",
+  "catalogSurface": "app/agents.js modelTools; definition audit, not transport evidence",
+  "proposed": [
+    "wall_joins_get",
+    "wall_join_end_set",
+    "wall_join_diagnostics"
+  ],
+  "registered": [
+    "model_describe",
+    "walls_list",
+    "walls_add",
+    "opening_add",
+    "floor_add",
+    "levels_add",
+    "grid_add"
+  ],
+  "joinRegistered": [],
+  "blockingFullAcceptance": true
+}

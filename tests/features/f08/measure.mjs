@@ -7,7 +7,7 @@ import {pathToFileURL} from 'node:url';
 import {performance} from 'node:perf_hooks';
 import {model,inspect} from './fixture.mjs';
 import {readWalls,wallOutlines,regenWalls} from '../../../app/model-walls.js';
-const base='3e42c21e33e642d1e07bea2fc3356344f91db00e',out='.cc-test/f08',dir=path.resolve(out+'/approved');fs.mkdirSync(dir,{recursive:true});
+const base='1afe80e78a42aa27ee9af5d1ac937cd38cd1b711',out='.cc-test/f08',dir=path.resolve(out+'/approved');fs.mkdirSync(dir,{recursive:true});
 execFileSync('tar',['-xf','-','-C',dir],{input:execFileSync('git',['archive',base],{maxBuffer:128*1024*1024})});
 const old=await import(pathToFileURL(path.join(dir,'app/model-walls.js'))),{model:openOld}=await import(pathToFileURL(path.join(dir,'tests/features/f04/fixture.mjs')));
 const m=await model(),walls=readWalls(m.w()),rows=walls.map(w=>({...w,key:w.guid}));

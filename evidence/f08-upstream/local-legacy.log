@@ -1,0 +1,412 @@
+npm notice run test
+npm notice run node devshell/test.mjs --offline --no-python
+
+▶ test-bimcraft-connectors.mjs
+== connectors in a recipe (family-model.js)
+== editing connectors (family-edit.js)
+== ports on placed elements (family-ops.js, IFC4 mm)
+(node:63805) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+== pipe runs and connectors (mep-model.js)
+
+37 passed, 0 failed
+
+▶ test-bimcraft-drafting.mjs
+Drafting regression checks passed: alignment, snap priority, face offsets, corners, egress well geometry and symbols.
+
+▶ test-bimcraft-drainage.mjs
+== the tables (mep/drainage.js)
+== the network
+== a bathroom in Brazilian PVC (NBR 8160)
+(node:63807) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+== the same bathroom in US PVC (IPC)
+
+22 passed, 0 failed
+
+▶ test-bimcraft-fixtures.mjs
+== the fixture table (mep/fixtures.js)
+== the starter fixtures (family-starters.js)
+== which fixture a family is
+== placed in a building (family-ops.js, mep-model.js)
+(node:63808) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+18 passed, 0 failed
+
+▶ test-bimcraft-pipes-br.mjs
+== the tables (mep/tables-br.js)
+== the catalog (mep/pipes.js)
+== runs (mep-model.js)
+(node:63809) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+20 passed, 0 failed
+
+▶ test-bimcraft-revit-ifc.mjs
+no Revit IFC exports in /var/www/CADCRAFT/testfiles/samples (a clean clone): skipped
+
+▶ test-bimcraft.mjs
+ok   fixtures/dwg/base-plan.dwg  (25 ms)
+       kind        Drawing
+       size        0.0 MB
+       release     AutoCAD 2018 (AC1032)
+       units       inches
+       layers      3
+       entities    13
+       spaces      Model: 12 lines, 0 fills, 1 texts | Layout1 (sheet, 0 viewports): 0 lines, 0 fills, 0 texts
+       weights     0.25 mm × 12 | 1 non-printing layers
+ok   fixtures/dwg/base-plan.dxf  (4 ms)
+       kind        Drawing
+       size        0.1 MB
+       release     DXF
+       units       inches
+       layers      3
+       entities    13
+       spaces      Model: 12 lines, 0 fills, 1 texts | Layout1 (sheet, 0 viewports): 0 lines, 0 fills, 0 texts
+       weights     0.25 mm × 12 | 1 non-printing layers
+ok   fixtures/dwg/df1-ocs-blocks-r2000.dwg  (7 ms)
+       kind        Drawing
+       size        0.1 MB
+       release     AutoCAD 2000 (AC1015)
+       units       millimeters
+       layers      23
+       entities    28
+       spaces      Model: 123 lines, 8 fills, 3 texts | Layout1 (sheet, 0 viewports): 0 lines, 0 fills, 0 texts
+       weights     0.25 mm × 123 | 1 non-printing layers
+ok   fixtures/dwg/df1-ocs-blocks.dwg  (4 ms)
+       kind        Drawing
+       size        0.0 MB
+       release     AutoCAD 2018 (AC1032)
+       units       millimeters
+       layers      23
+       entities    28
+       spaces      Model: 123 lines, 8 fills, 3 texts | Layout1 (sheet, 0 viewports): 0 lines, 0 fills, 0 texts
+       weights     0.25 mm × 123 | 1 non-printing layers
+ok   fixtures/dwg/df1-ocs-blocks.dxf  (3 ms)
+       kind        Drawing
+       size        0.1 MB
+       release     DXF
+       units       millimeters
+       layers      23
+       entities    28
+       spaces      Model: 123 lines, 8 fills, 3 texts | Layout1 (sheet, 0 viewports): 0 lines, 0 fills, 0 texts
+       weights     0.25 mm × 123 | 1 non-printing layers
+ok   fixtures/dwg/kitchen-equipment-r2000.dwg  (40 ms)
+       kind        Drawing
+       size        0.5 MB
+       release     AutoCAD 2000 (AC1015)
+       units       inches
+       layers      15
+       entities    264
+       spaces      Model: 668 lines, 4 fills, 125 texts | K-101 EQUIPMENT (sheet, 2 viewports): 5 lines, 0 fills, 5 texts | K-102 ELECTRICAL (sheet, 1 viewports): 5 lines, 0 fills, 5 texts | K-501 DETAILS (sheet, 1 viewports): 5 lines, 0 fills, 5 texts
+       linked      base-plan (loaded) — 13 entities drawn from links
+       weights     0.25 mm × 683 | 2 non-printing layers
+       equipment   101 items on sheets (K-101 EQUIPMENT 101, K-102 ELECTRICAL 101), 12 off sheets, from 114 tags
+       images      example-logo.png ×1
+ok   fixtures/dwg/kitchen-equipment.dwg  (37 ms)
+       kind        Drawing
+       size        0.2 MB
+       release     AutoCAD 2018 (AC1032)
+       units       inches
+       layers      15
+       entities    264
+       spaces      Model: 668 lines, 4 fills, 125 texts | K-101 EQUIPMENT (sheet, 2 viewports): 5 lines, 0 fills, 5 texts | K-102 ELECTRICAL (sheet, 1 viewports): 5 lines, 0 fills, 5 texts | K-501 DETAILS (sheet, 1 viewports): 5 lines, 0 fills, 5 texts
+       linked      base-plan (loaded) — 13 entities drawn from links
+       weights     0.25 mm × 683 | 2 non-printing layers
+       equipment   101 items on sheets (K-101 EQUIPMENT 101, K-102 ELECTRICAL 101), 12 off sheets, from 114 tags — matches fixtures/facts.json
+       images      example-logo.png ×1
+ok   fixtures/dwg/kitchen-equipment.dxf  (36 ms)
+       kind        Drawing
+       size        1.3 MB
+       release     DXF
+       units       inches
+       layers      15
+       entities    264
+       spaces      Model: 668 lines, 4 fills, 125 texts | K-101 EQUIPMENT (sheet, 2 viewports): 5 lines, 0 fills, 5 texts | K-102 ELECTRICAL (sheet, 1 viewports): 5 lines, 0 fills, 5 texts | K-501 DETAILS (sheet, 1 viewports): 5 lines, 0 fills, 5 texts
+       linked      base-plan (loaded) — 13 entities drawn from links
+       weights     0.25 mm × 683 | 2 non-printing layers
+       equipment   101 items on sheets (K-101 EQUIPMENT 101, K-102 ELECTRICAL 101), 12 off sheets, from 114 tags
+       images      example-logo.png ×1
+ok   fixtures/electrical/electrical-sample.dwg  (7 ms)
+       kind        Drawing
+       size        0.0 MB
+       release     AutoCAD 2018 (AC1032)
+       units       millimeters
+       layers      16
+       entities    347
+       spaces      Model: 49 lines, 1 fills, 21 texts | Sheet 1 (sheet, 0 viewports): 111 lines, 4 fills, 84 texts | Sheet 2 (sheet, 0 viewports): 84 lines, 6 fills, 82 texts | Sheet 3 (sheet, 0 viewports): 51 lines, 2 fills, 58 texts | Sheet list (sheet, 0 viewports): 46 lines, 0 fills, 63 texts | Terminal plan (sheet, 0 viewports): 46 lines, 0 fills, 65 texts | Cable list (sheet, 0 viewports): 47 lines, 0 fills, 69 texts | Parts list (sheet, 0 viewports): 53 lines, 0 fills, 103 texts
+       weights     0.25 mm × 487
+ok   fixtures/electrical/electrical-sample.dxf  (8 ms)
+       kind        Drawing
+       size        0.2 MB
+       release     DXF
+       units       millimeters
+       layers      16
+       entities    347
+       spaces      Model: 49 lines, 1 fills, 21 texts | Sheet 1 (sheet, 0 viewports): 111 lines, 4 fills, 84 texts | Sheet 2 (sheet, 0 viewports): 84 lines, 6 fills, 82 texts | Sheet 3 (sheet, 0 viewports): 51 lines, 2 fills, 58 texts | Sheet list (sheet, 0 viewports): 46 lines, 0 fills, 63 texts | Terminal plan (sheet, 0 viewports): 46 lines, 0 fills, 65 texts | Cable list (sheet, 0 viewports): 47 lines, 0 fills, 69 texts | Parts list (sheet, 0 viewports): 53 lines, 0 fills, 103 texts
+       weights     0.25 mm × 487
+ok   fixtures/f01/edited-reopened.ifc  (17 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F01 synthetic residential
+       from        BimCraft
+       storeys     1
+       elements    6
+       triangles   164
+       batches     4
+       top         Wall 5, Space 2, Window 1
+       sample      IfcWall "F01 exterior cavity wall" with 4 property sets
+ok   fixtures/f01/house.ifc  (2 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F01 synthetic residential
+       from        BimCraft
+       storeys     1
+       elements    6
+       triangles   164
+       batches     4
+       top         Wall 5, Space 2, Window 1
+       sample      IfcWall "F01 exterior cavity wall" with 4 property sets
+ok   fixtures/f01/missing-host.ifc  (1 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F01 synthetic residential
+       from        BimCraft
+       storeys     1
+       elements    4
+       triangles   48
+       batches     1
+       top         Wall 4
+       sample      IfcWall "F01 exterior cavity wall" with 4 property sets
+ok   fixtures/f02/foot-local.ifc  (2 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 foot-local
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f02/foot-translated.ifc  (1 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 foot-translated
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f02/inch-local.ifc  (0 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 inch-local
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f02/inch-translated.ifc  (0 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 inch-translated
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f02/m-local.ifc  (2 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 m-local
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f02/m-translated.ifc  (1 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 m-translated
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f02/mm-local.ifc  (1 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 mm-local
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f02/mm-translated.ifc  (1 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F02 mm-translated
+       from        BimCraft
+       storeys     1
+       elements    3
+       triangles   116
+       batches     1
+       top         Wall 3
+       sample      IfcWall "F02 precision wall" with 4 property sets
+ok   fixtures/f04/layered-plans.ifc  (5 ms)
+       kind        IFC
+       size        0.1 MB
+       schema      IFC4
+       project     F04 layered plan acceptance
+       from        BimCraft
+       storeys     1
+       elements    14
+       triangles   628
+       batches     4
+       top         Wall 9, Window 3, Door 2
+       sample      IfcWall "F04 ventilated rainscreen" with 4 property sets
+ok   fixtures/f05/wall-views.ifc  (3 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F05 straight-wall sections
+       from        BimCraft
+       storeys     1
+       elements    5
+       triangles   248
+       batches     4
+       top         Wall 2, Window 2, Door 1
+       sample      IfcWall "F05 rainscreen" with 4 property sets
+ok   fixtures/f06/assembly-documentation.ifc  (0 ms)
+       kind        IFC
+       size        0.0 MB
+       schema      IFC4
+       project     F06 assembly documentation
+       from        BimCraft
+       storeys     1
+       elements    1
+       triangles   12
+       batches     1
+       top         Wall 1
+       sample      IfcWall "Exterior ventilated rainscreen with continuous sheathing and zero nominal weather membrane" with 4 property sets
+ok   fixtures/f08/straight-joins.ifc  (1 ms)
+       kind        IFC
+       size        0.1 MB
+       schema      IFC4
+       project     F08-A straight joins
+       from        BimCraft
+       storeys     1
+       elements    17
+       triangles   476
+       batches     3
+       top         Wall 16, Window 1
+       sample      IfcWall "F08 ventilated exterior" with 4 property sets
+ok   fixtures/showcase/bimcraft-house-turned.ifc  (23 ms)
+       kind        IFC
+       size        0.7 MB
+       schema      IFC4
+       project     Maple Street house
+       from        BimCraft
+       storeys     2
+       elements    48
+       triangles   18026
+       batches     12
+       top         Slab 15, Wall 13, Window 9, Door 7
+       sample      IfcWall "Exterior 2×6" with 5 property sets
+ok   fixtures/showcase/bimcraft-house.ifc  (18 ms)
+       kind        IFC
+       size        0.7 MB
+       schema      IFC4
+       project     Maple Street house
+       from        BimCraft
+       storeys     2
+       elements    48
+       triangles   18026
+       batches     12
+       top         Slab 15, Wall 13, Window 9, Door 7
+       sample      IfcWall "Exterior 2×6" with 5 property sets
+ok   fixtures/showcase/cadcraft-sample-asbuilt.dwg  (4 ms)
+       kind        Drawing
+       size        0.0 MB
+       release     AutoCAD 2018 (AC1032)
+       units       millimeters
+       layers      10
+       entities    552
+       spaces      Model: 27 lines, 13 fills, 12 texts | AB-101 AS-BUILT PLAN (sheet, 1 viewports): 5 lines, 0 fills, 11 texts
+       weights     0.25 mm × 28, 0.50 mm × 4 | 1 non-printing layers
+ok   fixtures/showcase/cadcraft-sample-asbuilt.dxf  (2 ms)
+       kind        Drawing
+       size        0.1 MB
+       release     DXF
+       units       millimeters
+       layers      10
+       entities    552
+       spaces      Model: 27 lines, 13 fills, 12 texts | AB-101 AS-BUILT PLAN (sheet, 1 viewports): 5 lines, 0 fills, 11 texts
+       weights     0.25 mm × 28, 0.50 mm × 4 | 1 non-printing layers
+ok   fixtures/showcase/cadcraft-sample-house.dwg  (2 ms)
+       kind        Drawing
+       size        0.0 MB
+       release     AutoCAD 2018 (AC1032)
+       units       inches
+       layers      12
+       entities    84
+       spaces      Model: 85 lines, 13 fills, 28 texts | A-101 FLOOR PLAN (sheet, 1 viewports): 5 lines, 0 fills, 11 texts | A-201 ELEVATIONS (sheet, 1 viewports): 5 lines, 0 fills, 11 texts | A-301 SECTIONS (sheet, 1 viewports): 5 lines, 0 fills, 11 texts | A-501 DETAILS (sheet, 1 viewports): 5 lines, 0 fills, 11 texts
+       weights     0.25 mm × 90, 0.50 mm × 14, 0.70 mm × 1 | 1 non-printing layers
+ok   fixtures/showcase/cadcraft-sample-house.dxf  (2 ms)
+       kind        Drawing
+       size        0.0 MB
+       release     DXF
+       units       inches
+       layers      12
+       entities    84
+       spaces      Model: 85 lines, 13 fills, 28 texts | A-101 FLOOR PLAN (sheet, 1 viewports): 5 lines, 0 fills, 11 texts | A-201 ELEVATIONS (sheet, 1 viewports): 5 lines, 0 fills, 11 texts | A-301 SECTIONS (sheet, 1 viewports): 5 lines, 0 fills, 11 texts | A-501 DETAILS (sheet, 1 viewports): 5 lines, 0 fills, 11 texts
+       weights     0.25 mm × 90, 0.50 mm × 14, 0.70 mm × 1 | 1 non-printing layers
+
+31 of 31 files opened
+
+Partial mode (cut-off RVT/RFA)
+  11 complete Revit files checked: none reported partial
+  (skipped: MassWithBoxAndCone.rfa — the public samples are not in this checkout)
+  (skipped: Room_Properties.rvt — the public samples are not in this checkout)
+  (skipped: empty2013.rfa — the public samples are not in this checkout)
+  (skipped: cutWalls.rvt — the public samples are not in this checkout)
+  all 13 partial-mode checks passed
+
+pass  test-bimcraft-connectors.mjs  (0.2 s)
+pass  test-bimcraft-drafting.mjs  (0.1 s)
+pass  test-bimcraft-drainage.mjs  (0.2 s)
+pass  test-bimcraft-fixtures.mjs  (0.2 s)
+pass  test-bimcraft-pipes-br.mjs  (0.1 s)
+pass  test-bimcraft-revit-ifc.mjs  (0.1 s)
+pass  test-bimcraft.mjs  (0.4 s)
+note  bimcraft-test: npm packages not installed (--offline)
+note  library: npm packages not installed (--offline)
+note  mcp: npm packages not installed (--offline)
+note  modelcraft-test: npm packages not installed (--offline)
+note  takeoffcraft-test: npm packages not installed (--offline)
+7 of 7 test files passed

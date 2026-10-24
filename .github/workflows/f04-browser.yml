@@ -2,7 +2,7 @@ name: F04 browser acceptance
 on:
   pull_request:
   push:
-    branches: [main, feature/f04-layered-plan-graphics, candidate/f08-upstream-20261024]
+    branches: [main, feature/f04-layered-plan-graphics]
   workflow_dispatch:
 permissions:
   contents: read
