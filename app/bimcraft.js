@@ -4492,6 +4492,7 @@ function init(root) {
     select: (keys) => { if (!viewer) return; viewer.select(keys.length ? keys : null); afterPick(); if (viewer.selection.size > 1) showMany(); else if (viewer.selection.size) showProps(viewer.selected); else clearProps(); },
     save: () => saveIfc(),
     undo: async () => { coreCommands?.execute('undo'); },
+    redo: async () => { coreCommands?.execute('redo'); },
     busy: () => (busy ? 'opening or saving a file' : placing ? 'placing a library item' : null),   // i18n-ignore: read by the assistant
   });
   // 0.6 DF.22 (cloud-slice-ui.js): a point cloud's slice on the plan; the cloud is cloud-ui.js's (pc, made on its first open)

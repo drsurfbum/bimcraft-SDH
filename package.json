@@ -23,7 +23,8 @@
         "fixture:f06": "node tests/features/f06/fixture.mjs",
         "bench:f06": "node tests/features/f06/measure.mjs",
         "test:f28": "node --test tests/features/f28/*.test.mjs",
-        "bench:f28": "node tests/features/f28/measure.mjs"
+        "bench:f28": "node tests/features/f28/measure.mjs",
+        "test:mcp01": "node --test tests/features/mcp01/contract.test.mjs"
     },
     "engines": {
         "node": ">=20.19"

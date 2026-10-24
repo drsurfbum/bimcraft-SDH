@@ -14,9 +14,10 @@ import { CadSession, extOf, scriptLines } from './cad.mjs';
 import { load } from './apps.mjs';
 
 // BimCraft's Draw edits (0.6 DF.25, session `bim-draw`): the same tool definitions as its live window (bimcraft/dev/agents.js),
-// each given a `doc` handle here. A build without them (an older package) simply lists none.
-let BIM = null;
-try { BIM = await load('bimcraft', 'agents.js'); } catch { BIM = null; }
+// each given a `doc` handle here. Required in this fork: load failures terminate startup.
+// This fork requires semantic model tools. Fail startup on a broken/missing module; never advertise a partial catalog.
+const BIM = await load('bimcraft', 'agents.js');
+if (!BIM.modelTools) throw new Error('BimCraft modelTools is required by MCP-01.');
 
 export const MAX_OPEN = 16;
 export const MAX_FILE = 500 * 1024 * 1024;
@@ -158,9 +159,10 @@ export function headlessTools(env) {
 
   T({ name: 'undo', group: 'edit', title: 'Undo',
     description: 'Undo the assistant\'s last steps on a drawing or an IFC model (only steps labelled "Assistant:" unless any is true).',
-    inputSchema: obj({ doc: S.doc, steps: { type: 'integer', minimum: 1, maximum: 100, default: 1 }, any: { type: 'boolean', default: false } }, ['doc']),
+    inputSchema: obj({ doc: S.doc, steps: { type: 'integer', minimum: 1, maximum: 100, default: 1 }, any: { type: 'boolean', default: false }, ...BIM.BINDING }, ['doc']),
     run: async (a) => {
       const d = get(env, a.doc);
+      if (d.kind === 'ifc') BIM.bindDocument(await d.s.editor(), a);
       if (d.kind === 'ifc') return { undone: await d.s.undo(a.steps, { any: a.any }) };
       return { undone: get(env, a.doc, 'cad').s.undo(a.steps, { any: a.any }) };
     } });
@@ -251,14 +253,17 @@ export function headlessTools(env) {
           await d.s.editor();
           d.s.undoPrefix = env.undoPrefix;
           const { doc, ...rest } = a;
-          return BIM.modelTools(bimEnv(d.s)).find((t) => t.name === def.name).run(rest);
+          return { doc, ...await BIM.modelTools(bimEnv(d.s)).find((t) => t.name === def.name).run(rest) };
         } });
     }
+    T({ name: 'redo', group: 'edit', title: 'Redo an IFC edit', description: 'Redo an Assistant-owned IFC model step; a person step requires any: true.',
+      inputSchema: obj({ doc: S.doc, any: { type: 'boolean', default: false }, ...BIM.BINDING }, ['doc']),
+      run: async a => { const s = get(env, a.doc, 'ifc').s; BIM.bindDocument(await s.editor(), a); return { doc: a.doc, redone: await s.redo({ any: a.any }) }; } });
     T({ name: 'ifc_save', group: 'save', title: 'Save an IFC model',
       description: 'Write an IFC model with every change: to its own file (default) or a new .ifc path.',
-      inputSchema: obj({ doc: S.doc, path: S.path, overwrite: S.overwrite }, ['doc']),
+      inputSchema: obj({ doc: S.doc, path: S.path, overwrite: S.overwrite, ...BIM.BINDING }, ['doc']),
       run: async (a) => {
-        const d = get(env, a.doc, 'ifc');
+        const d = get(env, a.doc, 'ifc'); BIM.bindDocument(await d.s.editor(), a);
         const target = a.path || d.path;
         if (!target) throw new Error('This model has no file yet: give a path.');
         if (extOf(target) !== 'ifc') throw new Error('IFC models are written to a .ifc file.');

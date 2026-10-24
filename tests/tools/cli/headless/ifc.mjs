@@ -102,6 +102,12 @@ export class IfcSession {
     this.index();
     return out;
   }
+  async redo({ any = false } = {}) {
+    const ed = await this.editor(), top = ed.undone.at(-1);
+    if (!top) return [];
+    if (!any && !String(top.label).startsWith(this.undoPrefix)) throw new Error('The redo step belongs to the person.');
+    ed.redo(); this.index(); return [top.label];
+  }
   async save() { return (await this.editor()).save(); }
 
   pretty(id) { const up = this.f.type(id); return (up && this.f.schema.pretty(up)) || up || null; }

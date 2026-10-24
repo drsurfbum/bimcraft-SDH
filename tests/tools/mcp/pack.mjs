@@ -41,7 +41,9 @@ function copyClosure(src, dst, entries) {
   const seen = new Set(), todo = [...entries];
   while (todo.length) {
     const f = path.normalize(todo.pop());
-    if (seen.has(f) || !fs.existsSync(path.join(src, f))) continue;
+    if (seen.has(f)) continue;
+    if (!fs.existsSync(path.join(src, f))) throw new Error('Missing packed module: ' + f);
+    if (f.startsWith('..') || path.isAbsolute(f)) throw new Error('Module escapes app closure: ' + f);
     seen.add(f);
     const text = fs.readFileSync(path.join(src, f), 'utf8');
     for (const m of text.matchAll(/(?:from\s*|import\(\s*)['"](\.{1,2}\/[^'"]+\.m?js)['"]/g)) todo.push(path.join(path.dirname(f), m[1]));
@@ -60,18 +62,25 @@ fs.writeFileSync(path.join(OUT, 'package.json'), JSON.stringify(pkg, null, 2) + 
 for (const f of ['server.mjs', 'core.mjs', 'live-server.mjs']) cp(path.join(ROOT, 'tools/mcp', f), path.join(OUT, 'mcp', f));
 cp(path.join(ROOT, 'tools/cli/cadcraft.mjs'), path.join(OUT, 'cli/cadcraft.mjs'));
 for (const f of fs.readdirSync(path.join(ROOT, 'tools/cli/headless'))) if (f.endsWith('.mjs')) cp(path.join(ROOT, 'tools/cli/headless', f), path.join(OUT, 'cli/headless', f));
-for (const a of APPS) copyCode(path.join(ROOT, 'public_html/assets/apps', a, 'dev'), path.join(OUT, 'cli/apps', a));
+for (const a of APPS.filter(a => fs.existsSync(path.join(ROOT, 'public_html/assets/apps', a, 'dev')))) copyCode(path.join(ROOT, 'public_html/assets/apps', a, 'dev'), path.join(OUT, 'cli/apps', a));
 copyClosure(path.join(ROOT, 'public_html/assets/apps/bimcraft/dev'), path.join(OUT, 'cli/apps/bimcraft'), ['agents.js', 'ifc-edit.js', 'new-model.js']);
-copyCode(path.join(ROOT, 'lib/ifc'), path.join(OUT, 'cli/lib/ifc'));
+fs.writeFileSync(path.join(OUT, 'cli/apps/bimcraft/release.json'), JSON.stringify({ version: pkg.version, capability: 'MCP-01', source: 'drsurfbum/bimcraft-SDH' }) + '\n');
+// Use the fork's exact IFC engine, not an older sibling library snapshot.
+copyCode(path.join(ROOT, 'public_html/assets/apps/bimcraft/dev/ifc'), path.join(OUT, 'cli/lib/ifc'));
 const pl = fs.realpathSync(path.join(ROOT, 'public_html/assets/vendor/pdf-lib/current'));
-for (const f of ['pdf-lib.esm.js', 'LICENSE.md']) cp(path.join(pl, f), path.join(OUT, 'cli/vendor/pdf-lib', f));
-const lic = ['/var/www/CADCRAFT/repos/cadcraft/LICENSE', path.join(ROOT, 'LICENSE')].find((p) => fs.existsSync(p));
+cp(path.join(pl, 'pdf-lib.esm.js'), path.join(OUT, 'cli/vendor/pdf-lib/pdf-lib.esm.js'));
+const licenseFile = path.join(pl, 'LICENSE.md');
+const pdfLicense = fs.existsSync(licenseFile) ? fs.readFileSync(licenseFile, 'utf8') : fs.readFileSync(path.join(ROOT, 'tools/mcp/licenses/pdf-lib-1.17.1.txt'), 'utf8');
+if (!pdfLicense) throw new Error('pdf-lib license is required.');
+fs.writeFileSync(path.join(OUT, 'cli/vendor/pdf-lib/LICENSE.md'), pdfLicense);
+const lic = ['/var/www/CADCRAFT/repos/cadcraft/LICENSE', path.join(ROOT, 'LICENSE'), path.join(ROOT, '../LICENSE')].find((p) => fs.existsSync(p));
 if (!lic) { console.error('No Apache-2.0 LICENSE found to ship.'); process.exit(1); }
 cp(lic, path.join(OUT, 'LICENSE'));
+fs.writeFileSync(path.join(OUT, 'cli/apps/bimcraft/package.json'), '{"type":"module"}\n');
 fs.writeFileSync(path.join(OUT, 'THIRD_PARTY.md'), '# Third-party code in @getcadcraft/mcp\n\n'
-  + '## pdf-lib ' + path.basename(pl) + ' (MIT) — cli/vendor/pdf-lib/\n\n' + fs.readFileSync(path.join(pl, 'LICENSE.md'), 'utf8').trim() + '\n\n'
+  + '## pdf-lib ' + path.basename(pl) + ' (MIT) — cli/vendor/pdf-lib/\n\n' + pdfLicense.trim() + '\n\n'
   + '## pdfjs-dist (Apache-2.0) — optional dependency, installed by npm, used to read PDF markups\n\nSee its own LICENSE in node_modules/pdfjs-dist.\n');
-fs.writeFileSync(path.join(OUT, 'README.md'), `# @getcadcraft/mcp
+fs.writeFileSync(path.join(OUT, 'README.md'), `# @drsurfbum/bimcraft-mcp
 
 CadCraft's tools for AI assistants and scripts: an MCP server (\`cadcraft-mcp\`, stdio) and a command line (\`cadcraft\`). They run the
 CadCraft apps' own code with no window: DWG and DXF drawings (CadCraft), IFC models (BimCraft), takeoffs (TakeoffCraft) and PDF markups
@@ -79,13 +88,13 @@ CadCraft apps' own code with no window: DWG and DXF drawings (CadCraft), IFC mod
 
 ## MCP server
 
-    npx -y @getcadcraft/mcp --root ~/Drawings --allow read,edit
+    node /absolute/path/to/package/mcp/server.mjs --root /absolute/allowed/folder --allow read,edit,save
 
 - \`--root <folder>\` (repeat for more): the only folders it opens files in and writes to. Without one, no file is reachable.
 - \`--allow\`: read (default) · edit (run commands and scripts; each call one undo step) · save (write drawings) · export (PDF, conversions, CSV/XLSX).
 - \`--log activity.jsonl\`: every call as a JSON line. Environment: \`CADCRAFT_MCP_ROOTS\`, \`CADCRAFT_MCP_ALLOW\`.
 
-In your assistant's MCP settings, add it as a stdio server: \`{"mcpServers": {"cadcraft": {"command": "npx", "args": ["-y", "@getcadcraft/mcp", "--root", "/Users/me/Drawings"]}}}\`
+In your assistant's MCP settings, add it as a stdio server: \`{"mcpServers": {"sdh-bim-local": {"command": "node", "args": ["/absolute/path/to/package/mcp/server.mjs", "--root", "/absolute/allowed/folder", "--allow", "read,edit,save"]}}}\`
 
 ## Command line
 
