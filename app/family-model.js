@@ -17,7 +17,13 @@
  *     window kind for hosted families: its plan symbol, hand and IFC operation), ifc: { class, predefined },
  *     params: [{ key, label?, kind: length | angle | number | yesno, value, formula? }],
  *     solids: [{ id, name?, op: box | extrude | revolve | sweep, style, visible?, …fields }], booleans: [{ id, op: difference |
- *     union, a, b }], sizes?: [{ name, values }] (files only), notes?, license? }
+ *     union, a, b }], connectors?: [{ id, name?, domain: pipe | duct, system, x, y, z, dir, size, flow: in | out }],
+ *     fixture?: wc | lav | sink | shower | laundry (mep/fixtures.js: which plumbing fixture it is, for its fixture units),
+ *     sizes?: [{ name, values }] (files only), notes?, license? }
+ *   Connectors (unhosted families only) are where a pipe or duct joins the element: a point (x, y, z), the way out of it (dir:
+ *   +x, -x, +y, -y, +z or -z in the family's axes), the nominal size (mm: a pipe's DN, a round duct's diameter), the system key
+ *   (mep-model.js PIPE_SYSTEMS / DUCT_SYSTEMS: cw, hw, san, …) and whether the flow goes in (a tap fed with water) or out (a
+ *   drain). family-ops.js writes them on each placed element as IfcDistributionPort.
  *   Fields are numbers or expressions (expr.js, PartCraft's language): params by key; a hosted family also reads
  *   WallThickness (mm) and Face (1 | −1) from its wall. A param with a formula is driven. `visible` is an expression (a Yes /
  *   No parameter, or a comparison): 0 hides the solid. Coordinates in mm; a hosted family's axes are the opening's (x along
@@ -26,7 +32,8 @@
  *   revolve { plane, at, profile, axis [u0, v0, u1, v1], angle (degrees) } · sweep { path [[x, y, z]…], radius }
  *
  *   readFamily(obj) → { ok, family, errors: [{ key, fill }] }
- *   evaluateFamily(fam, values, { wallThickness, face }) → { ok, values, solids: Map, roots } | { ok: false, error: { key, fill } }
+ *   evaluateFamily(fam, values, { wallThickness, face }) → { ok, values, solids: Map, roots, connectors: [{ id, name, domain,
+ *     system, p, dir, size, flow }] } | { ok: false, error: { key, fill } }
  *   bodyItems(w, ev) → { items, type }                           IFC items (styled) for an evaluated family
  *   inputParams(fam) / sizeValues(fam, values) / sizeKey(fam, values) / defaultSizeName(fam, values)
  *   familyIndex(w) → { groups: Map key → { id, fam }, sizes: Map typeId → { family, name, values } , occ: Map typeId → [ids] }
@@ -42,6 +49,7 @@ import { openingType } from './opening-types.js';
 import { round } from './model-write.js';
 import { ids, val, deleteLine } from './ifc-util.js';
 import { t as tr } from './i18n.js';
+import { FIXTURE_KINDS, fixtureOf } from './mep/fixtures.js';
 
 export const FAMILY_FORMAT = 'cadcraft-family';
 export const FAMILY_PSET = 'CadCraft_Family';
@@ -65,8 +73,14 @@ export const STYLES = {
   metal: { name: 'fam.style.metal', rgb: [0.62, 0.64, 0.67], tr: 0 },
   stone: { name: 'fam.style.stone', rgb: [0.82, 0.8, 0.76], tr: 0 },
   solid: { name: 'fam.style.solid', rgb: [0.8, 0.8, 0.8], tr: 0 },
+  ceramic: { name: 'fam.style.ceramic', rgb: [0.96, 0.96, 0.94], tr: 0 },
 };
-export const LIMITS = { params: 60, solids: 200, booleans: 100, points: 400, expr: 300, sizes: 200, name: 80, notes: 2000, value: 1e7 };
+export const LIMITS = { params: 60, solids: 200, booleans: 100, connectors: 24, points: 400, expr: 300, sizes: 200, name: 80, notes: 2000, value: 1e7 };
+/** Connectors: what they join, the six ways out of one, and the set each placed element's ports carry. */
+export const CONNECTOR_DOMAINS = ['pipe', 'duct'];
+export const CONNECTOR_DIRS = { '+x': [1, 0, 0], '-x': [-1, 0, 0], '+y': [0, 1, 0], '-y': [0, -1, 0], '+z': [0, 0, 1], '-z': [0, 0, -1] };
+export const CONNECTOR_PSET = 'CadCraft_Connector';
+const SYSTEM_RE = /^[a-z][a-z0-9_-]{0,23}$/;
 
 const KEY_RE = /^[a-z0-9][a-z0-9-]{0,47}$/;
 const ID_RE = /^[a-z][a-z0-9_-]{0,23}$/;
@@ -114,6 +128,7 @@ export function readFamily(obj) {
     f.ifc.class = f.kind === 'door' ? 'IfcDoor' : 'IfcWindow';
   } else if (f.ifc.class === 'IfcDoor' || f.ifc.class === 'IfcWindow') f.ifc.class = 'IfcBuildingElementProxy';
   if (obj.starter === true) f.starter = true;
+  if (obj.fixture !== undefined && obj.fixture !== null && obj.fixture !== '') { if (f.host === 'wall' || !FIXTURE_KINDS.includes(obj.fixture)) bad('fam.err.fixture'); else f.fixture = obj.fixture; }
   // parameters
   const params = Array.isArray(obj.params) ? obj.params.slice(0, LIMITS.params + 1) : [];
   if (params.length > LIMITS.params) bad('fam.err.toomany', { what: 'params', n: LIMITS.params });
@@ -187,6 +202,25 @@ export function readFamily(obj) {
   }
   // a Boolean names only what came before it, so the tree has no cycle; one using a later Boolean is refused above (idSeen)
   if (!f.solids.length) bad('fam.err.nosolids');
+  // connectors (kept out of the recipe when there are none, so families without them read and write as before)
+  const conns = Array.isArray(obj.connectors) ? obj.connectors : [];
+  if (conns.length && f.host === 'wall') bad('fam.err.connhosted');
+  else if (conns.length) {
+    if (conns.length > LIMITS.connectors) bad('fam.err.toomany', { what: 'connectors', n: LIMITS.connectors });
+    f.connectors = [];
+    const cSeen = new Set();
+    for (const c of conns.slice(0, LIMITS.connectors)) {
+      if (!isObj(c) || typeof c.id !== 'string' || !ID_RE.test(c.id) || cSeen.has(c.id) || !CONNECTOR_DOMAINS.includes(c.domain)) { bad('fam.err.connector', { id: String(c?.id ?? '').slice(0, 24) }); continue; }
+      cSeen.add(c.id);
+      const q = { id: c.id, domain: c.domain };
+      const nm = cleanText(c.name, 60); if (nm) q.name = nm;
+      if (typeof c.system !== 'string' || !SYSTEM_RE.test(c.system)) bad('fam.err.connfield', { id: c.id, field: 'system' }); else q.system = c.system;
+      for (const k of ['x', 'y', 'z', 'size']) { const v = exprField(c[k]); if (v === null) bad('fam.err.connfield', { id: c.id, field: k }); else q[k] = v; }
+      q.dir = CONNECTOR_DIRS[c.dir] ? c.dir : bad('fam.err.connfield', { id: c.id, field: 'dir' });
+      q.flow = c.flow === 'out' ? 'out' : 'in';
+      f.connectors.push(q);
+    }
+  }
   // sizes kept in a family file
   if (Array.isArray(obj.sizes)) {
     f.sizes = [];
@@ -208,9 +242,13 @@ export function readFamily(obj) {
     const check = (src, where) => { const p = parse(src, names); if (!p.ok) errors.push(err('fam.err.unknown', { where, why: p.error })); };
     for (const p of f.params) if (p.formula) check(p.formula, p.key);
     for (const s of f.solids) for (const [k, v] of fieldsOf(s)) check(v, (s.name || s.id) + ' ' + k);
+    for (const c of f.connectors || []) for (const k of CONNECTOR_FIELDS) check(c[k], (c.name || c.id) + ' ' + k);
   }
   return { ok: errors.length === 0, family: errors.length ? null : f, errors };
 }
+
+/** A connector's expression fields. */
+export const CONNECTOR_FIELDS = ['x', 'y', 'z', 'size'];
 
 /** Every expression of a solid as [field, text]. */
 function fieldsOf(s) {
@@ -311,6 +349,18 @@ export function evaluateFamily(fam, values = {}, ctx = {}) {
     if (e instanceof ExprError) return { ok: false, error: err('fam.err.expr', { where: e.where || '', why: e.message }) };
     throw e;
   }
+  const connectors = [];
+  try {
+    for (const c of fam.connectors || []) {
+      const where = c.name || c.id;
+      const size = num(c.size, where + ' size');
+      if (!(size > 0)) return { ok: false, error: err('fam.err.connsize', { name: where }) };
+      connectors.push({ id: c.id, name: c.name || '', domain: c.domain, system: c.system, p: ['x', 'y', 'z'].map((k) => num(c[k], where + ' ' + k)), dir: CONNECTOR_DIRS[c.dir].slice(), size, flow: c.flow });
+    }
+  } catch (e) {
+    if (e instanceof ExprError) return { ok: false, error: err('fam.err.expr', { where: e.where || '', why: e.message }) };
+    throw e;
+  }
   // the Boolean tree: a hidden first operand hides the result; a hidden second one leaves the first as it is
   const nodes = new Map();
   for (const [id, s] of solids) nodes.set(id, s.visible ? { kind: 'solid', id, style: s.style } : null);
@@ -322,7 +372,7 @@ export function evaluateFamily(fam, values = {}, ctx = {}) {
   }
   const roots = [];
   for (const id of [...solids.keys(), ...(fam.booleans || []).map((b) => b.id)]) if (!operand.has(id) && nodes.get(id)) roots.push(nodes.get(id));
-  return { ok: true, values: env, solids, roots };
+  return { ok: true, values: env, solids, roots, connectors };
 }
 
 /** A profile's area with its arcs (each arc flattened to chords; enough to tell a real outline from a flat one). */
@@ -571,7 +621,7 @@ function makeType(w, fam, name, op) {
   }
   if (cls === 'IfcFurniture') return w.v4 ? w.make('IFCFURNITURETYPE', ...head, w.L(fam.name), 'NOTDEFINED', pre) : w.make('IFCFURNITURETYPE', ...head, w.L(fam.name), 'NOTDEFINED');
   if (cls === 'IfcFurnishingElement') return w.make('IFCFURNISHINGELEMENTTYPE', ...head, w.L(fam.name));
-  if (cls === 'IfcSanitaryTerminal') return w.make('IFCSANITARYTERMINALTYPE', ...head, w.L(fam.name), 'NOTDEFINED');
+  if (cls === 'IfcSanitaryTerminal') return w.make('IFCSANITARYTERMINALTYPE', ...head, w.L(fam.name), fam.ifc.predefined || fixtureOf(fam.fixture)?.ifc || 'NOTDEFINED');
   if (cls === 'IfcLightFixture') return w.make('IFCLIGHTFIXTURETYPE', ...head, w.L(fam.name), 'NOTDEFINED');
   return w.make('IFCBUILDINGELEMENTPROXYTYPE', ...head, w.L(fam.name), 'NOTDEFINED');
 }

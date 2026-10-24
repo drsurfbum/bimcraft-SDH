@@ -15,6 +15,7 @@ Put a library item into an IFC model: a sink, a work table, a chair. BimCraft wr
 1. Open an IFC model.
 2. Click the {{ui:Library}} tab beside {{ui:Properties}} on the right, or {{ui:Library}} in the toolbar above the model.
 3. Pick a source:
+   - **Built-in symbols**: generic plumbing plan symbols included with BimCraft under Apache-2.0, available offline. Check their dimensions before construction. For electrical plan symbols and IFC electrical devices, use **Build › Electrical**.
    - **LibraryCraft**: the CadCraft library on this site. Public items need no sign-in.
    - **This file**: the blocks of an open DWG or DXF drawing. A dynamic block with visibility states is offered once per state, named "Sink: Double bowl", each drawn with only that state's objects.
    - **Files…**: a DWG, DXF, IFC, glTF/GLB, OBJ, RFA or CSV file on your computer. It is read in this tab; nothing is uploaded.

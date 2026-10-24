@@ -31,7 +31,7 @@ import { planPdf } from './model-pdf.js';
 import { wallOutlines, wallTypes, wallType, typeThickness, typeName, typeAt, JUSTIFICATIONS, locationLine } from './model-walls.js';
 import { wallGeom, wallMap, arcMid, arcLength, bulgeThrough, bulgeFromHeight, arcHeight, flatPoly, BULGE_MAX } from './model-arcs.js';   // 0.6 round 2 (bim-comforts_PART_2): curved walls
 import { snapPoint, closesChain, loopSide, wallPath } from './model-tools.js';
-import { fmtLen, parseLen, parseTyped, fmtAngle, defaultUnits, fmtArea, parsePitch, fmtPitch } from './model-units.js';
+import { fmtLen, parseLen, parseTyped, fmtAngle, fmtArea, parsePitch, fmtPitch, getDisplayUnits, setDisplayUnits, isMetric } from './model-units.js';
 import { drawWallPath, drawWalls, changeWall, changeWalls, removeWalls, newLevel, changeLevel, snapshotModel, placeOpening, changeOpening, changeOpenings, removeElements, placeFloor, placeCeiling, placeRoof, changeDerived, loopsOf } from './model-ops.js';
 import { loopAt, labelPoint, planLoops } from './model-rooms.js';
 import { inPoly } from './model-plan.js';
@@ -48,7 +48,6 @@ import { placementReference, placementPath } from './wall-placement.js';
 const CUT = 1200;   // mm above the level: where the plan cuts (4'-0")
 const RCP_CUT = 2300;   // 0.6 DC.117: where a ceiling plan cuts and looks up from (about 7'-6")
 const SNAP_PX = 12;
-const UNITS_KEY = 'bimcraft.model.units';
 
 export function mountModel(host) {
   const root = host.root;
@@ -57,7 +56,7 @@ export function mountModel(host) {
     toggle: $('[data-model-toggle]'), wrap: $('[data-plan-wrap]'), canvas: $('[data-plan-canvas]'), bar: $('[data-modelbar]'),
     level: $('[data-model-level]'), kind: $('[data-model-viewkind]'), tools: [...root.querySelectorAll('[data-mtool]')], wallOpts: $('[data-mopts="wall"]'),
     wallRef: $('[data-model-wallref]'), wallSide: $('[data-model-wallside]'), wallShape: $('[data-model-wallshape]'), wallType: $('[data-model-walltype]'), wallTop: $('[data-model-walltop]'), wallH: $('[data-model-wallh]'), typed: $('[data-model-typed]'),
-    layout: [...root.querySelectorAll('[data-model-layout]')], fit: $('[data-model-fit]'), units: $('[data-model-units]'),
+    layout: [...root.querySelectorAll('[data-model-layout]')], layoutGroup: $('[data-model-layout-group]'), splitter: $('[data-model-splitter]'), fit: $('[data-model-fit]'), units: $('[data-model-units]'),
     levelsSec: $('[data-levels-sec]'), levels: $('[data-levels]'), stageEl: root.querySelector('.bc-stage'), hint: $('[data-model-hint]'),
     typedRow: $('[data-mtyped-row]'), toolbar: $('[data-toolbar]'),
     oOpts: { door: $('[data-mopts="door"]'), window: $('[data-mopts="window"]') },
@@ -67,7 +66,7 @@ export function mountModel(host) {
   if (!ui.toggle || !ui.wrap) return null;
 
   const S = {
-    on: false, layout: 'split', level: null, kind: 'plan', tool: 'select',   // kind: the level's floor plan or its ceiling plan ('rcp', 0.6 DC.117) busy: false, queue: [], again: false,
+    on: false, layout: 'split', split: 50, level: null, kind: 'plan', tool: 'select',   // kind: the level's floor plan or its ceiling plan ('rcp', 0.6 DC.117) busy: false, queue: [], again: false,
     data: null, outlines: new Map(), cut: null, cutFor: null, chain: null, last: null, hoverKey: null,
     wall: { reference: 'center', side: 'left', typeKey: 'ext-2x6', top: 'level', height: 2438.4, shape: 'straight' }, units: readUnits(),   // shape: straight | arc (0.6 round 2)
     open: {
@@ -118,7 +117,12 @@ export function mountModel(host) {
     st.classList.toggle('is-plan-split', S.on && S.layout === 'split');
     st.classList.toggle('is-plan-only', S.on && S.layout === 'plan');
     stackSplit();
-    for (const b of ui.layout) b.setAttribute('aria-pressed', b.dataset.modelLayout === S.layout ? 'true' : 'false');
+    st.style.setProperty('--bc-split', S.split + '%');
+    ui.layoutGroup.hidden = !canDraw();
+    ui.splitter.hidden = !(S.on && S.layout === 'split');
+    ui.splitter.setAttribute('aria-valuenow', String(S.split));
+    ui.splitter.setAttribute('aria-orientation', st.classList.contains('is-plan-stacked') ? 'horizontal' : 'vertical');
+    for (const b of ui.layout) b.setAttribute('aria-pressed', b.dataset.modelLayout === (S.on ? S.layout : '3d') ? 'true' : 'false');
     requestAnimationFrame(() => { host.viewer()?.resize?.(); pv?.resize(); });
   }
   ui.toggle.addEventListener('click', () => {
@@ -128,8 +132,21 @@ export function mountModel(host) {
   for (const b of ui.layout) b.addEventListener('click', () => {
     S.layout = b.dataset.modelLayout;
     if (S.layout === '3d') { S.layout = 'split'; show(false); return; }
+    if (!S.on) { show(true); return; }
     applyLayout();
     requestAnimationFrame(() => fitPlan());   // the pane changed size: the whole level again
+  });
+  const splitAt = (e) => {
+    const b = ui.stageEl.getBoundingClientRect(), stacked = ui.stageEl.classList.contains('is-plan-stacked');
+    S.split = Math.max(20, Math.min(80, Math.round((stacked ? (e.clientY - b.top) / b.height : (e.clientX - b.left) / b.width) * 100)));
+    applyLayout();
+  };
+  ui.splitter.addEventListener('pointerdown', (e) => { e.preventDefault(); ui.splitter.setPointerCapture(e.pointerId); splitAt(e); });
+  ui.splitter.addEventListener('pointermove', (e) => { if (ui.splitter.hasPointerCapture(e.pointerId)) splitAt(e); });
+  ui.splitter.addEventListener('keydown', (e) => {
+    const d = { ArrowLeft: -5, ArrowUp: -5, ArrowRight: 5, ArrowDown: 5 }[e.key];
+    if (!d) return;
+    e.preventDefault(); S.split = Math.max(20, Math.min(80, S.split + d)); applyLayout();
   });
   ui.fit?.addEventListener('click', () => fitPlan());
   /** Fit the plan below BimCraft's toolbar and the model bar, which sit over its top. */
@@ -259,7 +276,7 @@ export function mountModel(host) {
   function buildScene() {
     if (!pv) return;
     const scene = makeScene();
-    pv.gridUnit = S.units === 'mm' ? 1000 : 304.8;
+    pv.gridUnit = isMetric(S.units) ? 1000 : 304.8;
     pv.setScene(scene);
     renderSchedule();
     pv.setSelection(selectedKeys());
@@ -350,7 +367,7 @@ export function mountModel(host) {
     const sc = { ...pv.scene, dims: (pv.scene.dims || []).map((d) => ({ ...d, offPx: undefined })) };
     const lv = level(), when = new Date().toISOString().slice(0, 10);
     const base = String(host.fileName?.() || 'model').replace(/\.ifc$/i, '');
-    const r = planPdf(sc, { title: api.ask('viewTitle') || t(S.kind === 'rcp' ? 'model.print.rcpof' : 'model.print.titleof', { level: lv?.name || '' }), lines: [base, t('model.print.cut', { h: fmtLen(viewRange().cut, S.units) }), when], units: S.units, paper: S.units === 'mm' ? 'a4' : 'letter', scale: viewRange().scale || null });
+    const r = planPdf(sc, { title: api.ask('viewTitle') || t(S.kind === 'rcp' ? 'model.print.rcpof' : 'model.print.titleof', { level: lv?.name || '' }), lines: [base, t('model.print.cut', { h: fmtLen(viewRange().cut, S.units) }), when], units: S.units, paper: isMetric(S.units) ? 'a4' : 'letter', scale: viewRange().scale || null });
     host.download(base + ' — ' + (lv?.name || '') + (S.kind === 'rcp' ? ' ' + t('model.rcp.file') : '') + '.pdf', r.bytes, 'application/pdf');   // i18n-ignore: a file name
     host.status(t('model.print.done', { scale: r.scale.label }) + (r.missing ? ' ' + t('model.print.missing', { n: r.missing }) : ''));
   });
@@ -422,12 +439,12 @@ export function mountModel(host) {
   }
 
   // ---- units ----
-  function readUnits() { try { const u = localStorage.getItem(UNITS_KEY); if (u === 'mm' || u === 'ftin') return u; } catch (e) { /* none */ } return host.units?.() || defaultUnits(); }
+  function readUnits() { return getDisplayUnits(); }
   if (ui.units) {
     ui.units.value = S.units;
-    ui.units.addEventListener('change', () => { S.units = ui.units.value === 'mm' ? 'mm' : 'ftin'; try { localStorage.setItem(UNITS_KEY, S.units); } catch (e) { /* this tab */ } refresh(); renderProps(); });
+    ui.units.addEventListener('change', () => { S.units = ui.units.value; setDisplayUnits(S.units); refresh(); renderProps(); window.dispatchEvent(new Event('bimcraft-units')); });
   }
-  const round = () => (S.units === 'mm' ? 10 : 12.7);   // free directions come out in 10 mm or 1/2"
+  const round = () => (isMetric(S.units) ? 10 : 12.7);   // free directions come out in 10 mm or 1/2"
 
   // ---- tools ----
   function setTool(name) {
@@ -541,6 +558,13 @@ export function mountModel(host) {
   const sizeName = (v) => fmtLen(v.Width, S.units) + ' × ' + fmtLen(v.Height, S.units);
   function fillSlabOpts() {
     const fl = S.slab.floor, ce = S.slab.ceiling, rf = S.slab.roof;
+    const selectedRoof = () => S.data?.derived?.roofs.find((r) => r.parts.some((p) => selectedKeys().includes(kb() + p)));
+    const editSelectedRoof = (changes) => {
+      const r = selectedRoof();
+      if (!r) return;
+      const again = () => { const next = snapshotModel(ed()).derived.roofs.find((x) => x.guid === r.guid); return next?.parts.length ? [kb() + next.parts[0]] : null; };
+      commit(changeDerived([r.guid], changes), { label: t('model.roof'), verb: t('model.verb.changed'), reselect: again });
+    };
     const bind = (sel, fn) => { const e = root.querySelector(sel); if (e && !e.dataset.bound) { e.dataset.bound = '1'; e.addEventListener('change', () => { fn(e); drawOverlay(); }); } return e; };
     const len = (e, key, obj, min) => { const mm = parseLen(e.value, S.units); if (mm >= min) obj[key] = mm; else host.status(t('model.err.length'), true); e.value = fmtLen(obj[key], S.units); };
     bind('[data-model-flmode="floor"]', (e) => { fl.mode = e.value; });
@@ -548,10 +572,10 @@ export function mountModel(host) {
     bind('[data-model-flkind]', (e) => { fl.kind = e.value; fl.thickness = FLOOR_KINDS.find((x) => x.key === e.value)?.t || fl.thickness; const th = root.querySelector('[data-model-flthick]'); if (th) th.value = fmtLen(fl.thickness, S.units); });
     const th = bind('[data-model-flthick]', (e) => len(e, 'thickness', fl, 10));
     const ch = bind('[data-model-ceheight]', (e) => len(e, 'height', ce, 500));
-    const pi = bind('[data-model-rfpitch]', (e) => { const d = parsePitch(e.value); if (d > 1 && d < 80) rf.pitch = d; else host.status(t('model.err.pitch'), true); e.value = fmtPitch(rf.pitch, S.units); });
+    const pi = bind('[data-model-rfpitch]', (e) => { const d = parsePitch(e.value); if (d > 1 && d < 80) { rf.pitch = d; editSelectedRoof({ pitch: d, edges: formatEdges(new Map([...parseEdges(selectedRoof()?.edges)].map(([k, v]) => [k, v.kind === 'pitch' ? { kind: 'pitch', overhang: v.overhang } : v]))) || ' ' }); } else host.status(t('model.err.pitch'), true); e.value = fmtPitch(rf.pitch, S.units); });
     const ov = bind('[data-model-rfover]', (e) => { const mm = parseLen(e.value, S.units); if (mm >= 0) rf.overhang = mm; else host.status(t('model.err.length'), true); e.value = fmtLen(rf.overhang, S.units); });
     bind('[data-model-rfends]', (e) => { rf.ends = e.value; });
-    const fa = bind('[data-model-rffascia]', (e) => { rf.fascia = e.checked; });
+    const fa = bind('[data-model-rffascia]', (e) => { rf.fascia = e.checked; editSelectedRoof({ fascia: e.checked ? ROOF_DEFAULTS.fascia : 0, soffit: e.checked }); });
     if (fa) fa.checked = rf.fascia;
     if (ce.height === null && level()) ce.height = Math.max(2000, (levelAbove() ? levelAbove().elevation - level().elevation : level().height) - 304.8);
     if (th && document.activeElement !== th) th.value = fmtLen(fl.thickness, S.units);
@@ -1274,7 +1298,7 @@ export function mountModel(host) {
       } else {
         title = t('model.roof');
         const pi = el('input', { type: 'text', className: 'bc-input bc-num', value: fmtPitch(d.pitch, S.units), 'data-mp-rfpitch': '' });
-        pi.addEventListener('change', () => { const deg = parsePitch(pi.value); if (deg > 1 && deg < 80) run({ pitch: deg }); else { host.status(t('model.err.pitch'), true); pi.value = pi.defaultValue; } });
+        pi.addEventListener('change', () => { const deg = parsePitch(pi.value); if (deg > 1 && deg < 80) run({ pitch: deg, edges: formatEdges(new Map([...parseEdges(d.edges)].map(([k, v]) => [k, v.kind === 'pitch' ? { kind: 'pitch', overhang: v.overhang } : v]))) || ' ' }); else { host.status(t('model.err.pitch'), true); pi.value = pi.defaultValue; } });
         pi.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); pi.blur(); } });
         field(t('model.rf.pitch'), pi);
         field(t('model.rf.overhang'), lenInput(d.overhang, 'data-mp-rfover', (mm) => run({ overhang: mm }), { allowZero: true }));

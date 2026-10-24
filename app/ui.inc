@@ -68,10 +68,6 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
     <?php /* Levels (0.5 part 3, BM.2; model-ui.js renderLevels): shown while Draw is on — pick the plan's level, rename, elevation, height, add. */ ?>
     <section class="bc-sec" data-levels-sec hidden>
       <h2 class="bc-h"><?= Lang::e('model.levels') ?></h2>
-      <label class="bc-lv-units"><span><?= Lang::e('model.units') ?></span> <select class="bc-mb-select" data-model-units>
-        <option value="ftin"><?= Lang::e('model.units.ftin') ?></option>
-        <option value="mm"><?= Lang::e('model.units.mm') ?></option>
-      </select></label>
       <div data-levels></div>
       <p class="bc-note"><?= Lang::e('model.levels.note') ?></p>
     </section>
@@ -172,6 +168,19 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
       <button type="button" class="bc-tool" data-view="top" title="<?= Lang::e('ui.view.top.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('viewcube.face.top') ?></span></button>
       <button type="button" class="bc-tool" data-view="front" title="<?= Lang::e('ui.view.front.title') ?>"><i class="bi bi-layout-sidebar-inset" aria-hidden="true"></i><span><?= Lang::e('viewcube.face.front') ?></span></button>
       <button type="button" class="bc-tool" data-view="side" title="<?= Lang::e('ui.view.side.title') ?>"><i class="bi bi-layout-sidebar-inset-reverse" aria-hidden="true"></i><span><?= Lang::e('ui.view.side') ?></span></button>
+      <span class="bc-mb-layout" role="group" aria-label="<?= Lang::e('model.layout') ?>" data-model-layout-group hidden>
+        <button type="button" class="bc-tool" data-model-layout="plan" aria-pressed="false"><?= Lang::e('model.layout.plan') ?></button>
+        <button type="button" class="bc-tool" data-model-layout="split" aria-pressed="false"><?= Lang::e('model.layout.split') ?></button>
+        <button type="button" class="bc-tool" data-model-layout="3d" aria-pressed="true" title="<?= Lang::e('model.layout.3d.title') ?>"><?= Lang::e('model.layout.3d') ?></button>
+      </span>
+      <label class="bc-global-units"><span><?= Lang::e('model.units') ?></span> <select class="bc-mb-select" data-model-units aria-label="<?= Lang::e('model.units') ?>">
+        <option value="ftin"><?= Lang::e('model.units.ftin') ?></option>
+        <option value="in"><?= Lang::e('model.units.in') ?></option>
+        <option value="ftdec"><?= Lang::e('model.units.ftdec') ?></option>
+        <option value="mm"><?= Lang::e('model.units.mm') ?></option>
+        <option value="cm"><?= Lang::e('model.units.cm') ?></option>
+        <option value="m"><?= Lang::e('model.units.m') ?></option>
+      </select></label>
       <span class="bc-tool-sep" aria-hidden="true"></span>
       <button type="button" class="bc-tool" data-toggle="edges" aria-pressed="true" title="<?= Lang::e('ui.edges.title') ?>"><i class="bi bi-bounding-box" aria-hidden="true"></i><span><?= Lang::e('ui.edges') ?></span></button>
       <button type="button" class="bc-tool" data-toggle="spaces" aria-pressed="false" title="<?= Lang::e('ui.spaces.title') ?>"><i class="bi bi-grid-3x3" aria-hidden="true"></i><span><?= Lang::e('qto.view.spaces') ?></span></button>
@@ -309,7 +318,9 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
 
     <div class="bc-equip bc-ifc-equip" data-ifc-equip hidden></div>
 
-    <div class="bc-canvas" data-canvas-wrap hidden><canvas data-canvas aria-label="<?= Lang::e('ui.canvas.label') ?>"></canvas><div class="bc-measure-labels" data-measure-labels aria-hidden="true"></div></div>
+    <div class="bc-canvas" data-canvas-wrap hidden><canvas data-canvas aria-label="<?= Lang::e('ui.canvas.label') ?>"></canvas><div class="bc-measure-labels" data-measure-labels aria-hidden="true"></div>
+      <label class="bc-display-mode"><span class="visually-hidden"><?= Lang::e('view.display') ?></span><select class="bc-mb-select" data-display-mode aria-label="<?= Lang::e('view.display') ?>"><option value="shaded"><?= Lang::e('view.display.shaded') ?></option><option value="edges" selected><?= Lang::e('view.display.edges') ?></option><option value="wireframe"><?= Lang::e('view.display.wireframe') ?></option></select></label>
+    </div>
     <?php /* Plan view + model bar (0.5 part 3, track BM): model-ui.js / model-planview.js. Beside the 3D view (Split) or alone (Plan). */ ?>
     <div class="bc-plan" data-plan-wrap hidden>
       <canvas data-plan-canvas aria-label="<?= Lang::e('model.plan.label') ?>"></canvas>
@@ -326,6 +337,7 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
             <button type="button" class="bc-tool" data-mtool="floor" aria-pressed="false" title="<?= Lang::e('model.tool.floor.title') ?>"><i class="bi bi-layers" aria-hidden="true"></i><span><?= Lang::e('model.tool.floor') ?></span></button>
             <button type="button" class="bc-tool" data-mtool="ceiling" aria-pressed="false" title="<?= Lang::e('model.tool.ceiling.title') ?>"><i class="bi bi-layers-half" aria-hidden="true"></i><span><?= Lang::e('model.tool.ceiling') ?></span></button>
             <button type="button" class="bc-tool" data-mtool="roof" aria-pressed="false" title="<?= Lang::e('model.tool.roof.title') ?>"><i class="bi bi-house" aria-hidden="true"></i><span><?= Lang::e('model.tool.roof') ?></span></button>
+            <button type="button" class="bc-tool" data-mtool="electrical" aria-pressed="false" title="<?= Lang::e('res.tool.electrical.title') ?>"><i class="bi bi-plug" aria-hidden="true"></i><span><?= Lang::e('res.tool.electrical') ?></span></button>
             <?php /* The residential tools (0.5 part 4, track RC; res-ui.js through model-ui.js extend()). */ ?>
             <details class="bc-mb-more" data-res-tools>
               <summary class="bc-tool" title="<?= Lang::e('res.tools.title') ?>"><i class="bi bi-tools" aria-hidden="true"></i><span><?= Lang::e('res.tools') ?></span></summary>
@@ -359,7 +371,6 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
                 <button type="button" class="bc-tool" data-mtool="pad" aria-pressed="false" title="<?= Lang::e('res.tool.pad.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('res.tool.pad') ?></span></button>
                 <button type="button" class="bc-tool" data-mtool="paving" aria-pressed="false" title="<?= Lang::e('res.tool.paving.title') ?>"><i class="bi bi-signpost-split" aria-hidden="true"></i><span><?= Lang::e('res.tool.paving') ?></span></button>
                 <button type="button" class="bc-tool" data-mtool="section" aria-pressed="false" title="<?= Lang::e('res.tool.section.title') ?>"><i class="bi bi-slash-square" aria-hidden="true"></i><span><?= Lang::e('res.tool.section') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="electrical" aria-pressed="false" title="<?= Lang::e('res.tool.electrical.title') ?>"><i class="bi bi-plug" aria-hidden="true"></i><span><?= Lang::e('res.tool.electrical') ?></span></button>
               </div>
             </details>
             <?php /* Modify (0.6 DF.17, bim-draw): model-trim-ui.js through model-ui.js extend(). */ ?>
@@ -399,11 +410,6 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
             <button type="button" class="bc-tool" data-res-sheetsopen title="<?= Lang::e('res.sh.open.title') ?>"><i class="bi bi-files" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('res.sh.title') ?></span></button>
             <button type="button" class="bc-tool" data-res-takeoff data-handoff-url="<?= e($__takeoffUrl) ?>" title="<?= Lang::e('res.to.title') ?>"><i class="bi bi-calculator" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('res.to.button') ?></span></button>
             <button type="button" class="bc-tool" data-model-fit title="<?= Lang::e('model.fit.title') ?>"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('model.fit') ?></span></button>
-            <span class="bc-mb-layout" role="group" aria-label="<?= Lang::e('model.layout') ?>">
-              <button type="button" class="bc-tool" data-model-layout="plan" aria-pressed="false"><?= Lang::e('model.layout.plan') ?></button>
-              <button type="button" class="bc-tool" data-model-layout="split" aria-pressed="true"><?= Lang::e('model.layout.split') ?></button>
-              <button type="button" class="bc-tool" data-model-layout="3d" aria-pressed="false" title="<?= Lang::e('model.layout.3d.title') ?>"><?= Lang::e('model.layout.3d') ?></button>
-            </span>
           </span>
         </div>
         <div class="bc-modelbar-row" data-mopts="wall" hidden>
@@ -507,6 +513,8 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
         </div>
         <div class="bc-modelbar-row" data-mopts="framing" hidden>
           <label><span class="visually-hidden"><?= Lang::e('res.fr.spacing') ?></span><select class="bc-mb-select" data-res-frsp aria-label="<?= Lang::e('res.fr.spacing') ?>"></select></label>
+          <label><?= Lang::e('res.fr.floormode') ?> <select class="bc-mb-select" data-res-frfloor><option value="lumber"><?= Lang::e('res.fr.floor.lumber') ?></option><option value="tji"><?= Lang::e('res.fr.floor.tji') ?></option></select></label>
+          <label><?= Lang::e('res.fr.floordir') ?> <select class="bc-mb-select" data-res-frdir><option value="auto"><?= Lang::e('res.fr.dir.auto') ?></option><option value="x"><?= Lang::e('res.fr.dir.x') ?></option><option value="y"><?= Lang::e('res.fr.dir.y') ?></option></select></label>
           <label><span class="visually-hidden"><?= Lang::e('res.fr.corners') ?></span><select class="bc-mb-select" data-res-frcorner aria-label="<?= Lang::e('res.fr.corners') ?>">
             <option value="three-stud"><?= Lang::e('res.fr.corner.three') ?></option><option value="california"><?= Lang::e('res.fr.corner.california') ?></option>
           </select></label>
@@ -637,6 +645,7 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
         </div>
       </div>
     </div>
+    <div class="bc-splitter" data-model-splitter role="separator" tabindex="0" aria-label="<?= Lang::e('model.layout.resize') ?>" aria-valuemin="20" aria-valuemax="80" aria-valuenow="50" hidden></div>
     <?php /* Sheets (0.5 part 4 RC.5; res-ui.js openSheets): the drawing set made from the model. */ ?>
     <dialog class="bc-sheets" data-res-sheets-dlg aria-labelledby="bc-sheets-h">
       <div class="bc-sheets-head">

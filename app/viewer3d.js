@@ -117,6 +117,7 @@ export class Viewer3D {
     this.vis = new Visibility();
     this.batches = [];
     this.edgesOn = true;
+    this.displayMode = 'edges';
     this.spacesOn = false;
     this.box = new THREE.Box3();
 
@@ -186,6 +187,7 @@ export class Viewer3D {
     this.spaceMeshes = Ls.flatMap((L) => L.spaceMeshes);
     this.batches = Ls.flatMap((L) => L.batches);
     this.edgesAvailable = Ls.some((L) => L.edges.length);
+    this.applyDisplayMode();
     this.box.makeEmpty();
     for (const L of Ls) if (L.group.visible && !L.box.isEmpty()) this.box.union(L.box.clone().applyMatrix4(L.group.matrix));
     if (this.box.isEmpty()) for (const L of Ls) if (L.group.visible) for (const m of L.spaceMeshes) this.box.union(m.geometry.boundingBox.clone().applyMatrix4(L.group.matrix));
@@ -656,8 +658,22 @@ export class Viewer3D {
 
   setEdges(on) {
     this.edgesOn = on;
-    for (const e of this.edges) e.visible = on;
+    this.displayMode = on ? 'edges' : 'shaded';
+    this.applyDisplayMode();
     this.render();
+  }
+
+  setDisplayMode(mode) {
+    if (!['shaded', 'edges', 'wireframe'].includes(mode)) return;
+    this.displayMode = mode;
+    this.edgesOn = mode === 'edges';
+    this.applyDisplayMode();
+    this.render();
+  }
+
+  applyDisplayMode() {
+    for (const mesh of this.meshes) for (const material of mesh.material) material.wireframe = this.displayMode === 'wireframe';
+    for (const edge of this.edges) edge.visible = this.displayMode === 'edges';
   }
 
   /** The view presets' frame (0.6 DC.57): turned by `rad` about the vertical, so a building turned in its site is seen

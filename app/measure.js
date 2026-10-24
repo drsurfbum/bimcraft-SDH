@@ -13,6 +13,7 @@
  *   fmtLength(m) / fmtArea(m2)               "3.25 m", "1.20 m²"
  */
 import { runEdges } from './ifc-vis.js';
+import { fmtLen, fmtArea as fmtModelArea, getDisplayUnits } from './model-units.js';
 
 export { runEdges };
 
@@ -92,8 +93,20 @@ export function snapTo(points, edges, cursor, project, { vertexPx = 10, edgePx =
 }
 
 export const distance = (a, b) => len(sub(b, a));
+/** Prefer an orthogonal measurement when its endpoint is within a small screen tolerance. */
+export function axisSnap(a, b, cursor, project, tolerancePx = 12) {
+  let best = b, bestPx = tolerancePx;
+  for (let i = 0; i < 3; i++) {
+    const p = [...a]; p[i] = b[i];
+    const s = project(p);
+    if (!s) continue;
+    const d = Math.hypot(s[0] - cursor[0], s[1] - cursor[1]);
+    if (d < bestPx && Math.abs(p[i] - a[i]) > 1e-6) { best = p; bestPx = d; }
+  }
+  return best;
+}
 export const ifcDelta = (a, b) => [b[0] - a[0], -(b[2] - a[2]), b[1] - a[1]];
 const trim = (v, d) => v.toFixed(d).replace(/\.?0+$/, '') || '0';
-export const fmtLength = (m) => (Math.abs(m) < 10 ? m.toFixed(3) : m.toFixed(2)) + ' m';
-export const fmtArea = (m2) => (m2 < 10 ? m2.toFixed(3) : m2.toFixed(2)) + ' m²';
+export const fmtLength = (m) => fmtLen(m * 1000, getDisplayUnits(), { unit: true });
+export const fmtArea = (m2) => fmtModelArea(m2 * 1e6, getDisplayUnits());
 export { trim };

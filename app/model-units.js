@@ -11,8 +11,21 @@
  */
 import { parseLength } from './libitem.js';
 
-export const UNITS = ['ftin', 'mm'];
+export const UNITS = ['ftin', 'in', 'ftdec', 'mm', 'cm', 'm'];
 const INCH = 25.4;
+const FACTOR = { mm: 1, cm: 10, m: 1000, in: INCH, ftdec: 12 * INCH };
+export const isMetric = (unit) => ['mm', 'cm', 'm'].includes(unit);
+let displayUnits = null;
+export function getDisplayUnits() {
+  if (displayUnits) return displayUnits;
+  try { const saved = localStorage.getItem('bimcraft.model.units'); if (UNITS.includes(saved)) return saved; } catch (e) { /* no storage */ }
+  return defaultUnits();
+}
+export function setDisplayUnits(unit) {
+  if (!UNITS.includes(unit)) return;
+  displayUnits = unit;
+  try { localStorage.setItem('bimcraft.model.units', unit); } catch (e) { /* this tab */ }
+}
 
 /** The default for a new building or a model without a choice: feet and inches where the browser speaks US English. */
 export function defaultUnits(lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US') {
@@ -22,9 +35,11 @@ export function defaultUnits(lang = (typeof navigator !== 'undefined' && navigat
 /** Millimetres as text. `ftin`: feet-inches to 1/16" (fractions reduced); `mm`: whole millimetres (0.1 below 10). */
 export function fmtLen(mm, units = 'ftin', { unit = false } = {}) {
   if (!Number.isFinite(mm)) return '';
-  if (units === 'mm') {
-    const r = Math.abs(mm) < 10 ? Math.round(mm * 10) / 10 : Math.round(mm);
-    return (Object.is(r, -0) ? 0 : r) + (unit ? ' mm' : '');   // i18n-ignore: the unit symbol
+  if (units !== 'ftin' && FACTOR[units]) {
+    const value = mm / FACTOR[units];
+    const digits = units === 'mm' ? (Math.abs(value) < 10 ? 1 : 0) : units === 'in' ? 3 : 2;
+    const rounded = Number(value.toFixed(digits));
+    return (Object.is(rounded, -0) ? 0 : rounded) + (unit ? ' ' + (units === 'ftdec' ? 'ft' : units) : '');
   }
   const neg = mm < 0;
   let sixteenths = Math.round(Math.abs(mm) / INCH * 16);
@@ -44,14 +59,14 @@ export function parseLen(text, units = 'ftin') {
   const s = String(text ?? '').trim();
   if (!s) return NaN;
   // 12' 6" without the dash, 12'6, 6 1/2 (inches), 1/2"
-  let v = parseLength(s, units === 'mm' ? 1 : INCH);
+  let v = parseLength(s, FACTOR[units] || INCH);
   if (Number.isFinite(v)) return v;
   let m = s.match(/^(-?\d+(?:\.\d+)?)\s*'\s*-?\s*(\d+(?:\.\d+)?)?(?:\s+(\d+)\/(\d+))?\s*"?$/);
   if (m) return Math.sign(Number(m[1]) || 1) * (Math.abs(Number(m[1])) * 12 + Number(m[2] || 0) + (m[3] ? Number(m[3]) / Number(m[4]) : 0)) * INCH;
   m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
-  if (m && units !== 'mm') return (Number(m[1]) + Number(m[2]) / Number(m[3])) * INCH;
+  if (m && !isMetric(units)) return (Number(m[1]) + Number(m[2]) / Number(m[3])) * INCH;
   m = s.match(/^(-?)\s*(\d+)\/(\d+)$/);
-  if (m && units !== 'mm' && Number(m[3])) return (m[1] ? -1 : 1) * Number(m[2]) / Number(m[3]) * INCH;
+  if (m && !isMetric(units) && Number(m[3])) return (m[1] ? -1 : 1) * Number(m[2]) / Number(m[3]) * INCH;
   return NaN;
 }
 
@@ -95,7 +110,7 @@ function splitPair(t) {
 export const fmtAngle = (deg) => { let a = Math.round(((deg % 360) + 360) % 360 * 10) / 10; if (a === 360) a = 0; return a + '°'; };
 /** Square millimetres → m² (to 0.01) or ft² (to 0.1), as text with the unit. */
 export function fmtArea(mm2, units = 'ftin') {
-  if (units === 'mm') return (Math.round(mm2 / 1e4) / 100).toFixed(2) + ' m²';   // i18n-ignore: unit symbol
+  if (isMetric(units)) return (Math.round(mm2 / 1e4) / 100).toFixed(2) + ' m²';   // i18n-ignore: unit symbol
   return (Math.round(mm2 / (304.8 * 304.8) * 10) / 10).toFixed(1) + ' ft²';   // i18n-ignore: unit symbol
 }
 
@@ -109,6 +124,6 @@ export function parsePitch(text) {
 }
 /** A pitch as text: a rise over 12 to 1/4 in feet and inches, else degrees to 0.1°. */
 export function fmtPitch(deg, units = 'ftin') {
-  if (units === 'ftin') { const r = Math.round(Math.tan(deg * Math.PI / 180) * 12 * 4) / 4; return r + '/12'; }
+  if (!isMetric(units)) { const r = Math.round(Math.tan(deg * Math.PI / 180) * 12 * 4) / 4; return r + '/12'; }
   return (Math.round(deg * 10) / 10) + '°';
 }

@@ -2,7 +2,7 @@ name: F06 browser acceptance
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, candidate/f08-upstream-20261024]
   workflow_dispatch:
 permissions:
   contents: read
@@ -47,4 +47,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: f06-browser
-          path: .cc-test/f06-browser/
+          path: |
+            .cc-test/f06-browser/
+            !**/*.ifc
+            !**/*.pdf
+            !**/*.csv
+            !**/expected.json
+            !**/*-expected.json

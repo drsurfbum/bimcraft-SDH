@@ -2,7 +2,7 @@ name: F05 browser acceptance
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, candidate/f08-upstream-20261024]
   workflow_dispatch:
 permissions:
   contents: read
@@ -54,3 +54,8 @@ jobs:
           path: |
             .cc-test/f05-browser/
             !.cc-test/f05-browser/*.ifc
+            !**/*.ifc
+            !**/*.pdf
+            !**/*.csv
+            !**/expected.json
+            !**/*-expected.json

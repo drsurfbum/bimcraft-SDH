@@ -16,6 +16,7 @@
  */
 import { el } from './ui-util.js';
 import * as L from './libitem.js';
+import { BUILTIN_SYMBOLS } from './library-symbols.js';
 import { t, locale } from "./i18n.js";
 
 const API = '/api/v1/library';
@@ -33,7 +34,7 @@ export class LibraryPanel {
   constructor(container, host) {
     this.box = container;
     this.host = host;
-    this.source = 'librarycraft';
+    this.source = 'symbols';
     this.query = '';
     this.category = '';
     this.feed = null;
@@ -134,7 +135,12 @@ export class LibraryPanel {
   async load() {
     const token = (this.loadToken = (this.loadToken || 0) + 1);
     this.error = null;
-    if (this.source === 'this') {
+    if (this.source === 'symbols') {
+      this.entries = BUILTIN_SYMBOLS.map((item, i) => ({
+        key: 'symbol:' + i, name: item.name, maker: '', model: '', category: item.category, local: true, item,
+        load: async () => ({ item, meta: { library: 'file', source: t('lib.src.symbols'), sourceFile: 'BimCraft built-in symbols (Apache-2.0)', sha256: await L.itemHash(item), notes: [t('lib.src.symbols.license')] } }),
+      }));
+    } else if (this.source === 'this') {
       const d = this.host.dwg();
       this.entries = d ? this.dwgEntries(d.db, d.fileName) : [];
     } else if (this.source === 'files') {
@@ -255,6 +261,7 @@ export class LibraryPanel {
     const feeds = readJson(FEEDS_KEY, []);
     const kids = [
       el('div', { className: 'bc-lib-srcs', role: 'group', 'aria-label': t('lib.sources') },
+        src('symbols', t('lib.src.symbols'), t('lib.src.symbols.title')),
         src('librarycraft', 'LibraryCraft', t('lib.src.librarycraft.title')),   // i18n-ignore: product name
         src('this', t('lib.src.this'), t('lib.src.this.title')),
         src('files', t('lib.src.files'), t('lib.src.files.title')),

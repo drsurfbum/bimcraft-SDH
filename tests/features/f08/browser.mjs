@@ -22,8 +22,8 @@ async function click(p,selector){
  const e=p.locator(selector).first();await e.evaluate(el=>{for(let q=el.parentElement;q;q=q.parentElement)if(q.tagName==='DETAILS'&&!q.open)q.querySelector(':scope > summary')?.click();});await e.click();
 }
 async function settle(p){await p.waitForFunction(()=>{const s=globalThis.bimcraftPlan?.state;return s?.data?.walls?.length===16&&!s.busy&&!s.reloading&&!s.queue.length;},null,{timeout:90000});}
-async function open(p,file){
- await p.goto('http://127.0.0.1:8040/?space=paper',{waitUntil:'networkidle'});await p.locator('[data-file]').setInputFiles(file);
+async function open(p,file,locale='en'){
+ await p.goto('http://127.0.0.1:8040/?space=paper&lang='+locale,{waitUntil:'networkidle'});await p.locator('[data-file]').setInputFiles(file);
  await p.waitForFunction(()=>globalThis.bimcraftLive?.editor,null,{timeout:90000});
  if(await p.locator('[data-model-toggle]').getAttribute('aria-pressed')!=='true')await click(p,'[data-model-toggle]');
  await settle(p);await click(p,'[data-model-layout="plan"]');
@@ -69,6 +69,33 @@ try{
  // Extra enlarged export uses the same production writer, separately identified.
  const detail=await reopenedPage.evaluate(async()=>{const {planPdf}=await import('/assets/apps/bimcraft/dev/model-pdf.js');return Array.from(planPdf({...bimcraftPlan.view.scene,crop:[10900,10400,12200,11800]},{paper:'a3',units:'mm',scale:10,title:'F08-A T detail — same production vector writer'}).bytes);});fs.writeFileSync(path.join(out,'detail.pdf'),Buffer.from(detail));
  const other=await(await context()).newPage();await open(other,fixture);assert.deepEqual(semantic(await snapshot(other)),semantic(initial));check('separately opened original is unchanged in an independent browser context');
+ // Fresh real server-rendered language catalogs; units are presentation state only.
+ if(process.env.F08_REQUIRE_PHP==='1'){
+  execFileSync('php',['-v']);report.localeChecks=[];
+  for(const locale of ['es-MX','id','en-XA']){
+   const p=await(await context()).newPage();await open(p,fixture,locale);
+   assert.equal(await p.locator('html').getAttribute('lang'),locale);
+   const catalog=JSON.parse(await p.locator('#cc-lang').textContent());
+   const before=semantic(await snapshot(p));
+   await frame(p,{x0:400,y0:20400,x1:5600,y1:25400});await pick(p,target.guid);
+   const label=await p.locator('[data-mp-join-a] option[value="allow"]').textContent();
+   assert.equal(label.trim(),catalog.strings['join.allow']);assert.notEqual(label.trim(),'join.allow');
+   check(locale+': end controls use the actual language-pack catalog');
+   for(const unit of ['ftin','in','ftdec','mm','cm','m']){
+    await p.locator('[data-model-units]').selectOption(unit);await settle(p);
+    assert.equal(await p.evaluate(()=>bimcraftPlan.state.units),unit);
+    assert.equal(await p.evaluate(async()=>(await import('/assets/apps/bimcraft/dev/model-units.js')).getDisplayUnits()),unit);
+    assert.deepEqual(semantic(await snapshot(p)),before);
+    check(locale+'/'+unit+': global display units preserve raw geometry and persisted end settings');
+   }
+   await p.locator('[data-mp-join-a]').selectOption('disallow');await settle(p);
+   const edited=(await snapshot(p)).walls.find(w=>w.guid===target.guid);
+   assert.equal(edited.joinSettings.a.allow,false);assert.equal(edited.joinSettings.a.cap,'envelope');
+   await click(p,'[data-undo]');await settle(p);assert.deepEqual(semantic(await snapshot(p)),before);
+   check(locale+': translated end edit and Undo use the same raw allow/cap contract');
+   report.localeChecks.push({locale,allowLabel:label.trim(),units:6,rawRecordsPreserved:true});
+  }
+ }else throw new Error('F08_REQUIRE_PHP=1 is required for upstream language-pack acceptance');
  check('no application exceptions',report.errors.length===0);check('no unexpected warning/error console entries',report.console.every(m=>/bootstrap-icons|favicon/.test(m.text)));
  report.status='PASS';
 }catch(e){report.status='FAIL';report.error=e.stack||String(e);console.error(e);process.exitCode=1;if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});}

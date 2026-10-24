@@ -87,7 +87,9 @@ const require = createRequire(path.join(ROOT, 'tools/bimcraft-test/package.json'
 
 // cc-ifc's IfcAPI.Init() imports 'manifold-3d' by name (the page maps it in the manifest); Node gets the vendored build.
 // The crs.js copy (0.5 WL.4) imports 'proj4' the same way; tin.js (0.5 RC.10 terrain) imports delaunator and robust-predicates.
-register('data:text/javascript,' + encodeURIComponent(`export async function resolve(spec, ctx, next) {
+register('data:text/javascript,' + encodeURIComponent(`import { pathToFileURL } from 'node:url';
+export async function resolve(spec, ctx, next) {
+  if (/^[A-Za-z]:/.test(spec)) return { url: pathToFileURL(spec).href, shortCircuit: true };
   if (spec === 'manifold-3d') return { url: ${JSON.stringify(pathToFileURL(path.join(ROOT, 'public_html/assets/vendor/manifold-3d/current/manifold.js')).href)}, shortCircuit: true };
   if (spec === 'proj4') return { url: ${JSON.stringify(pathToFileURL(path.join(ROOT, 'public_html/assets/vendor/proj4/current/proj4.esm.min.js')).href)}, shortCircuit: true };
   if (spec === 'delaunator') return { url: ${JSON.stringify(pathToFileURL(path.join(ROOT, 'public_html/assets/vendor/delaunator/current/index.js')).href)}, shortCircuit: true };
@@ -704,6 +706,8 @@ async function libraryMode() {
   const valid = (it) => L.validateItem(L.cleanItem(it), { partial: true });
 
   console.log('== validateItem / itemHash');
+  const { BUILTIN_SYMBOLS } = await import(path.join(APP, 'library-symbols.js'));
+  ok(BUILTIN_SYMBOLS.length >= 2 && BUILTIN_SYMBOLS.every((i) => i.category === 'symbols/plumbing' && valid(i).ok), 'built-in plumbing symbols are valid library items');
   const csv = L.itemsFromCsv(fs.readFileSync(path.join(ROOT, 'tools/library/seed.csv'), 'utf8'));
   const table = csv.items[0];
   ok(csv.items.length === 6 && csv.items.every((i) => valid(i).ok), 'seed.csv: 6 generic items, all valid');
@@ -2057,7 +2061,12 @@ async function measureMode() {
   ok(near(M.distance([0, 0, 0], [3, 4, 0]), 5), 'distance 3-4-5');
   const d = M.ifcDelta([0, 0, 0], [1, 2, -3]);
   ok(d[0] === 1 && d[1] === 3 && d[2] === 2, 'viewer (x, y up, z) → IFC ΔX = Δx, ΔY = −Δz, ΔZ = Δy: ' + d.join(', '));
-  ok(M.fmtLength(3.25) === '3.250 m' && M.fmtLength(12.5) === '12.50 m' && M.fmtArea(1.2) === '1.200 m²', 'formats: ' + [M.fmtLength(3.25), M.fmtLength(12.5), M.fmtArea(1.2)].join(', '));
+  const U = await import(path.join(APP, 'model-units.js'));
+  U.setDisplayUnits('m');
+  ok(M.fmtLength(3.25) === '3.25 m' && M.fmtArea(1.2) === '1.20 m²', 'metric measure formats');
+  U.setDisplayUnits('ftdec');
+  ok(M.fmtLength(3.048) === '10 ft' && M.axisSnap([0, 0, 0], [2, 0.02, 0], [2, 0], (p) => [p[0], p[1]])[1] === 0, 'decimal feet and orthogonal snap');
+  U.setDisplayUnits('ftin');
   ifcm.close();
   console.log(bad ? '\n' + bad + ' FAILED, ' + good + ' passed' : '\nall ' + good + ' measure checks passed');
   return bad ? 1 : 0;

@@ -2,7 +2,7 @@ name: F08 straight-wall acceptance
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, candidate/f08-upstream-20261024]
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,6 +30,10 @@ jobs:
           key: vendor-${{ hashFiles('devshell/vendor.json') }}
       - name: Poppler
         run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+      - name: PHP language-pack rendering
+        run: |
+          if ! command -v php; then sudo apt-get update -qq && sudo apt-get install -y -qq php-cli; fi
+          php -v
       - name: Verify vendors
         run: npm run fetch-vendor
       - name: Browser and independent readers
@@ -50,6 +54,7 @@ jobs:
       - name: Real browser workflow and actual downloads
         env:
           F08_REVIEW_FRAMES: '1'
+          F08_REQUIRE_PHP: '1'
         run: node tests/features/f08/browser.mjs
       - name: Independent actual IFC and vector geometry
         run: .cc-test/f08-reader/bin/python -I tests/features/f08/independent.py
@@ -59,21 +64,14 @@ jobs:
           pdftoppm -scale-to 1400 -singlefile -png .cc-test/f08/browser/detail.pdf .cc-test/f08/browser/detail-render
           pdftoppm -scale-to 1400 -singlefile -png .cc-test/f08/browser/plan.pdf .cc-test/f08/browser/plan-render
           node --input-type=module -e "import fs from 'node:fs'; for(const name of ['detail-render.png','plan-render.png'])console.log('F08_IMAGE '+name+' '+fs.readFileSync('.cc-test/f08/browser/'+name).toString('base64'));"
-      - name: Review actual saved files
-        if: ${{ always() && hashFiles('.cc-test/f08/browser/saved.ifc') != '' }}
-        run: |
-          node --input-type=module -e "import fs from 'node:fs'; for (const name of ['saved.ifc','expected.json','report.json']) {const p='.cc-test/f08/browser/'+name;if(fs.existsSync(p))console.log('F08_FILE '+name+' '+fs.readFileSync(p).toString('base64'));}"
       - name: Retain F08 evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: f08-evidence
           path: |
-            .cc-test/f08/*.json
-            .cc-test/f08/*.ifc
-            .cc-test/f08/browser/*.json
-            .cc-test/f08/browser/*.ifc
-            .cc-test/f08/browser/*.csv
+            .cc-test/f08/performance.json
+            .cc-test/f08/independent.json
+            .cc-test/f08/browser/report.json
             .cc-test/f08/browser/*.png
-            fixtures/f08/
           retention-days: 90

@@ -1,9 +1,9 @@
 ---
 title: Edit a family
-summary: Change a family's parameters, formulas and solids, show parts by a Yes / No parameter, cut and join solids, and see the result drawn from the IFC it will save.
+summary: Change a family's parameters, formulas and solids, show parts by a Yes / No parameter, cut and join solids, give it connectors for pipes and ducts, and see the result drawn from the IFC it will save.
 section: tasks
 order: 38
-keywords: family editor, edit family, parameter, parameters, formula, formulas, visibility, yes no, solid, solids, box, extrusion, extrude, revolve, sweep, profile, arc, boolean, booleans, cut, join, difference, union, handle, handles, work plane, sketch, new family
+keywords: family editor, edit family, parameter, parameters, formula, formulas, visibility, yes no, solid, solids, box, extrusion, extrude, revolve, sweep, profile, arc, boolean, booleans, cut, join, difference, union, handle, handles, work plane, sketch, new family, connector, connectors, port, ports, pipe connector, duct connector, drain, water supply
 ---
 
 ## Open the editor
@@ -51,6 +51,22 @@ Hollow points are set by parameters: change them in the table, not by dragging.
 The {{ui:Booleans}} tab cuts the second solid out of the first, or joins them. A Boolean's result can be cut or joined again. A solid used in a Boolean is drawn only as part of it.
 
 When the second solid is hidden by its Yes / No parameter, the first is kept as it is; when the first is hidden, the result is hidden.
+
+## Connectors
+
+Families placed on a floor (furniture, fixtures and others) have a {{ui:Connectors}} tab: the points where a pipe or a duct joins the element, as on a basin's tap and drain. Click {{ui:Add a connector}} and set:
+
+- **Kind**: pipe or duct, and its **System** (cold water, sanitary drain, supply air…).
+- **x**, **y** and **z**: where it is, in the family's own axes. Like a solid's numbers, each can be a number or a formula of the parameters, so the connector moves with the size.
+- **Way out**: the direction a pipe or duct leaves it, along one of the family's axes (a drain under a basin goes **Down**).
+- **Size (mm)**: the pipe's nominal size (DN) or the round duct's diameter.
+- **Flow**: **In** for a connector that is fed (a tap), **Out** for one that drains.
+
+The preview draws each connector as a ring with an arrow the way out. Doors and windows have no connectors.
+
+For a plumbing fixture, choose which one it is under **Plumbing fixture** (water closet, lavatory, kitchen sink, shower, laundry tub). The starter fixtures already say so.
+
+Every element placed from the family gets its connectors as ports in the IFC file, and they are made again when the element changes size or the family is saved. Programs that read IFC systems see where each pipe or duct belongs.
 
 ## The preview and its handles
 

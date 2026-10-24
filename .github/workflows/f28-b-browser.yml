@@ -1,5 +1,7 @@
 name: F28-B wall workspace acceptance
 on:
+  push:
+    branches: [candidate/f08-upstream-20261024]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -55,3 +57,8 @@ jobs:
           path: |
             .cc-test/f28-b-browser/
             evidence/f28-b/performance-node.json
+            !**/*.ifc
+            !**/*.pdf
+            !**/*.csv
+            !**/expected.json
+            !**/*-expected.json
