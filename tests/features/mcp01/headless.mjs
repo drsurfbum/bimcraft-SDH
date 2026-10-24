@@ -59,6 +59,6 @@ try {
  }
  check('unsupported/corrupt assemblies, invalid core and material-library records refuse atomically over transport');
  fs.writeFileSync(path.join(out,'expected.json'),JSON.stringify(result,null,2)+'\n');
- fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({status:'PASS',head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),node:process.version,platform:os.platform(),server,version:init.serverInfo.version,checks,catalogCount:catalog.length,negativeCases:20+fixtures.length+5,skips:[]},null,2)+'\n');
+ fs.writeFileSync(path.join(out,'report.json'),JSON.stringify({status:'PASS',head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),node:process.version,platform:os.platform(),server,version:init.serverInfo.version,checks,catalogCount:catalog.length,negativeCases:21+fixtures.length+5,skips:[]},null,2)+'\n');
  console.log(JSON.stringify({status:'PASS',checks:checks.length,catalog:catalog.length,negativeFixtures:fixtures.length}));
 } finally {await client.close();}

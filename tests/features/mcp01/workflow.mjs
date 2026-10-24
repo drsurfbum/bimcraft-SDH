@@ -85,12 +85,13 @@ export async function workflow(call, check) {
     ['assembly_edit',{...bind(),key:copy.key,typeGuid:copy.guid,changes:{layers:layers.map(l=>({...l,core:false}))}}],
     ['assembly_edit',{...bind(),key:copy.key,typeGuid:copy.guid,changes:{layers:layers.map((l,i)=>i===0?{...l,materialId:'material-missing'}:l)}}],
     ['assembly_edit',{...bind(),key:copy.key,typeGuid:copy.guid,changes:{layers:layers.map((l,i)=>i===0?{...l,t:0}:l)}}],
+    ['assembly_edit',{...bind(),key:copy.key,typeGuid:copy.guid,changes:{layers:layers.map((l,i)=>i===0?{...l,materialId:null}:l)}}],
     ['material_edit',{...bind(),id:'material-missing',changes:{name:'Missing'}}],
     ['material_edit',{...bind(),id:'material-mcp01',changes:{defaultThickness:-1}}],
     ['material_edit',{...bind(),id:'material-mcp01',changes:{rawMetadata:'escape'}}],
     ['assembly_duplicate',{...bind(),sourceKey:copy.key,sourceGuid:copy.guid,key:copy.key,name:'Colliding identity'}],
   ]) { await call(name,args,true);assert.deepEqual(await semantic(),before); }
-  check('20 invalid/stale/foreign/schema/core/material failures leave no partial semantic edits');
+  check('21 invalid/stale/foreign/schema/core/material failures leave no partial semantic edits');
   const materials=(await call('materials_list',{})).materials,assemblies=(await call('assemblies_list',{})).assemblies;
   return {walls:(await call('walls_list',{})).walls,materials,assemblies,initialWalls:initial.walls,documentId:state.documentId,revision:state.revision};
 }

@@ -122,6 +122,11 @@ const layer = objectSchema({ mat: text, t: { type: 'number', minimum: 0, maximum
 const recipeFields = { name: text, exterior: { type: 'boolean' }, layers: { type: 'array', items: layer, minItems: 1, maxItems: 32, description: 'Ordered exterior to interior. One contiguous physical core.' } };
 const key = { type: 'string', pattern: '^wall-[a-zA-Z0-9_-]{1,80}$' };
 function recipe(w, input) {
+  for (const layer of input.layers || []) {
+    if (layer.kind === 'material' && (typeof layer.materialId !== 'string' || !layer.materialId)) throw new Error('Material layers require an explicit material ID; legacy fallback is read-only.');
+    if (layer.kind === 'cavity' && layer.materialId !== null) throw new Error('Cavities must have materialId null.');
+    if (layer.kind === 'material' && layer.ventilation !== undefined) throw new Error('Ventilation applies only to cavities.');
+  }
   const r = validateAssembly(input), materials = assertLibrary(w);
   for (const l of r.layers) if (l.kind === 'material' && !materials.some(m => m.id === l.materialId)) throw new Error('Missing material ID: ' + l.materialId);
   return r;
