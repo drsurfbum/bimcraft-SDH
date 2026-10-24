@@ -13,6 +13,8 @@
  *       (every expression follows) · setParam(fam, key, { kind, value, formula, label })
  *   addSolid(fam, op) · removeSolid(fam, id) (its Booleans go too) · duplicateSolid(fam, id) · setSolid(fam, id, patch)
  *   addBoolean(fam, { op, a, b }) · removeBoolean(fam, id) · setBoolean(fam, id, patch) · operands(fam, exceptId) (free ones)
+ *   addConnector(fam, { domain, system }) · removeConnector(fam, id) · setConnector(fam, id, patch) (unhosted families only)
+ *   setFixture(fam, kind) ('' = not a plumbing fixture)
  *   points: pointsOf(s) · movePoint(fam, id, i, [u, v]) · insertPoint(fam, id, i, [u, v]) · removePoint(fam, id, i) ·
  *       setBulge(fam, id, i, b) · cycleArc(b) (straight → quarter arc left → quarter arc right → straight) · snap(v, step)
  *   handles: sizeHandles(fam, values, ctx) and solidHandles(fam, values, id, ctx) → [{ p, axis, label, target }] in the
@@ -21,7 +23,8 @@
  *       formulas), so the size being previewed changes and the recipe keeps its formulas.
  */
 import { parse, evaluate, renameIn, formatNumber, literal, NAME_RE, RESERVED } from './expr.js';
-import { readFamily, evaluateFamily, inputParams, sizeValues, planBounds, CONTEXT_NAMES, PARAM_KINDS, SOLID_OPS, STYLES, LIMITS } from './family-model.js';
+import { readFamily, evaluateFamily, inputParams, sizeValues, planBounds, CONTEXT_NAMES, PARAM_KINDS, SOLID_OPS, STYLES, LIMITS,
+  CONNECTOR_DOMAINS, CONNECTOR_DIRS, CONNECTOR_FIELDS } from './family-model.js';
 
 const err = (key, fill = {}) => ({ ok: false, error: { key, fill } });
 const copy = (fam) => JSON.parse(JSON.stringify(fam));
@@ -52,6 +55,7 @@ export function usesOf(fam, key) {
   const out = [];
   for (const p of fam.params) if (p.formula && usesName(p.formula, key)) out.push(p.key);
   for (const s of fam.solids) for (const [label, get] of exprFields(s)) if (usesName(get(), key)) out.push((s.name || s.id) + ' ' + label);
+  for (const c of fam.connectors || []) for (const k of CONNECTOR_FIELDS) if (usesName(c[k], key)) out.push((c.name || c.id) + ' ' + k);
   return out;
 }
 
@@ -96,6 +100,7 @@ export function renameParam(fam, from, to) {
   const f = copy(fam);
   for (const p of f.params) { if (p.key === from) p.key = to; if (p.formula) p.formula = renameIn(p.formula, from, to); }
   for (const s of f.solids) for (const [, get, set] of exprFields(s)) { const v = get(); if (typeof v === 'string') set(renameIn(v, from, to)); }
+  for (const c of f.connectors || []) for (const k of CONNECTOR_FIELDS) if (typeof c[k] === 'string') c[k] = renameIn(c[k], from, to);
   if (Array.isArray(f.sizes)) for (const z of f.sizes) if (z.values && from in z.values) { z.values[to] = z.values[from]; delete z.values[from]; }
   return done(f);
 }
@@ -234,6 +239,52 @@ export function setBoolean(fam, id, patch = {}) {
   const free = new Set([...operands(fam, id)]);
   for (const k of ['a', 'b']) if (patch[k] !== undefined) { if (!free.has(patch[k]) && patch[k] !== b[k]) return err('fam.err.boolean', { id }); b[k] = patch[k]; }
   if (b.a === b.b) return err('fam.err.boolean', { id });
+  return checked(f);
+}
+
+// ======================================================================================================== connectors
+const freeConnectorId = (fam) => { const have = new Set((fam.connectors || []).map((c) => c.id)); for (let i = 1; ; i++) if (!have.has('c' + i)) return 'c' + i; };
+/** A new connector at the family's origin, pointing down (a drain) for a pipe, up for a duct. */
+export function addConnector(fam, { domain = 'pipe', system = '' } = {}) {
+  if (fam.host === 'wall') return err('fam.err.connhosted');
+  if (!CONNECTOR_DOMAINS.includes(domain)) return err('fam.err.connector', { id: String(domain) });
+  if ((fam.connectors || []).length >= LIMITS.connectors) return err('fam.err.toomany', { what: 'connectors', n: LIMITS.connectors });
+  const f = copy(fam), id = freeConnectorId(f);
+  const c = domain === 'pipe' ? { id, domain, system: system || 'cw', x: '0', y: '0', z: '0', dir: '-z', size: '20', flow: 'in' }
+    : { id, domain, system: system || 'supply', x: '0', y: '0', z: '0', dir: '+z', size: '150', flow: 'in' };
+  f.connectors = [...(f.connectors || []), c];
+  return { ...checked(f), id };
+}
+export function setFixture(fam, kind) {
+  const f = copy(fam);
+  if (kind) f.fixture = kind; else delete f.fixture;
+  return checked(f);
+}
+export function removeConnector(fam, id) {
+  if (!(fam.connectors || []).some((c) => c.id === id)) return err('fam.err.connector', { id });
+  const f = copy(fam);
+  f.connectors = f.connectors.filter((c) => c.id !== id);
+  if (!f.connectors.length) delete f.connectors;
+  return checked(f);
+}
+/** Change a connector: name, domain, system, dir, flow, and x, y, z, size (numbers or expressions of the parameters). */
+export function setConnector(fam, id, patch = {}) {
+  const f = copy(fam), c = (f.connectors || []).find((x) => x.id === id);
+  if (!c) return err('fam.err.connector', { id });
+  for (const [k, v] of Object.entries(patch)) {
+    if (k === 'name') { const n = String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 60); if (n) c.name = n; else delete c.name; continue; }
+    if (k === 'domain') { if (!CONNECTOR_DOMAINS.includes(v)) return err('fam.err.connfield', { id, field: k }); c.domain = v; continue; }
+    if (k === 'dir') { if (!CONNECTOR_DIRS[v]) return err('fam.err.connfield', { id, field: k }); c.dir = v; continue; }
+    if (k === 'flow') { c.flow = v === 'out' ? 'out' : 'in'; continue; }
+    if (k === 'system') { c.system = String(v ?? ''); continue; }
+    if (!CONNECTOR_FIELDS.includes(k)) continue;
+    if (typeof v === 'number') { if (!Number.isFinite(v)) return err('fam.err.connfield', { id, field: k }); c[k] = formatNumber(v); continue; }
+    const src = String(v ?? '').trim();
+    if (!src) return err('fam.err.connfield', { id, field: k });
+    const ps = parse(src, names(f));
+    if (!ps.ok) return err('fam.err.unknown', { where: (c.name || id) + ' ' + k, why: ps.error });
+    c[k] = src;
+  }
   return checked(f);
 }
 

@@ -111,7 +111,7 @@ import { installAgents } from './agents.js';   // 0.6 DF.25 (bim-draw): the Draw
 import { mountCloudSlice } from './cloud-slice-ui.js';   // 0.6 DF.22 (bim-draw): the cloud's slice on the plan, Scan menu
 import { mountTrace } from './model-trace-ui.js';   // 0.6 DF.23 (bim-draw): Build › From a drawing…
 import { mountLinks } from './links-ui.js';   // 0.6 DF.21 (bim-draw): linked models (the Links section)
-import { defaultUnits } from './model-units.js';
+import { getDisplayUnits, fmtLen, parseLen } from './model-units.js';
 import { readLevels } from './model-levels.js';
 import { ModelWriter } from './model-write.js';
 import { parseLength } from './libitem.js';
@@ -142,7 +142,7 @@ import { CLIP_KEY, placementClip, elementsClip, pasteMove, readClip, writeClip, 
 import { boundsOf } from './ifc-vis.js';
 import { cleanVolume, FACE_AXES, MAX_CELLS, MAX_PLANES, MAX_TILT, planeFromPoint, boxGrips, dragDelta, dragBox } from './section-volume.js';
 import { inv4, placementMatrix } from './ifc-util.js';
-import { distance, ifcDelta, fmtLength, fmtArea } from './measure.js';
+import { distance, ifcDelta, fmtLength, fmtArea, axisSnap } from './measure.js';
 import { readGeoref, fileToMap, siteLonLat, datumOf, dms, viewerToFile } from './ifc-geo.js';
 import { writeBcf, readBcf, newGuid, toIfcPoint, toIfcDir, fromIfcPoint, fromIfcDir } from './bcf.js';
 import { buildTree, leaves } from './ifc-tree.js';
@@ -639,6 +639,8 @@ function init(root) {
     if (viewer) return viewer;
     ui.canvasWrap.hidden = false;
     viewer = new Viewer3D(ui.canvas, { onPick: (key) => { afterPick(); if (viewer.selection.size > 1) showMany(); else showProps(key); } });
+    const display = root.querySelector('[data-display-mode]');
+    display?.addEventListener('change', () => { viewer.setDisplayMode(display.value); setPressed('edges', viewer.edgesOn); });
     ui.canvas.viewer = viewer;   // for tests and the console
     // web-ifc hands the viewer Y-up coordinates: the adapter turns them so the cube's Top is the model's top. The cube
     // works in the view frame (0.6 DC.57: a building turned in its site, viewer.viewTurn): its faces are the building's
@@ -658,7 +660,7 @@ function init(root) {
       viewer: () => viewer,
       entry: () => { const ent = mode === 'ifc' ? cur() : null; return ent ? { api: ent.ifc.api, mid: ent.model.modelID, C: [...ent.ifc.api.GetCoordinationMatrix(ent.model.modelID)], place: viewer.modelMatrix(ent.mi) } : null; },
       levels: () => { const ent = cur(); return ent ? readLevels(new ModelWriter(WebIFC, ent.ifc.api, ent.model.modelID)) : []; },
-      units: () => { try { return localStorage.getItem('bimcraft.model.units') || defaultUnits(); } catch (e) { return defaultUnits(); } },
+      units: getDisplayUnits,
     });
     coordsUi.onToggle = () => modelUi?.coordsChanged();
     viewer.onUserMove = ci.stop;
@@ -692,6 +694,8 @@ function init(root) {
     library.refresh();
     viewer.spacesOn = settings.spaces;
     viewer.edgesOn = settings.edges === 'on' || (settings.edges === 'small' && model.triangles <= SMALL_MODEL);
+    viewer.displayMode = root.querySelector('[data-display-mode]')?.value === 'wireframe' ? 'wireframe' : viewer.edgesOn ? 'edges' : 'shaded';
+    root.querySelector('[data-display-mode]').value = viewer.displayMode;
     viewer.vis.showAll();   // a new model starts with everything shown
     if (meas) measureOff();
     if (walking) walkOff();
@@ -2680,7 +2684,9 @@ function init(root) {
   /** What the bar cuts: the drawing's 3D view while it shows, else the IFC viewer. */
   const secOnDwg = () => view3dOn && !ui.dwg.hidden;
   const secView = () => (secOnDwg() ? view3d : viewer);
-  const secUnit = () => (secOnDwg() ? (dwg3d?.compiled?.units || t('sec.units')) : 'm');
+  const secUnit = () => (secOnDwg() ? (dwg3d?.compiled?.units || t('sec.units')) : getDisplayUnits() === 'ftin' ? 'ft–in' : getDisplayUnits() === 'ftdec' ? 'ft' : getDisplayUnits());
+  const secText = (v) => secOnDwg() ? metres(v) : fmtLen(v * 1000, getDisplayUnits());
+  const secBound = (v) => secOnDwg() ? `${metres(v)} ${secUnit()}` : fmtLen(v * 1000, getDisplayUnits(), { unit: true });
   const ubox = { panel: $('[data-sec-box]'), plane: $('[data-sec-plane]'), boxBtn: $('[data-sec-axis="box"]'), fill: $('[data-sec-fill]') };
   // Sections square to the building (0.5 BM.9): a building turned in its site (true north, shared coordinates) is cut along
   // its own walls, not the model's axes. The turn is the direction most wall length runs in (IfcPlacer.planRotation),
@@ -2744,7 +2750,7 @@ function init(root) {
     usec.range.max = String(max || 1);
     usec.range.step = String((max || 1) / 1000);
     usec.range.value = String(cut.offset);
-    if (document.activeElement !== usec.offset) usec.offset.value = metres(cut.offset);
+    if (document.activeElement !== usec.offset) usec.offset.value = secText(cut.offset);
     usec.hint.textContent = SEC_HINT()[cut.axis];
     if (usec.unit) usec.unit.textContent = secUnit();
     usec.bar.querySelectorAll('[data-sec-axis]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.secAxis === cut.axis ? 'true' : 'false'));
@@ -2816,7 +2822,7 @@ function init(root) {
       const from = row.querySelector('[data-box-from]'), to = row.querySelector('[data-box-to]');
       for (const r of [from, to]) { r.max = String(size[k] || 1); r.step = String((size[k] || 1) / 1000); }
       from.value = String(cut.box.min[k]); to.value = String(cut.box.max[k]);
-      row.querySelector('[data-box-val]').textContent = t('sec.box.val', { from: metres(cut.box.min[k]), to: metres(cut.box.max[k]) });
+      row.querySelector('[data-box-val]').textContent = t('sec.box.val', { from: secBound(cut.box.min[k]), to: secBound(cut.box.max[k]) });
     });
     renderShape();
     usec.bar.querySelectorAll('[data-sec-axis]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.secAxis === 'box' ? 'true' : 'false'));
@@ -2843,7 +2849,7 @@ function init(root) {
         el('span', { className: 'bc-sec-boxlbl' }, t('sec.plane.n', { n: i + 1 })),
         el('label', { title: t('sec.plane.az.title') }, t('sec.plane.az'), ' ', el('input', { type: 'number', className: 'bc-input bc-num', step: '5', min: '0', max: '360', value: String(Math.round(q.az * 10) / 10), 'data-pl': 'az' }), ' °'),
         el('label', { title: t('sec.plane.el.title') }, t('sec.plane.el'), ' ', el('input', { type: 'number', className: 'bc-input bc-num', step: '5', min: '-90', max: '90', value: String(Math.round(q.el * 10) / 10), 'data-pl': 'el' }), ' °'),
-        el('label', { title: t('sec.plane.off.title') }, t('sec.plane.off'), ' ', el('input', { type: 'number', className: 'bc-input bc-num', step: '0.1', value: metres(q.off), 'data-pl': 'off' }), ' m'),
+        el('label', { title: t('sec.plane.off.title') }, t('sec.plane.off'), ' ', el('input', { type: 'text', className: 'bc-input bc-num', value: secText(q.off), 'data-pl': 'off' })),
         el('button', { type: 'button', className: 'btn-line btn-sm-cc', 'data-sec-plane-remove': String(i), 'aria-label': t('sec.plane.remove', { n: i + 1 }) }, '×'))));
     }
     ushape.planeAdd.disabled = cell.planes.length >= MAX_PLANES;
@@ -2891,7 +2897,7 @@ function init(root) {
   ushape.planes.addEventListener('input', (e) => {
     const row = e.target.closest('[data-sec-plane-row]'), k = e.target.dataset.pl;
     if (!row || !k || !cut?.cells) return;
-    const v = Number(String(e.target.value).replace(',', '.'));
+    const v = k === 'off' ? parseLen(e.target.value, getDisplayUnits()) / 1000 : Number(String(e.target.value).replace(',', '.'));
     if (!Number.isFinite(v) || e.target.value.trim() === '') return;
     const cell = cut.cells[cut.cell], i = Number(row.dataset.secPlaneRow);
     cell.planes = cell.planes.map((q, j) => (j === i ? { ...q, [k]: v } : q));
@@ -2946,7 +2952,7 @@ function init(root) {
     if (phase === 'end') {
       gripDrag = null;
       const B = cut.box;
-      status(t('sec.box.dragged', { x: t('sec.box.val', { from: metres(B.min[0]), to: metres(B.max[0]) }), y: t('sec.box.val', { from: metres(B.min[1]), to: metres(B.max[1]) }), z: t('sec.box.val', { from: metres(B.min[2]), to: metres(B.max[2]) }) }));
+      status(t('sec.box.dragged', { x: t('sec.box.val', { from: secBound(B.min[0]), to: secBound(B.max[0]) }), y: t('sec.box.val', { from: secBound(B.min[1]), to: secBound(B.max[1]) }), z: t('sec.box.val', { from: secBound(B.min[2]), to: secBound(B.max[2]) }) }));
     }
   }
   usec.bar.addEventListener('click', (e) => {
@@ -2973,15 +2979,14 @@ function init(root) {
     let v;
     if (secOnDwg()) {   // drawing units, as the drawing says
       v = Number(txt);
-      if (txt === '' || !Number.isFinite(v)) { status(t('sec.dwg.type', { units: secUnit() }), true); usec.offset.value = metres(cut.offset); return; }
+      if (txt === '' || !Number.isFinite(v)) { status(t('sec.dwg.type', { units: secUnit() }), true); usec.offset.value = secText(cut.offset); return; }
     } else {
-      const m = /^(-?\d*\.?\d+)\s*(mm|cm|m)?$/i.exec(txt);
-      if (!m) { status(t('sec.ifc.type'), true); usec.offset.value = metres(cut.offset); return; }
-      v = Number(m[1]) / ({ mm: 1000, cm: 100 }[(m[2] || '').toLowerCase()] || 1);
+      v = parseLen(txt, getDisplayUnits()) / 1000;
+      if (!Number.isFinite(v)) { status(t('sec.ifc.type'), true); usec.offset.value = secText(cut.offset); return; }
     }
     cut.offset = Math.max(0, Math.min(max, v));
-    if (v < 0 || v > max) status(secOnDwg() ? t('sec.dwg.beyond', { size: metres(max), units: secUnit() }) : t(v < 0 ? 'sec.ifc.beyond.start' : 'sec.ifc.beyond.end', { size: metres(max) }));
-    usec.offset.value = metres(cut.offset);
+    if (v < 0 || v > max) status(secOnDwg() ? t('sec.dwg.beyond', { size: metres(max), units: secUnit() }) : t(v < 0 ? 'sec.ifc.beyond.start' : 'sec.ifc.beyond.end', { size: secText(max) }));
+    usec.offset.value = secText(cut.offset);
     applySection();
   });
   usec.offset.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); usec.offset.dispatchEvent(new Event('change')); } });
@@ -3045,13 +3050,23 @@ function init(root) {
   // ---- Measure (0.4 B6) ----
   const um = { bar: $('[data-measurebar]'), out: $('[data-measure-out]'), labels: $('[data-measure-labels]'), copy: $('[data-measure-copy]') };
   let meas = null;   // { mode: 'distance' | 'area' | 'point', a: point | null, items: [{ kind, a, b, tris, center, text, geo }], hover }
-  const m3 = (v) => (Math.round(v * 1000) / 1000).toFixed(3);
+  const m3 = (v) => fmtLength(v);
+  const measurementText = (it) => it.kind === 'distance'
+    ? t('measure.result.distance', { d: fmtLength(it.value), dx: m3(it.delta[0]), dy: m3(it.delta[1]), dz: m3(it.delta[2]) })
+    : it.kind === 'area' ? t('measure.result.area', { a: fmtArea(it.value) }) : it.text;
+  window.addEventListener('bimcraft-units', () => {
+    if (cut) applySection();
+    coordsUi?.render();
+    if (!meas) return;
+    for (const it of meas.items) it.text = measurementText(it);
+    syncMeasureBar(); redrawMeasure();
+  });
   function measureOn(kind = 'distance') {
     paintUi?.close();   // 0.5 RC.7: Measure and Paint both take the 3D view's clicks
     if (!viewer || (mode !== 'ifc' && !pc?.has())) return;
     if (placing) stopPlacing();
     meas = { mode: kind, a: null, items: [], hover: null };
-    viewer.measuring = { move: (x, y) => { meas.hover = viewer.measureAt(x, y); redrawMeasure(); }, click: (x, y) => measureClick(x, y) };
+    viewer.measuring = { move: (x, y) => { meas.hover = measureHit(x, y); redrawMeasure(); }, click: (x, y) => measureClick(x, y) };
     ui.canvasWrap.classList.add('is-measuring');
     um.bar.hidden = false;
     syncMeasureBar();
@@ -3074,23 +3089,29 @@ function init(root) {
     um.copy.hidden = !(last && last.kind === 'point' && last.geo);
   }
   function measureClick(x, y) {
-    const h = viewer.measureAt(x, y);
+    const h = measureHit(x, y);
     if (!h) { status(t('measure.nothing')); return; }
     if (meas.mode === 'point') { guard(() => (h.snap === 'cloud' && (!models.length || h.key === null) ? locateCloudPoint(h) : locatePoint(h))); return; }
     if (meas.mode === 'area') {
       if (!h.face || !h.face.tris.length) { status(t('measure.nothing')); return; }
       const T = h.face.tris, c = [0, 0, 0];
       for (let i = 0; i < T.length; i += 3) for (let k = 0; k < 3; k++) c[k] += T[i + k] / (T.length / 3);
-      meas.items.push({ kind: 'area', tris: T, center: c, value: h.face.area, text: t('measure.result.area', { a: fmtArea(h.face.area) }) });
+      const it = { kind: 'area', tris: T, center: c, value: h.face.area }; it.text = measurementText(it); meas.items.push(it);
     } else if (!meas.a) { meas.a = h.point; status(t('measure.second')); }
     else {
       const a = meas.a, b = h.point, d = ifcDelta(a, b);
-      meas.items.push({ kind: 'distance', a, b, value: distance(a, b), delta: d, text: t('measure.result.distance', { d: fmtLength(distance(a, b)), dx: m3(d[0]), dy: m3(d[1]), dz: m3(d[2]) }) });
+      const it = { kind: 'distance', a, b, value: distance(a, b), delta: d }; it.text = measurementText(it); meas.items.push(it);
       meas.a = null;
       status('');
     }
     syncMeasureBar();
     redrawMeasure();
+  }
+  function measureHit(x, y) {
+    const h = viewer.measureAt(x, y);
+    if (!h || !meas?.a || meas.mode !== 'distance' || h.snap === 'vertex') return h;
+    const point = axisSnap(meas.a, h.point, [x, y], (p) => { const q = viewer.project(p); return q ? [q.x, q.y] : null; });
+    return point === h.point ? h : { ...h, point, snap: 'axis' };
   }
   function redrawMeasure() {
     if (!meas) return;
@@ -3534,7 +3555,7 @@ function init(root) {
     const b = e.target.closest('button');
     if (!b || !viewer) return;
     if (b.dataset.view) viewer.view(b.dataset.view);
-    if (b.dataset.toggle === 'edges') { viewer.setEdges(!viewer.edgesOn); setPressed('edges', viewer.edgesOn); }
+    if (b.dataset.toggle === 'edges') { viewer.setEdges(!viewer.edgesOn); root.querySelector('[data-display-mode]').value = viewer.displayMode; setPressed('edges', viewer.edgesOn); }
     if (b.dataset.toggle === 'spaces') { viewer.setSpacesVisible(!viewer.spacesOn); setPressed('spaces', viewer.spacesOn); }
     if (b.dataset.toggle === 'section') toggleSection();
     if (b.dataset.toggle === 'measure') { if (meas) measureOff(); else measureOn(); }

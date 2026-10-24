@@ -18,15 +18,23 @@
  *        importFamilies(recipes, { keys }) ·
  *        removeFamily(key) · placeFamily({ storey, family, values, typeGuid, x, y, rot, guid }) · setFamilySize(guids, typeGuid) ·
  *        moveFamilyElement(guid, { x, y, rot }) · removeFamilyElements(guids)
+ *   A family's connectors become ports of each element (IFC4: IfcDistributionPort nested on it, placed in its axes with Z the way
+ *   out; IFC2X3: IfcDistributionPort + IfcRelConnectsPortToElement), each with CadCraft_Connector (Key, Domain, System, Size,
+ *   Flow, and Fixture for a plumbing fixture);
+ *   they are made again whenever the element is placed, resized or its family saved (and connected to the pipe or duct ends
+ *   they touch, mep-model.js joinPorts), and go with the element.
+ *   elementPorts(w, id) → port ids the family wrote on an element
  *   familyFile(w, key) → the recipe with its sizes (a .ccfamily.json)
  */
 import { op, changeOpenings } from './model-ops.js';
 import { readOpenings, regenOpenings, typeOf, DOOR_PSET, WINDOW_PSET } from './model-openings.js';
 import { readWalls } from './model-walls.js';
 import { DOOR_TYPES, WINDOW_TYPES, openingType } from './opening-types.js';
-import { STARTER_KEYS, STARTER_FURNITURE, starterRecipe } from './family-starters.js';
+import { STARTER_KEYS, STARTER_FURNITURE, STARTER_FIXTURES, starterRecipe } from './family-starters.js';
 import { readFamily, evaluateFamily, familyIndex, familyFor, storeFamily, sizeTypeFor, writeSizeMaps, sizeValues, sizeKey, sizeRows,
-  typePset, setTypePset, SIZE_PSET, FAMILY_PSET, newFamilyKey, defaultSizeName, forgetFamilyIndex } from './family-model.js';
+  typePset, setTypePset, SIZE_PSET, FAMILY_PSET, CONNECTOR_PSET, newFamilyKey, defaultSizeName, forgetFamilyIndex } from './family-model.js';
+import { PIPE_SYSTEMS, DUCT_SYSTEMS, joinPorts } from './mep-model.js';
+import { round } from './model-write.js';
 import { classesFor } from './ifc-place.js';
 import { ids, val, deleteLine } from './ifc-util.js';
 import { t as tr } from './i18n.js';
@@ -106,11 +114,12 @@ export function openingFamilies(w, kind) {
   for (const [key, g] of familyIndex(w).groups) if (g.fam && g.fam.host === 'wall' && g.fam.kind === kind && !openingType(key)) out.push({ key, name: g.fam.name, starter: false });
   return out;
 }
-/** What Place family offers: the starter furniture, then the file's own families placed on a floor. */
+/** What Place family offers: the starter furniture and plumbing fixtures, then the file's own families placed on a floor. */
 export function unhostedFamilies(w) {
-  const out = STARTER_FURNITURE.map((key) => ({ key, name: (w ? familyFor(w, key) : starterRecipe(key)).name, starter: true }));
+  const starters = [...STARTER_FURNITURE, ...STARTER_FIXTURES];
+  const out = starters.map((key) => ({ key, name: (w ? familyFor(w, key) : starterRecipe(key)).name, starter: true }));
   if (!w) return out;
-  for (const [key, g] of familyIndex(w).groups) if (g.fam && g.fam.host !== 'wall' && !STARTER_FURNITURE.includes(key)) out.push({ key, name: g.fam.name, starter: false });
+  for (const [key, g] of familyIndex(w).groups) if (g.fam && g.fam.host !== 'wall' && !starters.includes(key)) out.push({ key, name: g.fam.name, starter: false });
   return out;
 }
 /** Placed unhosted family elements, in their storey's plan (mm, degrees). */
@@ -239,7 +248,7 @@ function regenFamily(w, fam) {
     for (const id of out) { const nm = w.L(fam.name); const l = w.touch(id); l.Name = nm; l.ObjectType = nm; w.write(l); }
     return out;
   }
-  for (const e of readFamilyElements(w)) if (e.family === fam.key) { reshape(w, e.id, e.typeId); out.push(e.id); }
+  for (const e of readFamilyElements(w)) if (e.family === fam.key) { reshape(w, e.id, e.typeId); writePorts(w, e.id, fam, e.values); out.push(e.id); }
   return out;
 }
 /** An unhosted element's shape: mapped items of its type's maps (the old shape's lines go; the maps stay). */
@@ -394,6 +403,7 @@ export function placeFamily({ storey, family, values = {}, typeGuid = null, x = 
     w.noteGuid(g, id);
     w.relateType(id, tid);
     w.contain(id, st);
+    writePorts(w, id, fam, size?.values || values);
     forgetFamilyIndex(w);
     return { id, ids: [id], made: new Map([[g, id]]) };
   });
@@ -422,6 +432,7 @@ export function setFamilySize(guids, typeGuid) {
           w._typeOf = null;
         }
         reshape(w, id, tid);
+        writePorts(w, id, fam, s.values);
         const l = w.touch(id); l.ObjectType = w.L(s.name); w.write(l);
         out.push(id);
       }
@@ -446,10 +457,46 @@ export function removeFamilyElements(guids) {
   return op((w) => {
     patchWriter(w);
     const list = guids.map((g) => w.byGuidAny(g)).filter(Boolean);
-    if (list.length) w.dropProduct(list);
+    if (list.length) w.dropProduct([...list, ...list.flatMap((id) => elementPorts(w, id))]);
     forgetFamilyIndex(w);
     return { id: null, ids: [] };
   });
+}
+
+// ======================================================================================================== connectors → ports
+/** The ports a family wrote on an element (those with CadCraft_Connector), nested (IFC4) or related (IFC2X3). */
+export function elementPorts(w, id) {
+  const out = [];
+  for (const rid of listOf(w, 'IFCRELNESTS')) { const r = w.api.GetLine(w.mid, rid, false); if (r?.RelatingObject?.value === id) for (const h of r.RelatedObjects || []) out.push(h.value); }
+  for (const rid of listOf(w, 'IFCRELCONNECTSPORTTOELEMENT')) { const r = w.api.GetLine(w.mid, rid, false); if (r?.RelatedElement?.value === id && r.RelatingPort) out.push(r.RelatingPort.value); }
+  return out.filter((p) => w.api.GetLine(w.mid, p, false) && w.readPset(p, CONNECTOR_PSET));
+}
+/** An element's ports made again from its family's connectors (none when the family has none). */
+function writePorts(w, id, fam, values) {
+  const old = elementPorts(w, id);
+  if (old.length) w.dropProduct(old);
+  if (!fam.connectors?.length) return [];
+  const ev = evaluateFamily(fam, values, {});
+  if (!ev.ok) throw fail(ev.error.key, ev.error.fill);
+  const lp = w.api.GetLine(w.mid, id, false).ObjectPlacement.value, made = [];
+  for (const c of ev.connectors) {
+    const sys = (c.domain === 'pipe' ? PIPE_SYSTEMS : DUCT_SYSTEMS)[c.system];
+    const across = Math.abs(c.dir[2]) > 0.9 ? [1, 0, 0] : [0, 0, 1];
+    const plp = w.make('IFCLOCALPLACEMENT', w.H(lp), w.H(w.axisFrame(c.p, c.dir, across)));
+    const name = w.L(c.name || tr('fam.conn.' + c.domain));
+    const flow = c.flow === 'out' ? 'SOURCE' : 'SINK';
+    const pid = w.v4 ? w.make('IFCDISTRIBUTIONPORT', w.guid(), w.ownerHistory(), name, null, null, w.H(plp), null, flow, c.domain === 'pipe' ? 'PIPE' : 'DUCT', sys?.ifc || 'NOTDEFINED')
+      : w.make('IFCDISTRIBUTIONPORT', w.guid(), w.ownerHistory(), name, null, null, w.H(plp), null, flow);
+    if (!w.v4) w.make('IFCRELCONNECTSPORTTOELEMENT', w.guid(), w.ownerHistory(), null, null, w.H(pid), w.H(id));
+    w.upsertPset(pid, CONNECTOR_PSET, [['Key', 'IFCIDENTIFIER', c.id], ['Domain', 'IFCLABEL', c.domain], ['System', 'IFCLABEL', c.system],
+      ['Size', 'IFCPOSITIVELENGTHMEASURE', round(w.u(c.size))], ['Flow', 'IFCLABEL', c.flow], ...(fam.fixture ? [['Fixture', 'IFCLABEL', fam.fixture]] : [])]);
+    made.push(pid);
+  }
+  if (w.v4 && made.length) w.make('IFCRELNESTS', w.guid(), w.ownerHistory(), null, null, w.H(id), made.map((p) => w.H(p)));
+  // a pipe or duct already ending where a connector now is gets connected to it
+  const storey = w.storeyOfId(id);
+  if (storey && made.length) joinPorts(w, storey, made);
+  return made;
 }
 
 /** Writers here also find types and any element by GlobalId (model-write.js byGuid knows the building tools' classes only). */

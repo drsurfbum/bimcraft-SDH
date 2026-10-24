@@ -9,16 +9,20 @@
  *                                (equal friction, the HVAC add-on's sizing) ([data-mep-dsys|shape|w|h|dz|flow|rate|sizeit]).
  *   Valve  [data-mtool="valve"]  click on a pipe: gate, ball, globe or check ([data-mep-valve]).
  * Ending a run on another run's line makes a tee; on its end, an elbow or a reducer (mep-model.js makes the fittings).
+ * Connectors of elements placed from families (a basin's drain, a tap) show as points while drawing and snap: a run started on
+ * one takes its system and size and leaves it the way it points (a riser to the height in the bar when it points up or down);
+ * a run ended on one goes down or up onto it. The run is connected to the element's port when it is made.
  * Plans: pipes under 150 mm as one line, larger pipes and ducts as two, in their system's colour; rises and drops marked;
  * size and system labels; a drain's fall. Runs show on every level their height range reaches (the plan's view range).
- * Properties edit a run; Delete removes it. Schedules: pipes, ducts, fittings and valves. The TakeoffCraft hand-off (res-ui.js
+ * Properties edit a run; Delete removes it. A sanitary run shows the fixture units it carries and the size they need (NBR 8160
+ * UHC for the Brazilian pipes, IPC DFU for the others), whether it is a branch or a building drain, and Size the drains. Schedules: pipes, ducts, fittings and valves. The TakeoffCraft hand-off (res-ui.js
  * makeTakeoff) gets them through `takeoffExtra`. Test hook: window.bimcraftMep = { state, api }.
  */
-import { readRuns, placeRun, changeRun, removeRuns, addValve, removeValve, mepLayout, sectionOf, runVertices, runDefaults, drainMinimum, along, runLength,
+import { readRuns, placeRun, changeRun, removeRuns, addValve, removeValve, mepLayout, sectionOf, runVertices, runDefaults, drainMinimum, along, runLength, readFixturePorts, drainPlan, sizeDrains,
   PIPE_SYSTEMS, DUCT_SYSTEMS, VALVE_KINDS, DUCT_SHAPES, systemLabel, pipeForFlow, ductForFlow, ductLoss, runSchedules } from './mep-model.js';
-import { MATERIALS, CLASSES, DEFAULT_CLASS, sizesFor, pipeSize } from './mep/tables.js';
+import { MATERIALS, CLASSES, DEFAULT_CLASS, sizesFor, pipeSize, standardOf, BR_MAX_VELOCITY } from './mep/pipes.js';
 import { ModelWriter } from './model-write.js';
-import { fmtLen, parseLen } from './model-units.js';
+import { fmtLen, parseLen, isMetric } from './model-units.js';
 import { el } from './ui-util.js';
 
 const IN = 25.4;
@@ -27,7 +31,7 @@ const SINGLE_UNDER = 150;   // pipes narrower than this draw as one line
 /** A slope as people write it: imperial rise per foot ('1/4"/ft'), metric per cent. */
 export function fmtSlope(s, units) {
   if (!(s > 0)) return '0';
-  if (units === 'mm') return (Math.round(s * 1000) / 10) + ' %';
+  if (isMetric(units)) return (Math.round(s * 1000) / 10) + ' %';
   const inPerFt = s * 12, den = [2, 4, 8, 16, 32].find((d) => Math.abs(inPerFt * d - Math.round(inPerFt * d)) < 1e-6);
   return (den ? (Math.round(inPerFt * den) / den === Math.floor(inPerFt) ? String(Math.floor(inPerFt)) : (Math.floor(inPerFt) ? Math.floor(inPerFt) + '-' : '') + Math.round((inPerFt % 1) * den) + '/' + den) : inPerFt.toFixed(3)) + '"/ft';   // i18n-ignore: unit mark
 }
@@ -46,6 +50,7 @@ export function parseSlope(text) {
 export function mountMep(modelUi) {
   const R = {
     runs: [], lay: new Map(),   // storey → mepLayout result (per refresh)
+    fix: [],                    // ports of elements placed from families (readFixturePorts)
     pts: [], hover: null, snapRun: null, valveHover: null,
     pipe: { ...runDefaults('pipe', 'cw'), z: 2438.4, slopeAuto: true },
     duct: { ...runDefaults('duct', 'supply'), z: 2600, flow: 0, rate: 0 },
@@ -60,16 +65,18 @@ export function mountMep(modelUi) {
   const opts = () => (A.S.tool === 'duct' ? R.duct : R.pipe);
   const kindNow = () => (A.S.tool === 'duct' ? 'duct' : 'pipe');
   const imperial = () => A.units() !== 'mm';
-  const sizeLabel = (sec) => (sec.kind === 'pipe' && !imperial() && sec.p?.dn ? 'DN' + sec.p.dn : sec.kind === 'duct' && imperial() ? (sec.round ? Math.round(sec.w / IN) + '"Ø' : Math.round(sec.w / IN) + '×' + Math.round(sec.h / IN)) : sec.label);   // i18n-ignore: size marks
+  const sizeLabel = (sec) => (sec.kind === 'pipe' && sec.p?.metric ? sec.label : sec.kind === 'pipe' && !imperial() && sec.p?.dn ? 'DN' + sec.p.dn : sec.kind === 'duct' && imperial() ? (sec.round ? Math.round(sec.w / IN) + '"Ø' : Math.round(sec.w / IN) + '×' + Math.round(sec.h / IN)) : sec.label);   // i18n-ignore: size marks
   const elevOf = (storey) => A.S.data.levels.find((l) => l.id === storey)?.elevation ?? 0;
 
   function read() {
-    R.runs = []; R.lay = new Map();
+    R.runs = []; R.lay = new Map(); R.fix = [];
     if (!A.ed()) return;
     try {
-      R.runs = readRuns(W()).map((r) => ({ ...r, sec: sectionOf(r), verts: runVertices(r) }));
+      const w = W();
+      R.runs = readRuns(w).map((r) => ({ ...r, sec: sectionOf(r), verts: runVertices(r) }));
       for (const st of new Set(R.runs.map((r) => r.storey))) R.lay.set(st, mepLayout(R.runs.filter((r) => r.storey === st)));
-    } catch (e) { console.error(e); R.runs = []; R.lay = new Map(); }
+      R.fix = readFixturePorts(w);
+    } catch (e) { console.error(e); R.runs = []; R.lay = new Map(); R.fix = []; }
   }
   const partsOf = (r) => R.lay.get(r.storey)?.runs.get(r.guid)?.parts || [];
   /** The run whose plan line passes within tol of p (same kind), with where along it. */
@@ -89,12 +96,19 @@ export function mountMep(modelUi) {
     for (let i = 0; i + 1 < V.length; i++) { const Lg = Math.hypot(V[i + 1][0] - V[i][0], V[i + 1][1] - V[i][1], V[i + 1][2] - V[i][2]); if (s <= Lg || i === V.length - 2) { const u = Lg ? Math.min(1, s / Lg) : 0; return V[i][2] + (V[i + 1][2] - V[i][2]) * u + elevOf(r.storey) - elevOf(A.S.level); } s -= Lg; }
     return V[0][2];
   };
-  /** Snap: the Wall tool's snapping, then another run's corner or line (its height comes too). */
+  /** Free connectors of this kind (pipe / duct) that this level's view range shows, their height above THIS level. */
+  function portsHere(kind) {
+    const g = rangeHere();
+    return R.fix.filter((q) => q.domain === kind && !q.connected).map((q) => ({ ...q, zAbs: q.p[2] + elevOf(q.storey) })).filter((q) => q.zAbs >= g.lo && q.zAbs <= g.hi)
+      .map((q) => ({ ...q, z: q.zAbs - elevOf(A.S.level) }));
+  }
+  /** Snap: an element's connector, the Wall tool's snapping, then another run's corner or line (its height comes too). */
   function at(p, e) {
     const last = R.pts.length ? R.pts[R.pts.length - 1] : null;
     const s = A.snapFrom(p, e, last);
     R.snapRun = null;
     const tol = A.pv().pxToMm(12);
+    for (const q of portsHere(kindNow())) if (Math.hypot(q.p[0] - p[0], q.p[1] - p[1]) <= tol) { R.snapRun = { port: q, z: q.z, kind: 'end' }; return [q.p[0], q.p[1]]; }
     // a run's corner or end
     for (const r of R.runs) {
       if (r.kind !== kindNow() || !visible(r)) continue;
@@ -107,6 +121,22 @@ export function mountMep(modelUi) {
   }
   function addPoint(q) {
     const o = opts();
+    if (R.snapRun?.port) {
+      const c = R.snapRun.port, vertical = Math.abs(c.dir[2]) > 0.9;
+      if (!R.pts.length) {
+        // from a connector: its system and size, out the way it points (up or down to the bar's height)
+        takeFrom(c);
+        R.pts.push([q[0], q[1], c.z]);
+        if (vertical && Math.abs(o.z - c.z) > 1) R.pts.push([q[0], q[1], o.z]);
+        bindRows();
+        return;
+      }
+      const lastZ = R.pts[R.pts.length - 1][2];
+      if (Math.abs(lastZ - c.z) > 1) R.pts.push([q[0], q[1], lastZ]);
+      R.pts.push([q[0], q[1], c.z]);
+      finish();
+      return;
+    }
     if (R.snapRun) {
       const z = R.snapRun.z;
       if (!R.pts.length) { o.z = z; R.pts.push([q[0], q[1], z]); bindRows(); return; }
@@ -118,6 +148,23 @@ export function mountMep(modelUi) {
       return;
     }
     R.pts.push([q[0], q[1], o.z]);
+  }
+  /** A run started on a connector takes its system and size: the pipe of the bar's material nearest at or above its DN, a round
+   *  duct of its diameter. */
+  function takeFrom(c) {
+    if (c.domain === 'pipe') {
+      const P = R.pipe;
+      if (PIPE_SYSTEMS[c.system] && c.system !== P.system) { const d = runDefaults('pipe', c.system, undefined, standardOf(P.mat)); Object.assign(P, { system: d.system, mat: d.mat, cls: d.cls }); }
+      // by nominal size (a table's keys are not in size order: "1", "2" come before "1/2")
+      const sizes = sizesFor(P.mat, P.cls).map((s) => ({ s, p: pipeSize(P.mat, P.cls, s) })).filter((x) => x.p).map((x) => ({ ...x, dn: x.p.dn ?? x.p.nps * IN })).sort((a, b) => a.dn - b.dn);
+      const pick = sizes.find((x) => x.dn >= c.size - 0.5) || sizes.at(-1);
+      if (pick) P.size = pick.s;
+      if (P.slopeAuto) P.slope = PIPE_SYSTEMS[P.system]?.drain ? drainMinimum(P) || 0 : 0;
+    } else {
+      const D = R.duct;
+      if (DUCT_SYSTEMS[c.system]) D.system = c.system;
+      D.shape = 'round'; D.w = D.h = Math.max(50, c.size);
+    }
   }
   function finish() {
     const pts = R.pts.slice();
@@ -256,14 +303,17 @@ export function mountMep(modelUi) {
   // ---- option rows ----
   const fill = (sel, list, value) => { if (!sel) return; const have = [...sel.options].map((o) => o.value).join('|'); if (have !== list.map((x) => x[0]).join('|')) sel.replaceChildren(...list.map(([v, l]) => el('option', { value: v }, l))); if (document.activeElement !== sel) sel.value = value; };
   const sysList = (kind) => Object.keys(kind === 'pipe' ? PIPE_SYSTEMS : DUCT_SYSTEMS).map((k) => [k, systemLabel(kind, k)]);
-  const pipeSizes = (o) => sizesFor(o.mat, o.cls).map((s) => [s, imperial() ? s + '"' : 'DN' + (pipeSize(o.mat, o.cls, s)?.dn ?? s)]);   // i18n-ignore: size marks
+  /** A size as people name it: DN for the Brazilian tables (PVC soldável with its inch reference size), else inches or DN. */
+  const sizeName = (mat, cls, s) => { const p = pipeSize(mat, cls, s); return p?.metric ? p.label + (p.ref ? ' (' + p.ref + '")' : '') : imperial() ? s + '"' : 'DN' + (p?.dn ?? s); };   // i18n-ignore: size marks
+  const pipeSizes = (o) => sizesFor(o.mat, o.cls).map((s) => [s, sizeName(o.mat, o.cls, s)]);
   function bindRows() {
     const root = A.root, q = (s) => root.querySelector(s);
     const P = R.pipe, D = R.duct;
     if (q('[data-mep-sys]') && !q('[data-mep-sys]').dataset.bound) {
       q('[data-mep-sys]').dataset.bound = '1';
       const len = (sel, fn) => { const i = q(sel); i?.addEventListener('change', () => { const mm = parseLen(i.value, A.units()); if (Number.isFinite(mm)) fn(mm); else A.host.status(t('model.err.length'), true); bindRows(); A.drawOverlay(); }); i?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); i.dispatchEvent(new Event('change')); } }); };
-      q('[data-mep-sys]').addEventListener('change', (e) => { const d = runDefaults('pipe', e.target.value); Object.assign(P, { system: d.system, mat: d.mat, cls: d.cls, size: d.size }); if (P.slopeAuto) P.slope = d.slope; bindRows(); });
+      // another system: its usual material under the standard of the material in use (PVC esgoto after PVC soldável)
+      q('[data-mep-sys]').addEventListener('change', (e) => { const d = runDefaults('pipe', e.target.value, undefined, standardOf(P.mat)); Object.assign(P, { system: d.system, mat: d.mat, cls: d.cls, size: d.size }); if (P.slopeAuto) P.slope = d.slope; bindRows(); });
       q('[data-mep-mat]')?.addEventListener('change', (e) => { P.mat = e.target.value; P.cls = DEFAULT_CLASS[P.mat]; const s = sizesFor(P.mat, P.cls); if (!s.includes(P.size)) P.size = s[Math.min(s.length - 1, Math.floor(s.length / 3))]; autoSlope(); bindRows(); });
       q('[data-mep-cls]')?.addEventListener('change', (e) => { P.cls = e.target.value; const s = sizesFor(P.mat, P.cls); if (!s.includes(P.size)) P.size = s[0]; bindRows(); });
       q('[data-mep-size]')?.addEventListener('change', (e) => { P.size = e.target.value; autoSlope(); bindRows(); });
@@ -297,7 +347,7 @@ export function mountMep(modelUi) {
     const fu = q('[data-mep-flowunit]'); if (fu) fu.textContent = t(imperial() ? 'mep.unit.cfm' : 'mep.unit.ls');
     const ru = q('[data-mep-rateunit]'); if (ru) ru.textContent = t(imperial() ? 'mep.unit.inwg' : 'mep.unit.pam');
   }
-  function autoSlope() { const P = R.pipe; if (P.slopeAuto) P.slope = runDefaults('pipe', P.system, P.size).slope ? drainMinimum(P) || 0 : 0; }
+  function autoSlope() { const P = R.pipe; if (P.slopeAuto) P.slope = PIPE_SYSTEMS[P.system]?.drain ? drainMinimum(P) || 0 : 0; }
   function sizeDuct() {
     const D = R.duct;
     const rate = D.rate || (imperial() ? 0.08 : 0.8);
@@ -327,6 +377,7 @@ export function mountMep(modelUi) {
       kit.field(t('mep.slope'), sl);
       const min = drainMinimum(r);
       if (min !== null) kit.rows.push(el('dt', {}, ''), el('dd', { className: r.slope + 1e-9 < min ? 'bc-input-err' : 'bc-muted', 'data-mp-mepmin': '' }, t(r.slope + 1e-9 < min ? 'mep.slope.under' : 'mep.slope.min', { min: fmtSlope(min, A.units()) })));
+      if (r.system === 'san') drainRows(r, kit, run);
     } else {
       kit.field(t('mep.shape'), kit.select(DUCT_SHAPES.map((s) => [s, t('mep.shape.' + s)]), r.shape, 'data-mp-mepshape', (v) => run({ shape: v, h: v === 'round' ? r.w : (v === 'oval' && !(r.w > r.h) ? r.w / 2 : r.h) })));
       kit.field(t(r.shape === 'round' ? 'mep.diameter' : 'mep.width'), kit.lenInput(r.w, 'data-mp-mepw', (mm) => run({ w: mm, ...(r.shape === 'round' ? { h: mm } : {}) }), { min: 50 }));
@@ -341,19 +392,43 @@ export function mountMep(modelUi) {
     const z0 = r.points[0][2];
     kit.field(t('mep.z'), kit.lenInput(z0, 'data-mp-mepz', (mm) => run({ points: r.points.map((q) => [q[0], q[1], q[2] + (mm - z0)]) }), { any: true }));
     kit.rows.push(el('dt', {}, t('mep.length')), el('dd', { 'data-mp-meplen': '' }, L(runLength(r)) + ' · ' + t('mep.parts', { n: r.parts.length })));
-    if (r.kind === 'pipe' && r.flow >= 0) {
+    if (r.kind === 'pipe' && r.system !== 'san' && r.flow >= 0) {
       const fb = el('input', { type: 'text', className: 'bc-input bc-num', value: r.flow ? String(r.flow) : '', 'data-mp-mepgpm': '', size: 6 });
       const go = kit.button(t('mep.sizeit'), 'data-mp-mepsizeit', () => {
         const q = Number(fb.value.replace(',', '.'));
-        const v = PIPE_SYSTEMS[r.system]?.drain ? null : pipeForFlow(r.mat, r.cls, q, imperial() ? (r.system === 'hw' || r.system === 'hwr' ? 5 : 8) : (r.system === 'hw' || r.system === 'hwr' ? 1.5 : 2.4), imperial() ? 'in' : 'mm');
+        // the Brazilian tables keep the water at or under 3 m/s (NBR 5626); the others at 8 ft/s, 5 ft/s for hot water
+        const hot = r.system === 'hw' || r.system === 'hwr', br = standardOf(r.mat) === 'br';
+        const vmax = br ? (imperial() ? BR_MAX_VELOCITY / 0.3048 : BR_MAX_VELOCITY) : imperial() ? (hot ? 5 : 8) : (hot ? 1.5 : 2.4);
+        const v = PIPE_SYSTEMS[r.system]?.drain ? null : pipeForFlow(r.mat, r.cls, q, vmax, imperial() ? 'in' : 'mm');
         if (!v) { A.host.status(t(PIPE_SYSTEMS[r.system]?.drain ? 'mep.err.drainsize' : 'mep.err.sizeit'), true); return; }
-        A.host.status(t('mep.pipesized', { size: imperial() ? v.size + '"' : 'DN' + (pipeSize(r.mat, r.cls, v.size)?.dn ?? v.size), v: v.v.toFixed(1) + ' ' + t(imperial() ? 'mep.unit.fps' : 'mep.unit.ms') }));   // i18n-ignore: size mark
+        A.host.status(t('mep.pipesized', { size: sizeName(r.mat, r.cls, v.size), v: v.v.toFixed(1) + ' ' + t(imperial() ? 'mep.unit.fps' : 'mep.unit.ms') }));
         run({ size: v.size, flow: q });
       });
       kit.field(t('mep.flow', { unit: t(imperial() ? 'mep.unit.gpm' : 'mep.unit.ls') }), fb, go);
     }
     r.valves.forEach((v, i) => kit.field(t('mep.valve.at', { kind: t('mep.valve.' + v.kind), at: L(v.s) }), kit.button(t('mep.valve.del'), 'data-mp-mepdelvalve', () => A.commit(removeValve(r.guid, i), meta))));
     return { title: t(r.kind === 'duct' ? 'mep.run.duct' : 'mep.run.pipe') + ' ' + sizeLabel(r.sec) + ' ' + systemLabel(r.kind, r.system) };
+  }
+
+  /** A sanitary run: branch or building drain, the fixture units it carries and the size they need, Size the drains. */
+  function drainRows(r, kit, run) {
+    kit.field(t('mep.role'), kit.select([['branch', t('mep.role.branch')], ['main', t('mep.role.main')]], r.role, 'data-mp-meprole', (v) => run({ role: v })));
+    let q = null;
+    try { q = drainPlan(W()).get(r.guid); } catch (e) { console.error(e); }
+    const std = standardOf(r.mat), unit = t('mep.fu.' + std);
+    const text = !q || (!q.units && !q.floor) ? t('mep.fu.none') : q.toobig ? t('mep.fu.toobig', { n: q.units, unit })
+      : t('mep.fu.text', { n: q.units, unit, size: sizeName(r.mat, r.cls, q.need), code: t('mep.fu.code.' + std) });
+    kit.rows.push(el('dt', {}, t('mep.fu')), el('dd', { className: q?.grow || q?.toobig ? 'bc-input-err' : 'bc-muted', 'data-mp-mepfu': '' }, text));
+    kit.field('', kit.button(t('mep.sizedrains'), 'data-mp-mepsizedrains', () => sizeAll()));
+  }
+  /** Every sanitary run too small for its fixture units made the size they need (one undo step). */
+  function sizeAll() {
+    let plan;
+    try { plan = [...drainPlan(W()).values()]; } catch (e) { console.error(e); return; }
+    const grow = plan.filter((q) => q.grow).length, big = plan.filter((q) => q.toobig).length;
+    if (!grow) { A.host.status(big ? t('mep.sizedrains.big', { n: big }) : t('mep.sizedrains.none'), !!big); return; }
+    A.commit(sizeDrains(), { label: t('mep.sizedrains.label', { n: grow }), verb: t('model.verb.changed') });
+    if (big) A.host.status(t('mep.sizedrains.big', { n: big }), true);
   }
 
   // ---- schedules ----
@@ -366,7 +441,7 @@ export function mountMep(modelUi) {
     const fits = S.fittings.sort((a, b) => (a.kind + a.system + a.what).localeCompare(b.kind + b.system + b.what));
     R.sched = { pipes, ducts, mepfit: fits };
     return {
-      pipes: { head: [t('mep.system'), t('mep.material'), t('mep.size'), t('mep.length'), t('mep.pieces')], rows: pipes.map((x) => [sys('pipe', x.system), t('mep.cls.' + x.mat, { c: x.cls }), imperial() ? x.size + '"' : 'DN' + (x.p?.dn ?? x.size), len(x.length), String(x.n)]), total: ['', '', '', len(pipes.reduce((s, x) => s + x.length, 0)), String(pipes.reduce((s, x) => s + x.n, 0))] },   // i18n-ignore: size mark
+      pipes: { head: [t('mep.system'), t('mep.material'), t('mep.size'), t('mep.length'), t('mep.pieces')], rows: pipes.map((x) => [sys('pipe', x.system), t('mep.cls.' + x.mat, { c: x.cls }), sizeName(x.mat, x.cls, x.size), len(x.length), String(x.n)]), total: ['', '', '', len(pipes.reduce((s, x) => s + x.length, 0)), String(pipes.reduce((s, x) => s + x.n, 0))] },   // i18n-ignore: size mark
       ducts: { head: [t('mep.system'), t('mep.shape'), t('mep.size'), t('mep.length'), t('mep.surface')], rows: ducts.map((x) => [sys('duct', x.system), t('mep.shape.' + x.shape), sizeLabel({ kind: 'duct', round: x.shape === 'round', w: x.w, h: x.h, label: x.label }), len(x.length), area(x.area)]), total: ['', '', '', len(ducts.reduce((s, x) => s + x.length, 0)), area(ducts.reduce((s, x) => s + x.area, 0))] },
       mepfit: { head: [t('mep.system'), t('mep.fitting'), t('mep.size'), t('mep.count')], rows: fits.map((x) => [sys(x.kind, x.system), x.valve ? t('mep.valve.' + x.what) : t('mep.fit.' + x.what + (x.kind === 'duct' && x.what === 'reducer' ? '.duct' : '')) + (x.angle ? ' ' + Math.round(x.angle) + '°' : ''), x.size, String(x.n)]), total: ['', '', '', String(fits.reduce((s, x) => s + x.n, 0))] },
     };
@@ -451,6 +526,7 @@ export function mountMep(modelUi) {
         return;
       }
       if (!['pipe', 'duct'].includes(A.S.tool)) return;
+      for (const q of portsHere(kindNow())) o.points.push([q.p[0], q.p[1]]);
       if (R.hover) o.snap = { p: R.hover, kind: R.snapRun ? (R.snapRun.kind === 'end' ? 'end' : 'mid') : 'free' };
       if (R.pts.length) {
         const pts = R.hover ? [...R.pts.map((q) => [q[0], q[1]]), R.hover] : R.pts.map((q) => [q[0], q[1]]);

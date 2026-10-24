@@ -247,6 +247,9 @@
   border: var(--pen-2) solid var(--ink);
   border-radius: var(--radius);
 }
+.bc-global-units { display: inline-flex; align-items: center; gap: .25rem; padding: 0 .4rem; font-size: var(--fs-sm); }
+.bc-global-units .bc-mb-select { max-width: 8rem; }
+.bc-display-mode { position: absolute; z-index: 5; right: .75rem; bottom: 9.5rem; padding: .2rem; background: var(--sheet-2); border: var(--pen-1) solid var(--ink); border-radius: var(--radius); }
 .bc-tool {
   display: inline-flex;
   align-items: center;
@@ -683,10 +686,14 @@
 .bc-plan { position: absolute; inset: 0; background: var(--sheet); }
 .bc-plan canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; }
 .bc-plan canvas.is-drawing { cursor: crosshair; }
-.bc-stage.is-plan-split .bc-plan { right: 50%; border-right: var(--pen-2) solid var(--ink); }
-.bc-stage.is-plan-split .bc-canvas { left: 50%; }
+.bc-stage.is-plan-split .bc-plan { right: calc(100% - var(--bc-split, 50%)); }
+.bc-stage.is-plan-split .bc-canvas { left: var(--bc-split, 50%); }
 .bc-stage.is-plan-only .bc-canvas { visibility: hidden; }
-.bc-stage.is-plan-split .bc-measurebar, .bc-stage.is-plan-split .bc-placebar { left: calc(50% + .75rem); }
+.bc-stage.is-plan-split .bc-measurebar, .bc-stage.is-plan-split .bc-placebar { left: calc(var(--bc-split, 50%) + .75rem); }
+.bc-splitter { position: absolute; z-index: 6; top: var(--bc-tb-h, 4.75rem); bottom: 0; left: var(--bc-split, 50%); width: 10px; transform: translateX(-50%); cursor: col-resize; touch-action: none; }
+.bc-splitter::after { content: ''; position: absolute; inset: 0 4px; background: var(--ink); }
+.bc-splitter:focus-visible { outline: 2px solid var(--action); outline-offset: 2px; }
+.bc-splitter[hidden] { display: none; }
 /* the model bar sits under BimCraft's toolbar (model-ui.js keeps --bc-tb-h = the toolbar's height) */
 .bc-modelbar { position: absolute; z-index: 3; left: .75rem; right: .75rem; top: calc(var(--bc-tb-h, 4.75rem) + 1.25rem); display: grid; gap: .3rem; padding: .35rem .45rem; font-size: var(--fs-sm);
   background: var(--sheet-2); border: var(--pen-2) solid var(--ink); border-radius: var(--radius); }
@@ -713,8 +720,10 @@ html:not(.cc-compact) .bc-mb-tools, html:not(.cc-compact) .bc-mb-layout, html:no
 .is-touch .bc-modelbar .bc-tool { min-height: 2.5rem; }
 /* Split stacked: the plan over the 3D view when side by side each half would be narrower than 20rem, or the window is
    900px or less (model-ui.js applyLayout sets is-plan-stacked; 0.6 DC.101) */
-.bc-stage.is-plan-split.is-plan-stacked .bc-plan { right: 0; bottom: 50%; border-right: 0; border-bottom: var(--pen-2) solid var(--ink); }
-.bc-stage.is-plan-split.is-plan-stacked .bc-canvas { left: 0; top: 50%; }
+.bc-stage.is-plan-split.is-plan-stacked .bc-plan { right: 0; bottom: calc(100% - var(--bc-split, 50%)); }
+.bc-stage.is-plan-split.is-plan-stacked .bc-canvas { left: 0; top: var(--bc-split, 50%); }
+.bc-stage.is-plan-split.is-plan-stacked .bc-splitter { left: 0; right: 0; width: auto; top: var(--bc-split, 50%); bottom: auto; height: 10px; transform: translateY(-50%); cursor: row-resize; }
+.bc-stage.is-plan-split.is-plan-stacked .bc-splitter::after { inset: 4px 0; }
 .bc-stage.is-plan-split.is-plan-stacked .bc-measurebar, .bc-stage.is-plan-split.is-plan-stacked .bc-placebar { left: .75rem; }
 /* Properties of a drawn wall, door or window (0.5 BM.5; model-ui.js propsBlock) */
 .bc-model-props { margin: .25rem 0 .9rem; padding: .6rem .7rem; border: var(--pen-2) solid var(--action); border-radius: var(--radius); background: var(--sheet); }

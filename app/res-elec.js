@@ -27,6 +27,7 @@ import { readWalls } from './model-walls.js';
 import { ids, val } from './ifc-util.js';
 import { t as tr } from './i18n.js';
 import { SYMBOLS } from './res-elec-symbols.js';
+import { isMetric } from './model-units.js';
 
 export const ELEC_PSET = 'CadCraft_Electrical';
 const IN = 25.4;
@@ -55,14 +56,14 @@ const CLASSES = [...new Set(Object.values(DEVICES).flatMap((d) => [d.ifc4[0], d.
 export const isLight = (kind) => /^(luminaire|downlight)/.test(kind);
 export const isSwitch = (kind) => /^(switch|pushbutton|sensor)/.test(kind);
 /** Volts for the circuit schedule's amps: 120 / 240 in a feet-and-inches model, 230 / 400 in a metric one. */
-export const voltsOf = (kind, units) => (kind === 'socket.3ph' ? (units === 'mm' ? 400 : 240) : (units === 'mm' ? 230 : 120));
+export const voltsOf = (kind, units) => (kind === 'socket.3ph' ? (isMetric(units) ? 400 : 240) : (isMetric(units) ? 230 : 120));
 export function defaultHeight(kind, units, ceiling) {
   const d = DEVICES[kind];
   if (!d) return 0;
-  return d.mount === 'ceiling' ? ceiling : d.height[units === 'mm' ? 'mm' : 'ftin'];
+  return d.mount === 'ceiling' ? ceiling : d.height[isMetric(units) ? 'mm' : 'ftin'];
 }
 /** Plan mm per paper mm for the symbols: drawn for a 1:50 plan (1/4" = 1'-0" in feet and inches). */
-export const symbolScale = (units) => (units === 'mm' ? 50 : 48);
+export const symbolScale = (units) => (isMetric(units) ? 50 : 48);
 
 /** A symbol in the plan: rotated (angle in radians; the symbol's +y points along it), scaled, moved to `at`. */
 export function symbolPlan(kind, at, angle, scale) {

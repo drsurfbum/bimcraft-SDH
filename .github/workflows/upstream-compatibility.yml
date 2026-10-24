@@ -1,0 +1,58 @@
+name: Upstream rebase compatibility
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: upstream-compatibility-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: PHP source rendering and six-unit compatibility
+        run: |
+          if ! command -v php; then sudo apt-get update -qq && sudo apt-get install -y -qq php-cli; fi
+          php -v
+      - uses: actions/cache@v4
+        with:
+          path: devshell/vendor
+          key: vendor-${{ hashFiles('devshell/vendor.json') }}
+      - run: npm run fetch-vendor
+      - name: Pinned browser and independent reader
+        run: |
+          npm install --prefix .cc-test/upstream-deps --no-package-lock playwright@1.56.1
+          .cc-test/upstream-deps/node_modules/.bin/playwright install --with-deps chromium
+          python -m venv .cc-test/upstream-reader
+          .cc-test/upstream-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
+      - name: Six units, reloads, fallback and real server locale catalogs
+        env:
+          REBASE_PLAYWRIGHT: .cc-test/upstream-deps/node_modules/playwright/index.mjs
+          REBASE_REQUIRE_PHP: '1'
+        run: node tests/features/upstream-alignment/browser.mjs
+      - name: Actual MCP transport and independently read saved results
+        run: |
+          node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror();"
+          .cc-test/upstream-reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
+      - name: Retain reports and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream-rebase-compatibility
+          path: |
+            .cc-test/upstream-browser/*.json
+            .cc-test/upstream-browser/*.png
+            .cc-test/upstream-mcp/*.json
+          retention-days: 30

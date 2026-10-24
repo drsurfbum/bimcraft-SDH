@@ -33,6 +33,9 @@ try{
  // Complete drawing set includes every continuation. Use ordinary drawing-set UI.
  await click(page,'[data-res-sheetsopen]');await page.locator('[data-res-shlist] [data-sheet]').first().waitFor({state:'visible'});await download(page,'[data-res-shpdf]','drawing-set.pdf');await click(page,'[data-res-shclose]');
  await open(page,path.resolve('.cc-test/f06/large.ifc'));report.large=await timing(page);check('larger project has 210 layer rows',layers(await snapshot(page)).length===210);await screen(page,'assemblies');await page.screenshot({path:path.join(out,'large-schedule.png')});
- check('no unexpected browser errors',report.console.every(x=>x.type!=='pageerror'&&x.text.includes('/bootstrap-icons/current/bootstrap-icons.min.css')));report.status='PASS';
+ // Retain known headless GPU driver notices; all application exceptions and other console messages still fail.
+ report.driverWarnings=report.console.filter(x=>x.type==='warning'&&/GL Driver Message .*GPU stall due to ReadPixels/.test(x.text));
+ report.unexpectedConsole=report.console.filter(x=>!(x.type!=='pageerror'&&(x.text.includes('/bootstrap-icons/current/bootstrap-icons.min.css')||(x.type==='warning'&&/GL Driver Message .*GPU stall due to ReadPixels/.test(x.text)))));
+ check('no unexpected browser errors',report.unexpectedConsole.length===0);report.status='PASS';
 }catch(e){report.status='FAIL';report.error=e.stack||String(e);console.error(e);if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});process.exitCode=1;}
 finally{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({status:report.status,checks:report.checks,error:report.error}));await browser?.close();await new Promise(r=>server?server.close(r):r());}
