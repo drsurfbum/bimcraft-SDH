@@ -96,4 +96,4 @@ PERF-F04-01, PERF-F05-01 and TEST-F28-01 remain **OPEN**. Broader semantic MCP c
 
 Source implementation, registration, actual transport testing and local packaging are verified separately. A test client connected to both surfaces; **the user's persistent client is not configured or connected by this delivery**. See [connection instructions](MCP-01-CONNECTION.md). No published upstream package is assumed to contain this fork.
 
-Exact source/final revisions and CI outcomes are recorded in the draft PR, `evidence/mcp01/validation.json`, and the final handoff response. The final evidence commit necessarily refers to its parent source revision; CI artifact reports record the exact checked-out delivery SHA.
+Exact implementation source: `83a61859e8b734139498cbb041b31dbb12e0a963`; application tree: `df002f550cf3d6c596d33adf765acf4a1b604983`. Final revision and CI outcomes are recorded in the draft PR, `evidence/mcp01/validation.json`, and the final handoff response. The final evidence commit necessarily refers to its parent source revision; CI artifact reports record the exact checked-out delivery SHA.

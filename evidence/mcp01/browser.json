@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "actual Streamable HTTP initialize/list/call to real browser host.control registration",
+    "discovery includes authored assemblies and exact instance values",
+    "duplicate has distinct stable identity through Undo/Redo",
+    "material and recipe create/edit preserve explicit layers, cavity ventilation and zero membranes",
+    "assignment is instance-specific; shared edits keep core anchors, wall lengths and openings",
+    "material defaults never resize existing layers; exact defaults survive Undo/Redo",
+    "all six location lines \u00d7 both exterior sides and level/fixed instance heights",
+    "21 invalid/stale/foreign/schema/core/material failures leave no partial semantic edits",
+    "six display-unit modes leave exact machine-readable mm values unchanged",
+    "live undo refuses a person-owned history step",
+    "live busy drawing and denied edit/save permissions refuse without partial changes",
+    "dimension references/values and separately open original remain unchanged",
+    "actual browser download reopens exactly and old document tokens are refused"
+  ],
+  "errors": [],
+  "head": "83a61859e8b734139498cbb041b31dbb12e0a963",
+  "platform": "darwin",
+  "node": "v26.9.0",
+  "skips": [],
+  "browser": "151.0.7922.34",
+  "status": "PASS",
+  "catalogCount": 24
+}
