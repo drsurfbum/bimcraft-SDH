@@ -42,3 +42,7 @@ PR #12 has a separate correctness finding, F28C-PM-01: when another sheet/schedu
 F28C-PM-01 is **CLOSED** at delivery `f956fac00adf1d4d51ddc2e4253fe215a2c50acd`. Fresh PM Mac C browser **47/47** and focused tests **14/14** pass. Source-specific Properties actions check the displayed source ID/editor; toolbar/File actions retain the active drawing. Seven exact-head workflows pass, including B 42/42 and independent IFC/CSV/vector-PDF checks. See [fix re-review](F28-C-REVIEW.md).
 
 The October 23 correctness finding above is historical and resolved by this delivery. PR #12 remains draft/unmerged. Documentation MCP catch-up and upstream integration work remain open. TEST-F28-01 still awaits integrated confirmation; both performance issues remain OPEN. No default-layout change.
+
+## Upstream adoption — integrated-main confirmation, October 24, 2026
+
+Current main is 1afe80e after PR #15. All seven exact-main workflows pass, including F28-B browser and independent saved IFC/CSV/vector-PDF acceptance, six-unit/locale compatibility and basic MCP persistence. TEST-F28-01 remains **OPEN** by explicit user direction; the integrated result is new evidence, not automatic follow-up closure. Both performance issues and semantic MCP catch-up also remain **OPEN**. Historical F28-B/F28-C records above retain their original revisions. F28-C #12 and F08 #13 remain separate draft PRs and unmerged.
