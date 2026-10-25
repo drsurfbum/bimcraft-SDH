@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: f05-browser-${{ github.ref }}
+  group: f05-browser-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   browser:
@@ -52,5 +52,4 @@ jobs:
         with:
           name: f05-browser
           path: |
-            .cc-test/f05-browser/
-            !.cc-test/f05-browser/*.ifc
+            .cc-test/f05-browser/report.json

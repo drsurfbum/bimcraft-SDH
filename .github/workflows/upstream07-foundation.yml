@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: upstream07-${{ github.ref }}
+  group: upstream07-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   controls:
@@ -25,7 +25,8 @@ jobs:
         run: |
           git worktree add --detach .cc-test/release c778c7ca3f83eeecc3e815078417f152b2ca7a94
           git worktree add --detach .cc-test/accepted 1afe80e78a42aa27ee9af5d1ac937cd38cd1b711
-          git diff --exit-code c778c7ca3f83eeecc3e815078417f152b2ca7a94 -- .cc-test/release
+          git -C .cc-test/release diff --exit-code c778c7ca3f83eeecc3e815078417f152b2ca7a94 --
+          git -C .cc-test/accepted diff --exit-code 1afe80e78a42aa27ee9af5d1ac937cd38cd1b711 --
       - name: Pinned libraries and clean control mirrors
         run: |
           npm run fetch-vendor
@@ -34,6 +35,8 @@ jobs:
           node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror()"
           (cd .cc-test/release && node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror()")
           (cd .cc-test/accepted && node devshell/baseline.mjs --offline)
+          npm ci --prefix .cc-test/tools/markupcraft-test --no-audit --no-fund
+          cp -a .cc-test/tools/markupcraft-test/node_modules .cc-test/release/.cc-test/tools/markupcraft-test/node_modules
       - name: Shared record guard and all retained F28 assertions
         run: node --test tests/features/upstream07/*.test.mjs tests/features/f28/*.test.mjs
       - name: Compare executed release and candidate domain cases
@@ -48,6 +51,7 @@ jobs:
           .cc-test/reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
           .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
           node .cc-test/tools/mcp/pack.mjs --bimcraft-only --out .cc-test/packed
+          node tests/features/upstream07/package-closure.mjs
           MCP_SERVER=.cc-test/packed/mcp/server.mjs .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
       - name: Three browser controls, real catalogs and same-environment timings
         run: |
@@ -61,9 +65,10 @@ jobs:
         with:
           name: upstream07-controls
           path: |
-            .cc-test/upstream07/*.json
-            .cc-test/upstream07/*.log
+            .cc-test/upstream07/matrix.json
+            .cc-test/upstream07/model-performance.json
+            .cc-test/upstream07/package-closure.json
             .cc-test/upstream-mcp/summary.json
-            .cc-test/upstream07-shell/*.json
-            .cc-test/upstream07-shell/*.png
+            .cc-test/upstream07-shell/report.json
+            .cc-test/upstream07-shell/lifecycle.json
           retention-days: 30

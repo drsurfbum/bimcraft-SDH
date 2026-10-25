@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: upstream-compatibility-${{ github.ref }}
+  group: upstream-compatibility-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   compatibility:
@@ -54,7 +54,6 @@ jobs:
         with:
           name: upstream-rebase-compatibility
           path: |
-            .cc-test/upstream-browser/*.json
-            .cc-test/upstream-browser/*.png
+            .cc-test/upstream-browser/report.json
             .cc-test/upstream-mcp/summary.json
           retention-days: 30

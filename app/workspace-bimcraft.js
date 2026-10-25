@@ -39,7 +39,7 @@ const GROUPS = [
 
 export function createBimcraftWorkspace({ root, modelUi, views, commands, props, current, status, statusEl }) {
   const stage = root.querySelector('.bc-stage');
-  let engine = null, ctx = null, frame = 0;
+  let engine = null, ctx = null, frame = 0, browserForClassic = null;
   const soon = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; engine?.refresh(); }); };
   const A = modelUi.extend({ refresh: soon, settled: soon, toolChanged: soon });
   const T = (k, v) => A.t(k, v);
@@ -248,10 +248,17 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     },
     leaving(c) {
       if (c.has('palettes')) {
+        browserForClassic = browserEl();
         walls.setActive(false); rememberCamera(); propsHome.after(props); restoreBrowser();
       }
     },
-    left(c) { if (c.was && root.querySelector('.bc-right [data-rtab="props"]')) root.querySelector('.bc-right [data-rtab="props"]').click(); ctx = null; launch.hidden = false; },
+    left(c) {
+      // A browser created after entry may have its shared-engine home inside the temporary panel slot.
+      // Reattach that same authoritative node after the shared engine removes its chrome.
+      const links = root.querySelector('[data-links-sec]');
+      if (browserForClassic && !browserForClassic.isConnected && links) links.before(browserForClassic);
+      browserForClassic = null;
+      if (c.was && root.querySelector('.bc-right [data-rtab="props"]')) root.querySelector('.bc-right [data-rtab="props"]').click(); ctx = null; launch.hidden = false; },
     resized() { current().viewer?.resize(); A.pv()?.resize(); },
     refresh(c) {
       root.classList.toggle('tbx-noifc', c.has('toolbox') && !current().editor);

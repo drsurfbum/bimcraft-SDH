@@ -12,7 +12,7 @@ const ctx=await browser.newContext({viewport:{width:1440,height:1000},acceptDown
 const watch=p=>p.on('pageerror',e=>report.errors.push(e.message));
 let page=await ctx.newPage();watch(page);
 const goto=()=>page.goto('http://127.0.0.1:8068/?workspace=established&space=paper',{waitUntil:'networkidle'});
-const idle=()=>page.waitForFunction(()=>globalThis.bimcraftLive?.editor&&!bimcraftPlan?.state.busy&&!bimcraftPlan?.state.reloading);
+const idle=()=>page.waitForFunction(()=>globalThis.bimcraftLive?.editor&&!globalThis.bimcraftPlan?.state.busy&&!globalThis.bimcraftPlan?.state.reloading);
 const records=()=>page.evaluate(async()=>{const p='/assets/apps/bimcraft/dev/',e=bimcraftLive.editor,[{ModelWriter},{readWalls}]=await Promise.all([import(p+'model-write.js'),import(p+'model-walls.js')]);return readWalls(new ModelWriter(e.W,e.api,e.mid)).map(w=>({guid:w.guid,height:w.height,a:w.a,b:w.b,type:w.typeKey}));});
 try {
  await goto();await page.locator('[data-file]').setInputFiles({name:'Duplicate.ifc',mimeType:'application/x-step',buffer:fs.readFileSync('fixtures/f04/layered-plans.ifc')});await idle();const first=await records();
@@ -22,9 +22,20 @@ try {
  await page.locator('[data-model-active="'+ids[0]+'"]').check();await idle();assert.deepEqual(await records(),first);report.checks.push('duplicate file names retain distinct source identities and native active-source ownership');
  // Close the clean federation; a new isolated tab performs the real transaction to be recovered.
  await page.close();page=await ctx.newPage();watch(page);await page.goto('http://127.0.0.1:8068/?workspace=live&space=paper',{waitUntil:'networkidle'});
+ const rpc=(method,params={})=>page.evaluate(([method,params])=>bimcraftControl.handle({jsonrpc:'2.0',id:1,method,params},'foundation-basic'),[method,params]);
+ const disabled=await rpc('tools/list');assert.equal(disabled.error?.code,-32001);
+ await page.evaluate(()=>localStorage.setItem('bimcraft.settings',JSON.stringify({assistants:{enabled:true,groups:['read','edit']}})));await page.reload({waitUntil:'networkidle'});
+ const hello=await rpc('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'foundation-basic',version:'1'}});assert.equal(hello.result.serverInfo.title,'BimCraft');
  await page.locator('[data-file]').setInputFiles(path.resolve('fixtures/f04/layered-plans.ifc'));await idle();await page.locator('[data-pb-plan]').first().dblclick();await idle();
+ const catalog=await rpc('tools/list');assert.ok(['walls_list','element_set','undo'].every(n=>catalog.result.tools.some(t=>t.name===n)));
+ const tool=async(name,args)=>{const r=await rpc('tools/call',{name,arguments:args});assert.ok(r.result&&!r.error);return r.result;};
+ const beforeAgent=await records(),guid=beforeAgent[0].guid;
+ assert.equal((await tool('element_set',{guid,set:'CadCraft_Wall',property:'Height',value:9999})).isError,true);assert.deepEqual(await records(),beforeAgent);
+ assert.ok(!(await tool('element_set',{guid,attribute:'Name',value:'Foundation temporary agent name'})).isError);
+ assert.ok(!(await tool('undo',{steps:1})).isError);assert.equal(await page.evaluate(()=>bimcraftLive.editor.changes.length),0);assert.deepEqual(await records(),beforeAgent);
+ report.checks.push('live host JSON-RPC defaults off, initializes, lists actual tools, refuses protected properties and undoes an ordinary assistant edit');
  const point=await page.evaluate(()=>{const v=bimcraftPlan.view,w=bimcraftPlan.state.data.walls[0],s=v.toScreen([(w.a[0]+w.b[0])/2,(w.a[1]+w.b[1])/2]),r=v.canvas.getBoundingClientRect();return{x:r.x+s.x,y:r.y+s.y};});await page.mouse.click(point.x,point.y);
- await page.locator('[data-mp-height]').fill('3210 mm');await page.locator('[data-mp-height]').press('Enter');await idle();const edited=await records();assert.ok(edited.some(w=>w.height===3210));
+ await page.locator('[data-mp-height]').fill('3210 mm');await page.locator('[data-mp-height]').press('Enter');await idle();const edited=await records();assert.ok(edited.some(w=>w.height===3210));assert.equal((await tool('undo',{steps:1})).isError,true);assert.deepEqual(await records(),edited);report.checks.push('basic live Undo refuses a person-authored step');
  // Wait for production's normal debounce; never insert or synthesize a recovery record.
  await page.waitForTimeout(4000);await page.close({runBeforeUnload:false});page=await ctx.newPage();watch(page);await goto();
  await page.locator('[data-autosave-dialog][open]').waitFor();assert.equal(await page.locator('[data-autosave-row]').count(),1);await page.locator('[data-autosave-recover]').click();await idle();assert.deepEqual(await records(),edited);assert.ok(await page.locator('[data-save]').isEnabled());report.checks.push('normal autosave survives tab closure and recovers the exact authored edit');
