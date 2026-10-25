@@ -42,6 +42,13 @@
  *     is connected to it when the run is made; joinPorts(w, storey, ports) connects new ports to touching free ones.
  *   Errors: mep.err.points, mep.err.size, mep.err.back (a run doubling back on itself), mep.err.short (a leg too short for its
  *   fittings), mep.err.valve, mep.err.none.
+ * 0.7 LC.9 (session `mep-07`): a run's end may be FIXED to a port of a piece of equipment (mep/equipment.js): `ends` = [start, end],
+ * each null or { eq: equipment GlobalId, port: port name }, kept in CadCraft_MepRun.Ends. regenMep puts a fixed end where that port
+ * now is (so a run follows the equipment it starts or ends on, and an edit to the run keeps that end on the port) and connects
+ * the run's end port to the equipment's (IfcRelConnectsPorts). systemForKey(w, kind, key) is the system equipment joins.
+ * Steel runs may be cut into spools (mep/spools.js): `spoolMax` (mm, 0 = not spooled), `fieldWelds` (mm along the drawn line),
+ * `line` (its line number); mepLayout takes `weldCuts` (mm along the drawn line) and cuts straight pipe there, and regenMep writes
+ * each part's CadCraft_Spool.
  */
 import { op } from './model-ops.js';
 import { ids, val } from './ifc-util.js';
@@ -49,6 +56,9 @@ import { round } from './model-write.js';
 import { t as tr } from './i18n.js';
 import { pipeSize, bendRadius, drainSlope, DEFAULT_CLASS, sizesFor, SYSTEM_MATERIALS, standardOf } from './mep/pipes.js';
 import { sizeSection, sectionLoss } from './mep/sizing.js';
+import { readEquipment, portsAt, portsOfElement, PORT_PSET } from './mep/equipment.js';   // 0.7 LC.9 (mep-07): runs fixed to equipment ports
+import { readPorts } from './mep/ports.js';
+import { spooled, planSpools, assignSpools, SPOOL_PSET } from './mep/spools.js';   // 0.7 LC.9 (mep-07): steel spools
 import { CONNECTOR_PSET } from './family-model.js';
 import { drainNetwork, smallestSize, upstreamFirst, MAIN_MIN_DN } from './mep/drainage.js';
 
@@ -221,6 +231,12 @@ export function mepLayout(runs) {
     t.branch.trim[legB][t.e === 1 ? 1 : 0] += mb;
     t.bd = norm(sub(t.e === 1 ? t.branch.verts[t.branch.verts.length - 2] : t.branch.verts[1], t.at));   // from the joint out along the branch
   }
+  // 0.7: welds that cut straight pipe (spools), by distance along the run
+  for (const r of R) for (const s of r.weldCuts || []) {
+    let x = s, i = 0;
+    while (i < r.legs.length && x > r.legs[i].L) { x -= r.legs[i].L; i++; }
+    if (i < r.legs.length) r.cuts[i].push({ s: x, half: 0, kind: 'weld' });
+  }
   // valves on pipes, by distance along the run
   for (const r of R) for (const v of r.valves || []) {
     if (r.kind !== 'pipe') return fail('mep.err.valve');
@@ -246,6 +262,7 @@ export function mepLayout(runs) {
         const s1 = c.s - c.half;
         if (s1 - s0 < 1) return fail('mep.err.short');
         push({ kind: 'segment', a: add(l.a, mul(l.d, s0)), b: add(l.a, mul(l.d, s1)), d: l.d, wd });
+        if (c.kind === 'weld') { s0 = c.s; continue; }
         const a = add(l.a, mul(l.d, c.s - c.half)), b = add(l.a, mul(l.d, c.s + c.half));
         if (c.kind === 'tee') push({ kind: 'tee', at: c.tee.at, d: l.d, bd: c.tee.bd, m: c.m, mb: c.mb, wd, branchGuid: c.tee.branch.guid, branchSec: c.tee.branch.sec, a, b });
         else push({ kind: 'valve', a, b, d: l.d, wd, valve: c.valve });
@@ -279,6 +296,8 @@ function aggKids(w, id) {
 }
 /** Points (and valves) from the file: untrusted JSON, checked. */
 function readJson(s, fallback) { try { const v = JSON.parse(String(s || '')); return v ?? fallback; } catch (e) { return fallback; } }
+/** [start, end] fixings: { eq, port } (short text) or null each. */
+const okEnds = (e) => (Array.isArray(e) && e.length === 2 ? e.map((x) => (x && typeof x.eq === 'string' && typeof x.port === 'string' && x.eq.length <= 64 && x.port.length <= 60 ? { eq: x.eq, port: x.port } : null)) : [null, null]);
 const okPoints = (p) => Array.isArray(p) && p.length >= 2 && p.length <= 500 && p.every((q) => Array.isArray(q) && q.length >= 2 && q.slice(0, 3).every((x) => Number.isFinite(x) && Math.abs(x) < 1e8));
 export function readRuns(w) {
   const out = [];
@@ -298,6 +317,10 @@ export function readRuns(w) {
       shape: DUCT_SHAPES.includes(ps.Shape) ? ps.Shape : 'rect', w: mmOf(w, ps.Width), h: mmOf(w, ps.Height), slope: Number(ps.Slope) || 0, flow: Number(ps.Flow) || 0,
       role: ps.DrainRole === 'main' ? 'main' : 'branch',
       valves: Array.isArray(valves) ? valves.filter((v) => v && Number.isFinite(v.s) && VALVE_KINDS[v.kind]).map((v) => ({ s: v.s, kind: v.kind })) : [],
+      ends: okEnds(readJson(ps.Ends, null)),
+      insulation: Math.max(0, mmOf(w, ps.Insulation)),   // 0.7 LC.9: insulation thickness (mm), for the soft clearance and openings
+      spoolMax: Math.max(0, Number(ps.SpoolMaxMm) || 0), line: String(ps.Line || ''),
+      fieldWelds: (() => { const f = readJson(ps.FieldWelds, []); return Array.isArray(f) ? f.filter((s) => Number.isFinite(s) && s >= 0 && s < 1e8).slice(0, 500) : []; })(),
       parts: aggKids(w, id),
     });
   }
@@ -313,7 +336,10 @@ function writeDef(w, id, r) {
   w.upsertPset(id, RUN_PSET, [['Kind', 'IFCLABEL', r.kind], ['System', 'IFCLABEL', r.system], ['PointsMm', 'IFCTEXT', JSON.stringify(r.points.map((q) => q.map((x) => round(x, 3))))],
     ['Material', 'IFCLABEL', r.mat || ''], ['Class', 'IFCLABEL', r.cls || ''], ['Size', 'IFCLABEL', r.size || ''], ['Shape', 'IFCLABEL', r.kind === 'duct' ? r.shape : ''],
     Lm('Width', r.kind === 'duct' ? r.w : 0), Lm('Height', r.kind === 'duct' ? r.h : 0), ['Slope', 'IFCREAL', round(r.slope || 0, 9)], ['Flow', 'IFCREAL', round(r.flow || 0, 6)],
-    ['Valves', 'IFCTEXT', JSON.stringify((r.valves || []).map((v) => ({ s: round(v.s, 3), kind: v.kind })))], ['DrainRole', 'IFCLABEL', r.role === 'main' ? 'main' : 'branch']]);
+    ['Valves', 'IFCTEXT', JSON.stringify((r.valves || []).map((v) => ({ s: round(v.s, 3), kind: v.kind })))],
+    ['Ends', 'IFCTEXT', JSON.stringify(okEnds(r.ends || [null, null]))], Lm('Insulation', Math.max(0, Number(r.insulation) || 0)),
+    ['SpoolMaxMm', 'IFCREAL', round(Math.max(0, Number(r.spoolMax) || 0), 3)], ['FieldWelds', 'IFCTEXT', JSON.stringify((r.fieldWelds || []).map((s) => round(s, 3)))], ['Line', 'IFCLABEL', String(r.line || '').slice(0, 20)],
+    ['DrainRole', 'IFCLABEL', r.role === 'main' ? 'main' : 'branch']]);
 }
 /** Plane angles in the file's own unit (radians unless the project says degrees). */
 function angleUnit(w) {
@@ -440,6 +466,10 @@ function systemFor(w, r) {
   w._mepSys.set(key, id);
   return id;
 }
+/** The system a part or a piece of equipment of this kind (pipe | duct) and key joins. */
+export const systemForKey = (w, kind, system) => systemFor(w, { kind, system });
+/** Elements into a system (IFC4: an assignment of their own; IFC2X3: the system's one assignment, extended). */
+export const assignToSystem = (w, sys, elements) => assign(w, sys, elements);
 function assign(w, sys, parts) {
   if (!parts.length) return;
   // IFC4 lets a system have several assignments: each write gets its own (Live: no two people write one line); IFC2X3 one
@@ -529,9 +559,46 @@ const sameSec = (a, b) => a.shape === b.shape && Math.abs(a.w - b.w) < 0.5 && Ma
 /** Every run of a level made again: the old parts and ports go, the layout is written, touching ports connected. */
 export function regenMep(w, storey) {
   const runs = readRuns(w).filter((r) => r.storey === storey);
-  if (!runs.length) { dropEmptySystems(w); return 0; }
-  const L = mepLayout(runs.map((r) => ({ ...r, sec: sectionOf(r), verts: runVertices(r) })));
+  // 0.7: equipment on this level and where its ports are now; fixed run ends go there
+  const eqs = readEquipment(w).filter((e) => e.storey === storey);
+  const eqPorts = new Map();
+  for (const e of eqs) for (const p of portsAt(e)) eqPorts.set(e.guid + '#' + p.name, p);
+  for (const r of runs) {
+    let moved = false;
+    r.ends.forEach((f, k) => {
+      const p = f && eqPorts.get(f.eq + '#' + f.port);
+      if (!p) return;
+      const i = k ? r.points.length - 1 : 0, q = r.points[i];
+      if (dist(q, p.at) > 0.05) { r.points[i] = p.at.map((x) => round(x, 3)); moved = true; }
+    });
+    if (moved) writeDef(w, r.id, r);
+  }
+  const fresh = [];
+  let n = 0;
+  if (runs.length) n = writeChanged(w, storey, runs, fresh);
+  else dropEmptySystems(w);
+  connectPorts(w, storey, runs, eqs, fresh);
+  if (runs.length) dropEmptySystems(w);
+  return n;
+}
+/** The runs whose parts come out differently, written again (their new ports pushed to `fresh`). → how many. */
+/**
+ * The layout of one level's runs as regenMep writes it (0.7: spooled steel runs are planned first — where their straight pipe is
+ * cut and their spools break, set on each run as weldCuts / breaks — then laid out again with the cuts). Refuses on a layout error.
+ */
+export function planLayout(runs) {
+  const prep = () => runs.map((r) => ({ ...r, sec: sectionOf(r), verts: runVertices(r) }));
+  let L = mepLayout(prep());
   if (L.error) refuse(L.error);
+  if (runs.some(spooled)) {
+    for (const r of runs) if (spooled(r) && L.runs.get(r.guid)) { const pl = planSpools({ ...r, verts: runVertices(r) }, L.runs.get(r.guid).parts); r.weldCuts = pl.cuts; r.breaks = pl.breaks; }
+    L = mepLayout(prep());
+    if (L.error) refuse(L.error);
+  }
+  return L;
+}
+function writeChanged(w, storey, runs, fresh) {
+  const L = planLayout(runs);
   // only runs whose parts come out differently are written again: the others keep their lines (Live: an edit to one run
   // never writes over what someone else drew, so their undo still works), and parts keep their ids
   const fpOf = (r) => fingerprint(r, L.runs.get(r.guid));
@@ -540,7 +607,7 @@ export function regenMep(w, storey) {
   const oldParts = changed.flatMap((r) => r.parts);
   if (oldParts.length) w.dropProduct([...oldParts, ...portsOfParts(w, oldParts)]);
   const lp = w.api.GetLine(w.mid, storey, false).ObjectPlacement.value;
-  const fresh = [], bySys = new Map();
+  const bySys = new Map();
   for (const r of changed) {
     const sec = sectionOf(r), lay = L.runs.get(r.guid);
     if (!sec || !lay) continue;
@@ -552,6 +619,10 @@ export function regenMep(w, storey) {
       if (part.kind === 'segment') length += dist(part.a, part.b);
     }
     if (kids.length) w.make('IFCRELAGGREGATES', w.guid(), w.ownerHistory(), null, null, w.H(r.id), kids.map((k) => w.H(k)));
+    if (spooled(r)) for (const sp of assignSpools({ ...r, verts: runVertices(r) }, lay.parts, r.breaks || [])) for (const i of sp.parts) {
+      const pp = lay.parts[i], s = sp.s0;
+      w.upsertPset(kids[i], SPOOL_PSET, [['SpoolId', 'IFCLABEL', sp.id], ['Run', 'IFCLABEL', r.guid], ['Index', 'IFCINTEGER', sp.index], ['StartMm', 'IFCREAL', round(s, 3)], ['EndMm', 'IFCREAL', round(sp.s1, 3)], ['Part', 'IFCLABEL', pp.kind]]);
+    }
     w.upsertQto(r.id, 'Qto_CadCraftMepRun', [['Length', 'length', length], ['Parts', 'count', kids.length]]);
     w.upsertPset(r.id, RUN_PSET, [['Layout', 'IFCLABEL', fpOf(r)]]);
     const sys = systemFor(w, r);
@@ -559,15 +630,34 @@ export function regenMep(w, storey) {
     bySys.get(sys).push(...kids);
   }
   for (const [sys, parts] of bySys) assign(w, sys, parts);
-  // ports that touch, of different parts, are connected once: new ports with new ones, with the kept runs' free ports, and
-  // with the free ports of elements placed from families (a basin's drain, a fan's outlet)
-  const keptParts = runs.filter((r) => !changed.includes(r)).flatMap((r) => r.parts);
-  const joined = connectedPorts(w);
-  const kept = portsOfParts(w, keptParts).filter((id) => !joined.has(id)).map((id) => ({ id, p: portAt(w, id), part: portOwner(w, id) })).filter((q) => q.p);
-  const fixtures = readFixturePorts(w).filter((q) => q.storey === storey && !q.connected).map((q) => ({ id: q.id, p: q.p, part: q.owner }));
-  linkTouching(w, fresh, [...kept, ...fixtures]);
-  dropEmptySystems(w);
   return changed.length;
+}
+/**
+ * Ports that touch, of different parts, are connected once: the runs' new ports and the equipment's free ports look for a free
+ * port within 0.6 mm among the new ones, the kept runs' free ports and the equipment's.
+ */
+function connectPorts(w, storey, runs, eqs, fresh) {
+  const joined = connectedPorts(w);
+  const freshIds = new Set(fresh.map((p) => p.id));
+  const keptParts = runs.flatMap((r) => r.parts);
+  const kept = portsOfParts(w, keptParts).filter((id) => !joined.has(id) && !freshIds.has(id)).map((id) => ({ id, p: portAt(w, id), part: portOwner(w, id) })).filter((q) => q.p);
+  const eqFree = [];
+  for (const e of eqs) {
+    const at = new Map(portsAt(e).map((p) => [p.name, p.at]));
+    for (const pid of portsOfElement(w, e.id)) {
+      if (joined.has(pid)) continue;
+      const nm = w.readPset(pid, PORT_PSET)?.PortName;
+      if (at.has(nm)) eqFree.push({ id: pid, p: at.get(nm), part: e.id });
+    }
+  }
+  // other elements' free ports with a CadCraft_Port set (an add-on's equipment written with api.mep.addPorts), from their placements
+  const mine = new Set(eqs.map((e) => e.id));
+  if (fresh.length) for (const p of readPorts(w)) if (p.role === 'equipment' && !p.connectedTo && p.storey === storey && !mine.has(p.owner) && p.at) eqFree.push({ id: p.id, p: p.at, part: p.owner });
+  // and the free ports of elements placed from families (a basin's drain, a fan's outlet: renanem's connectors)
+  const fixtures = readFixturePorts(w).filter((q) => q.storey === storey && !q.connected).map((q) => ({ id: q.id, p: q.p, part: q.owner }));
+  const seekers = [...fresh, ...eqFree];
+  if (!seekers.length) return;
+  linkTouching(w, seekers, [...kept, ...fixtures]);
 }
 /** Connect each of `fresh` to a port of another part within 0.6 mm (among `fresh` and `others`), each port once. */
 function linkTouching(w, fresh, others) {
@@ -628,6 +718,7 @@ export function readFixturePorts(w) {
 function fingerprint(r, lay) {
   const R3 = (q) => q.map((x) => Math.round(x * 10) / 10);
   const s = JSON.stringify([r.kind, r.system, r.mat, r.cls, r.size, r.shape, Math.round(r.w), Math.round(r.h), round(r.slope || 0, 9), r.flow || 0, r.valves,
+    ...(spooled(r) ? [r.spoolMax, r.line, (r.breaks || []).map((b) => [Math.round(b.s * 10), b.kind])] : []),
     (lay?.parts || []).map((p) => [p.kind, ...(p.ports || []).map((q) => R3(q.p)), p.kind === 'tee' ? p.branchSec?.label : p.kind === 'reducer' ? [p.from.label, p.to.label] : p.valve?.kind || ''])]);
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }

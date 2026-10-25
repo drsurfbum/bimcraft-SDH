@@ -19,6 +19,8 @@ Draw the pipes and ducts of a building the way you draw walls: click the corners
 
 The pipe snaps like walls do, and to other runs: start on a pipe's end to carry on from it, or end on a pipe's line to branch off it. A new run takes the height of the pipe it snaps to.
 
+A run started or ended on a piece of equipment's port takes its size and system and stays fixed to it: see [MEP equipment with ports](topic:mep-equipment) and [Connect pipes and ducts to equipment](topic:mep-connections).
+
 ## Draw a duct
 
 1. Choose {{ui:Duct}}. Pick the system (supply, return, exhaust or outside air) and the shape: round, rectangular or flat oval.
@@ -91,6 +93,8 @@ Pick any part of a run, in the plan or the 3D view. In Properties:
 
 - **System**, **Material**, **Class** and **Size** (pipes), or **Shape**, **Width**, **Height** (ducts).
 - **Height above the level** moves the whole run up or down.
+- **Insulation**: its thickness, kept for the clearance check and the openings list (nothing is drawn for it): see [Check pipes and ducts against the structure](topic:mep-against-structure).
+- Steel pipe: **Cut into spools**: see [Steel pipe spools and spool sheets](topic:pipe-spools).
 - **Slope** (pipes).
 - **Flow** with {{ui:Size it}}: for water, the smallest size that keeps the water at 8 ft/s (2.4 m/s), or 5 ft/s (1.5 m/s) for hot water; at 3 m/s for the Brazilian PVC water pipe (NBR 5626). For ducts, the velocity and friction rate of the duct as drawn. Sanitary drains are sized by their fixture units instead: see **Size the drains by fixture units** below.
 

@@ -20,14 +20,19 @@
  */
 import { t } from './i18n.js';
 import { PlanView } from './model-planview.js';
-import { planCut, chainLoops, viewerToPlan, wallPieces, wallDims } from './model-plan.js';
+import { wallPlanGraphics, wallPlanEdges } from './wall-plan-graphics.js';
+import { readMaterials } from './project-materials.js';
+import { planCut, chainLoops, viewerToPlan, wallDims, wallPieces } from './model-plan.js';
+import { assemblySchedules } from './assembly-schedule.js';
+import { materialBackground } from './project-materials.js';
 import { schedules, scheduleCsv } from './model-schedule.js';
 import { planPdf } from './model-pdf.js';
-import { wallOutlines, WALL_TYPES, wallType, typeThickness, typeName, typeAt, JUSTIFICATIONS, locationLine } from './model-walls.js';
+import { wallOutlines, wallTypes, wallType, typeThickness, typeName, typeAt, JUSTIFICATIONS, locationLine, wallsThrough, wallLevelsPassed, topLevelChoices } from './model-walls.js';
 import { wallGeom, wallMap, arcMid, arcLength, bulgeThrough, bulgeFromHeight, arcHeight, flatPoly, BULGE_MAX } from './model-arcs.js';   // 0.6 round 2 (bim-comforts_PART_2): curved walls
 import { snapPoint, closesChain, loopSide, wallPath } from './model-tools.js';
-import { fmtLen, parseLen, parseTyped, fmtAngle, fmtArea, parsePitch, fmtPitch, getDisplayUnits, setDisplayUnits, isMetric } from './model-units.js';
-import { drawWallPath, drawWalls, changeWall, changeWalls, removeWalls, newLevel, changeLevel, snapshotModel, placeOpening, changeOpening, changeOpenings, removeElements, placeFloor, placeCeiling, placeRoof, changeDerived, loopsOf } from './model-ops.js';
+import { fmtLen, parseLen, parseTyped, fmtAngle, fmtArea, parsePitch, fmtPitch, getDisplayUnits, setDisplayUnits, isMetric, fillUnitSelect } from './model-units.js';
+import { onUnitsChange } from './unit-prefs.js';   // 0.7 UNITS: Settings › General › Units
+import { copyLevel, drawWallPath, drawWalls, changeWall, changeWalls, removeWalls, newLevel, changeLevel, snapshotModel, placeOpening, changeOpening, changeOpenings, removeElements, placeFloor, placeCeiling, placeRoof, changeDerived, loopsOf } from './model-ops.js';
 import { loopAt, labelPoint, planLoops } from './model-rooms.js';
 import { inPoly } from './model-plan.js';
 import { inv4 } from './ifc-util.js';
@@ -38,6 +43,7 @@ import { el } from './ui-util.js';
 import { ModelWriter } from './model-write.js';
 import { openingFamilies, readFamilies, setFamilySize, familyWriter } from './family-ops.js';   // 0.6 DC.114: families and their sizes
 import { familyFor, sizeValues, sizeKey } from './family-model.js';
+import { placementReference, placementPath } from './wall-placement.js';
 
 const CUT = 1200;   // mm above the level: where the plan cuts (4'-0")
 const RCP_CUT = 2300;   // 0.6 DC.117: where a ceiling plan cuts and looks up from (about 7'-6")
@@ -60,7 +66,7 @@ export function mountModel(host) {
   if (!ui.toggle || !ui.wrap) return null;
 
   const S = {
-    on: false, layout: 'split', split: 50, level: null, kind: 'plan', tool: 'select',   // kind: the level's floor plan or its ceiling plan ('rcp', 0.6 DC.117) busy: false, queue: [], again: false,
+    on: false, layout: 'split', layoutAuto: true, split: 50, level: null, kind: 'plan', tool: 'select',   // kind: the level's floor plan or its ceiling plan ('rcp', 0.6 DC.117) busy: false, queue: [], again: false,
     data: null, outlines: new Map(), cut: null, cutFor: null, chain: null, last: null, hoverKey: null,
     wall: { reference: 'center', side: 'left', typeKey: 'ext-2x6', top: 'level', height: 2438.4, shape: 'straight' }, units: readUnits(),   // shape: straight | arc (0.6 round 2)
     open: {
@@ -87,11 +93,16 @@ export function mountModel(host) {
     ui.wrap.hidden = !S.on;
     ui.levelsSec.hidden = !S.on;
     if (ui.schedSec) ui.schedSec.hidden = !S.on;
+    // 0.7 SU.751: side by side, each half of a laptop-sized stage is too small to draw in: start with the plan alone (Split is one click)
+    if (S.on && S.layoutAuto && S.layout === 'split' && ui.stageEl.clientWidth && ui.stageEl.clientWidth < 60 * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16)) S.layout = 'plan';
     applyLayout();
     if (!S.on) { endChain(); setTool('select'); return; }
     if (!pv) {
       pv = new PlanView(ui.canvas, { move: onMove, click: onClick, dblclick: onDbl, down: onDown, up: onUp, leave: () => { S.last = null; S.hover = null; host.coords?.()?.plan(null, level(), S.planM); drawOverlay(); }, contextmenu: () => endChain() });
       pv.padBottom = 40;   // the status line
+      // the Draw bar changes height with the tool; content it now covers is brought back into view (only a plan you have not moved)
+      pv.barBoxFn = () => { const c = ui.canvas.getBoundingClientRect(), b = ui.bar.getBoundingClientRect(); return b.width > 0 ? { w: b.right - c.left + 12, h: b.bottom - c.top + 12 } : null; };
+      if (ui.bar) new ResizeObserver(() => { if (pv && !pv.userMoved && S.on && pv.outsideView()) requestAnimationFrame(() => fitPlan()); }).observe(ui.bar);
       window.bimcraftPlan = { view: pv, state: S, click: (p) => onClick(p, {}), move: (p) => onMove(p, {}), typed: (s) => applyTyped(s), refresh };   // for tests
     }
     refresh(true);
@@ -124,11 +135,12 @@ export function mountModel(host) {
     show(!S.on);
   });
   for (const b of ui.layout) b.addEventListener('click', () => {
-    S.layout = b.dataset.modelLayout;
+    S.layout = b.dataset.modelLayout; S.layoutAuto = false;
     if (S.layout === '3d') { S.layout = 'split'; show(false); return; }
     if (!S.on) { show(true); return; }
     applyLayout();
     requestAnimationFrame(() => fitPlan());   // the pane changed size: the whole level again
+    if (S.autoFit3d) setTimeout(() => host.viewer()?.view('iso'), 80);   // 0.7 SU.751: the 3D pane was hidden or another size when it last framed the building
   });
   const splitAt = (e) => {
     const b = ui.stageEl.getBoundingClientRect(), stacked = ui.stageEl.classList.contains('is-plan-stacked');
@@ -148,7 +160,9 @@ export function mountModel(host) {
     if (!pv) return;
     pv.resize();   // the pane may just have changed size (Split / Plan)
     const c = ui.canvas.getBoundingClientRect(), b = ui.bar.getBoundingClientRect();
-    pv.padTop = Math.max(0, b.bottom - c.top) + 12;
+    // the Draw bar floats over the plan's top left: when it is narrow, fit beside it (not under it), else below it
+    if (b.width > 0 && b.width < c.width * 0.7) { pv.padLeft = b.right - c.left + 12; pv.padTop = Math.max(0, b.top - c.top) + 12; pv.barBox = { w: pv.padLeft, h: b.bottom - c.top + 12 }; }
+    else { pv.padLeft = 0; pv.padTop = Math.max(0, b.bottom - c.top) + 12; pv.barBox = null; }
     const cr = S.data && S.level !== null ? viewRange().crop : null;   // 0.6 DC.117: a cropped view fits its crop
     pv.fit(cr ? { x0: cr[0], y0: cr[1], x1: cr[2], y1: cr[3] } : undefined);
   }
@@ -176,12 +190,28 @@ export function mountModel(host) {
     cutPlan();
     buildScene();
     if (fitToo) fitPlan();
+    else if (pv && !pv.userMoved && pv.outsideView()) fitPlan();   // 0.7 SU.751: what you drew went off the edge of a view you have not moved: show it all
   }
   const level = () => S.data?.levels.find((l) => l.id === S.level) || null;
-  const levelAbove = () => { const L = S.data.levels, i = L.findIndex((l) => l.id === S.level); return i >= 0 ? L[i + 1] || null : null; };
+  const levelAbove = () => { const L = S.data?.levels || [], i = L.findIndex((l) => l.id === S.level); return i >= 0 ? L[i + 1] || null : null; };
   const wallsHere = () => (S.data?.walls || []).filter((w) => w.storey === S.level);
   const wallsOn = (storey) => (S.data?.walls || []).filter((w) => w.storey === storey);
-  const openingsHere = () => (S.data?.openings || []).filter((o) => o.storey === S.level);
+  /**
+   * 0.7 BIM-MLWALL: an opening is on the level whose floor-to-floor band holds its sill, so one high up a wall that runs through
+   * levels is on the upper level's plan (it stays stored on the wall's own level, where the wall is).
+   */
+  function openingLevel(o) {
+    const L = S.data.levels, wl = L.find((l) => l.id === o.storey);
+    if (!wl) return o.storey;
+    const z = wl.elevation + o.sill + 1;
+    let best = wl;
+    for (const l of L) if (l.elevation <= z && l.elevation > best.elevation) best = l;
+    return best.id;
+  }
+  const openingsHere = () => (S.data?.openings || []).filter((o) => openingLevel(o) === S.level);
+  const throughHere = (cut = CUT) => (S.data?.levels?.length > 1 ? wallsThrough(S.data.walls, S.data.levels, S.level, cut) : []);
+  /** How far this level's floor is above the floor of the level `storey` where a wall starts (what an opening's sill adds up there). */
+  const riseOver = (storey) => { const a = S.data.levels.find((l) => l.id === storey), b = level(); return a && b ? Math.max(0, b.elevation - a.elevation) : 0; };
   /** 0.6 DF.19: the plan's view range and what it hides (views-ui.js asks views-model.js); else the cut at CUT. */
   function viewRange() {
     for (const x of exts) { const r = x.viewRange?.(S.level, S.kind, S.callout); if (r) return r; }
@@ -240,17 +270,23 @@ export function mountModel(host) {
     const vr = viewRange();
     const walls = wallsHere().filter((w) => !hiddenOwn(vr, 'IfcWall', w.guid));
     S.outlines = wallOutlines(walls.map((w) => ({ key: w.guid, a: w.a, b: w.b, t: w.t, bulge: w.bulge })));
-    const k = kb(), own = ownKeys(), ops = openingsHere().filter((o) => !hiddenOwn(vr, o.kind === 'window' ? 'IfcWindow' : 'IfcDoor', o.guid));
-    const byWall = new Map(walls.map((w) => [w.id, w]));
+    const k = kb(), own = ownKeys(), allOps = openingsHere(), ops = allOps.filter((o) => !hiddenOwn(vr, o.kind === 'window' ? 'IfcWindow' : 'IfcDoor', o.guid));
+    const through = throughScene(vr, k);
+    const byWall = new Map([...walls, ...throughHere(vr.cut)].map((w) => [w.id, w]));
+    let materials = null;
+    try { materials = readMaterials(new ModelWriter(ed().W, ed().api, ed().mid)); } catch { /* F02: preserve unsupported library; envelope only. */ }
     const scene = {
-      walls: walls.map((w) => { const poly = S.outlines.get(w.guid) || []; return { key: k + w.id, guid: w.guid, poly, pieces: poly.length ? wallPieces(w, poly, ops.filter((o) => o.wall === w.id), vr.cut) : [] }; }),
+      through,
+      walls: wallPlanGraphics(walls, S.outlines, allOps, materials, { detail: vr.detail || 'coarse', cutZ: vr.cut, scale: vr.scale || 50, keyBase: k }),
       symbols: ops.filter((o) => byWall.has(o.wall) && (!S.drag || S.drag.op.guid !== o.guid)).map((o) => ({ key: k + o.id, guid: o.guid, ...openingSymbol(o, byWall.get(o.wall)) })),
       rooms: hiddenOwn(vr, 'IfcSpace', '') ? [] : roomsScene(), dims: [],
       cut: (S.cut?.cut || []).filter((c) => !own.has(c.key)),
       below: (S.cut?.below || []).filter((c) => !own.has(c.key)),
       above: (S.cut?.above || []).filter((c) => !own.has(c.key)),
-      crop: vr.crop || null, scale: vr.scale || 0,   // 0.6 DC.117: the view's crop region and scale (sheets, print)
+      cutZ: vr.cut, crop: vr.crop || null, scale: vr.scale || 0, detail: vr.detail || 'coarse',   // 0.6 DC.117: the view's crop region and scale (sheets, print)
     };
+    scene.graphicWarnings = scene.walls.filter(w => w.graphicWarning).map(w => w.guid);
+    if (scene.graphicWarnings.length) host.status(t('model.pv.layers.unavailable'), true);
     if (S.kind === 'rcp') {
       // 0.6 DC.117, a ceiling plan: the walls cut at its height, no door or window symbols, no rooms or dimensions; what is above
       // the cut (ceilings, lights, beams) drawn solid and thin, as a plan draws what is below it
@@ -258,10 +294,27 @@ export function mountModel(host) {
     } else scene.symbols.push(...roofsScene());
     // the walls' outline as one: their joins (mitres, T ends) are not drawn, as on a drafted plan
     const pieces = scene.walls.flatMap((w) => w.pieces || []);
-    if (pieces.length) { const L = planLoops(pieces); scene.wallEdges = [...L.rooms.flatMap((r) => [r.poly, ...r.holes]), ...L.outlines.map((o) => o.poly)]; }
-    if (S.dims && S.kind !== 'rcp') scene.dims = wallDims(walls, S.outlines, ops, (mm) => fmtLen(mm, S.units), { exteriorOf: (w) => wallType(w.typeKey)?.exterior ?? true });
+    if (pieces.length) scene.wallEdges = wallPlanEdges(scene.walls);
+    if (S.dims && S.kind !== 'rcp') scene.dims = wallDims(walls, S.outlines, ops, (mm) => fmtLen(mm, S.units), { exteriorOf: (w) => (w.assembly || projectWallType(w.typeKey))?.exterior ?? true });
     for (const x of exts) x.scene?.(scene);
     return scene;
+  }
+  /**
+   * 0.7 BIM-MLWALL: walls of other levels that this plan cuts (a wall that starts below and runs up past this floor), drawn
+   * in the same poché but lighter and never picked: they are edited on the level they start on. Joined outlines come from
+   * that level's walls, doors and windows are taken out at this level's cut height.
+   */
+  function throughScene(vr, k) {
+    const D = S.data;
+    if (!D?.levels || D.levels.length < 2) return [];
+    const list = wallsThrough(D.walls, D.levels, S.level, vr.cut).filter((w) => !hiddenOwn(vr, 'IfcWall', w.guid));
+    if (!list.length) return [];
+    const lvl = new Map(D.levels.map((l) => [l.id, l])), here = lvl.get(S.level), outlines = new Map();
+    for (const st of new Set(list.map((w) => w.storey))) for (const [g, poly] of wallOutlines(D.walls.filter((w) => w.storey === st).map((w) => ({ key: w.guid, a: w.a, b: w.b, t: w.t, bulge: w.bulge })))) { outlines.set(g, poly); S.outlines.set(g, poly); }   // S.outlines too: the opening tools measure the face ends from it
+    return list.map((w) => {
+      const poly = outlines.get(w.guid) || [], rel = here.elevation + vr.cut - lvl.get(w.storey).elevation;
+      return { key: k + w.id, guid: w.guid, poly, from: lvl.get(w.storey).name, pieces: poly.length ? wallPieces(w, poly, (D.openings || []).filter((o) => o.wall === w.id), rel) : [] };
+    });
   }
   function buildScene() {
     if (!pv) return;
@@ -306,32 +359,51 @@ export function mountModel(host) {
     const loops = new Map();
     for (const l of S.data?.levels || []) if ((S.data.derived?.spaces || []).some((x) => x.storey === l.id)) loops.set(l.id, l.id === S.level && S.loops ? S.loops : loopsOf(ed(), l.id));
     const all = schedules(S.data, loops, { fmtLen: (mm) => fmtLen(mm, S.units), fmtArea: (mm2) => fmtArea(mm2, S.units), t });
+    if (ed()) Object.assign(all, assemblySchedules(new ModelWriter(ed().W, ed().api, ed().mid)));
     for (const x of exts) Object.assign(all, x.schedules?.() || {});   // extensions' schedules (res-ui.js: the lumber cut list)
     return all;
   }
   function renderSchedule() {
     if (!ui.sched || !S.on || !S.data) return;
     const all = scheduleData(), sc = all[S.sched];
+    for (const key of ['assemblies','materialLegend']) if (!ui.schedKind.querySelector('option[value="'+key+'"]')) ui.schedKind.append(el('option', {value:key}, all[key].title));
     if (!sc) return;
     // a row picks what it lists
     const k = kb();
     const xs = exts.find((x) => x.scheduleKeys && (x.schedules?.() || {})[S.sched]);
     const keysOf = (i) => {
+      if (sc.rowInfo) return [];
       if (xs) return xs.scheduleKeys(S.sched, i) || [];
       if (S.sched === 'doors' || S.sched === 'windows') { const kind = S.sched === 'doors' ? 'door' : 'window'; const list = S.data.openings.filter((o) => o.kind === kind); const byRow = sc.rows[i][0]; const o = list.find((x) => x.mark === byRow); return o ? [k + o.id] : []; }
-      if (S.sched === 'walls') { const name = sc.rows[i][0]; return S.data.walls.filter((w) => (wallType(w.typeKey) ? typeName(wallType(w.typeKey)) : w.typeName) === name).map((w) => k + w.id); }
+      if (S.sched === 'walls') { const name = sc.rows[i][0]; return S.data.walls.filter((w) => (projectWallType(w.typeKey) ? typeName(projectWallType(w.typeKey)) : w.typeName) === name).map((w) => k + w.id); }
       const sp = (S.data.derived?.spaces || []).find((x) => x.number === sc.rows[i][0]); return sp ? [k + sp.id] : [];
     };
     const table = el('table', {}, el('thead', {}, el('tr', {}, ...sc.head.map((h) => el('th', {}, h)))),
-      el('tbody', {}, ...sc.rows.map((r, i) => { const tr = el('tr', { 'data-msched-row': String(i) }, ...r.map((c) => el('td', {}, c))); tr.addEventListener('click', () => host.select(keysOf(i))); return tr; })),
+      el('tbody', {}, ...sc.rows.map((r, i) => {
+        const info=sc.rowInfo?.[i], group=info?.group;
+        const tr = el('tr', { 'data-msched-row': String(i) }, ...r.map((c,j) => {
+          const td=el(group?'th':'td', { ...(group?{colSpan:sc.head.length}:{}), style:sc.rowInfo?'white-space:pre-wrap;overflow-wrap:anywhere;max-width:260px;min-width:50px':'' }, c);
+          if(S.sched==='materialLegend'&&j===0&&info?.swatch){const m=info.swatch;td.append(el('span', {title:m.kind,'aria-label':m.kind+' symbol',style:`display:block;width:30px;height:14px;border:1px ${m.kind==='missing'?'dashed':'solid'} #777;${m.kind==='membrane'?`height:0;border:0;border-top:3px dashed ${m.color};`:m.kind==='material'?'background:'+materialBackground(m)+';':''}`}));}
+          return td;
+        }));
+        if(!sc.rowInfo)tr.addEventListener('click', () => host.select(keysOf(i))); return tr;
+      })),
       sc.total ? el('tfoot', {}, el('tr', {}, ...sc.head.map((_, i) => el('td', {}, sc.total[i] ?? '')))) : null);
-    ui.sched.replaceChildren(sc.rows.length ? table : el('p', { className: 'bc-muted' }, t('model.sch.none')));
+    const expand=sc.rowInfo?el('button',{type:'button',className:'btn-line btn-sm-cc','data-schedule-expand':'',onClick:()=>{
+      const full=table.cloneNode(true);full.style='width:100%;min-width:900px';
+      const dlg=el('dialog',{className:'bc-dialog','data-schedule-expanded':'',style:'width:min(1240px,96vw);max-width:1240px'},
+        el('h2',{},sc.title),el('p',{className:'bc-muted'},sc.note),
+        el('div',{style:'max-height:70vh;overflow:auto'},full),
+        el('button',{type:'button',className:'btn-line btn-sm-cc','data-schedule-close':'',onClick:()=>dlg.close()},t('model.sch.close')));
+      dlg.addEventListener('close',()=>dlg.remove());dlg.addEventListener('keydown',e=>e.stopPropagation());host.root.append(dlg);dlg.showModal();
+    }},t('model.sch.full')):null;
+    ui.sched.replaceChildren(...(sc.note?[el('p',{className:'bc-muted','data-schedule-note':''},sc.note)]:[]),...(expand?[expand]:[]), sc.rows.length ? table : el('p', { className: 'bc-muted' }, t('model.sch.none')));
   }
   ui.schedCsv?.addEventListener('click', () => {
     if (!S.data) return;
     const sc = scheduleData()[S.sched];
     const base = String(host.fileName?.() || 'model').replace(/\.ifc$/i, '');
-    host.download(base + ' ' + t('model.sch.' + S.sched).toLowerCase() + '.csv', '\ufeff' + scheduleCsv(sc), 'text/csv');   // i18n-ignore: a file name
+    host.download(base + ' ' + (sc.title || t('model.sch.' + S.sched)).toLowerCase() + '.csv', '\ufeff' + scheduleCsv(sc), 'text/csv');   // i18n-ignore: a file name
   });
   ui.print?.addEventListener('click', () => {
     if (!pv || !S.data) return;
@@ -404,14 +476,48 @@ export function mountModel(host) {
       const top = L[L.length - 1];
       commit(newLevel({ name: t('new.level', { n: L.length + 1 }), elevation: top ? top.elevation + top.height : 0, height: top ? top.height : 3000 }), { label: t('new.level', { n: L.length + 1 }), verb: t('model.verb.added') });
     });
+    // 0.7 SU.461: the floor plan of this level drawn again on another (or a new one on top)
+    const copy = el('button', { type: 'button', className: 'btn-line btn-sm-cc', 'data-lv-copy': '' }, el('i', { className: 'bi bi-files', 'aria-hidden': 'true' }), ' ' + t('model.lv.copy'));
+    copy.addEventListener('click', () => openCopyLevel());
     ui.levels.replaceChildren(
       el('div', { className: 'bc-level bc-level-head', 'aria-hidden': 'true' }, el('span', { className: 'bc-lv-e' }, t('model.lv.elev')), el('span', { className: 'bc-lv-h' }, t('model.lv.height'))),
-      el('ul', { className: 'bc-levels' }, ...L.slice().reverse().map(row)), add, ...exts.flatMap((x) => x.levelButtons?.() || []));   // 0.6 DF.20: Add levels…
+      el('ul', { className: 'bc-levels' }, ...L.slice().reverse().map(row)), add, copy, ...exts.flatMap((x) => x.levelButtons?.() || []));   // 0.6 DF.20: Add levels…
+  }
+
+  /** Copy level…: what is drawn on the level shown, to another level or a new one on top. */
+  function openCopyLevel() {
+    const from = level(), L = S.data.levels, others = L.filter((l) => l.id !== from.id);
+    const top = L[L.length - 1], mine = wallsHere().length;
+    const to = el('select', { className: 'select-cc', 'data-lvc-to': '' }, ...others.slice().reverse().map((l) => el('option', { value: l.guid }, l.name)), el('option', { value: '' }, t('model.lv.copy.new')));
+    const note = el('p', { className: 'bc-muted', role: 'status' });
+    const showNote = () => { const l = L.find((x) => x.guid === to.value); note.textContent = !mine ? t('model.lv.copy.none', { name: from.name }) : l && wallsOn(l.id).length ? t('model.lv.copy.exists', { name: l.name }) : ''; };
+    to.addEventListener('change', showNote); showNote();
+    const dlg = el('dialog', { className: 'bc-dialog', 'aria-labelledby': 'bc-lvc-h', 'data-lvc-dialog': '' },
+      el('form', { method: 'dialog' },
+        el('h2', { className: 'bc-h', id: 'bc-lvc-h' }, t('model.lv.copy.title')),
+        el('p', {}, t('model.lv.copy.what', { name: from.name })),
+        el('label', { className: 'bc-dlg-field' }, el('span', {}, t('model.lv.copy.to')), to), note,
+        el('p', { className: 'bc-lib-actions' },
+          el('button', { type: 'submit', className: 'btn-plot btn-sm-cc', value: 'ok', 'data-lvc-ok': '', disabled: !mine }, t('model.lv.copy.ok')),
+          el('button', { type: 'submit', className: 'btn-line btn-sm-cc', value: 'cancel' }, t('model.gp.cancel')))));
+    dlg.querySelector('form').addEventListener('submit', (e) => {
+      if (e.submitter?.value !== 'ok') return;
+      const spec = { from: from.guid, to: to.value || null };
+      if (!spec.to) spec.newLevel = { name: t('new.level', { n: L.length + 1 }), elevation: top.elevation + top.height, height: top.height };
+      commit(copyLevel(spec), { label: from.name, verb: t('model.verb.copied') });
+      const dest = spec.to ? S.data.levels.find((l) => l.guid === spec.to) : S.data.levels[S.data.levels.length - 1];
+      if (dest && S.data.levels.length >= L.length) { S.level = dest.id; S.cutFor = null; refresh(); fitPlan(); }
+    });
+    dlg.addEventListener('close', () => dlg.remove());
+    root.append(dlg);
+    dlg.showModal();
   }
 
   // ---- units ----
   function readUnits() { return getDisplayUnits(); }
   if (ui.units) {
+    fillUnitSelect(ui.units, S.units);   // the units turned on in Settings (0.7 UNITS) + the one in use
+    onUnitsChange(() => fillUnitSelect(ui.units, S.units));
     ui.units.value = S.units;
     ui.units.addEventListener('change', () => { S.units = ui.units.value; setDisplayUnits(S.units); refresh(); renderProps(); window.dispatchEvent(new Event('bimcraft-units')); });
   }
@@ -437,18 +543,41 @@ export function mountModel(host) {
     for (const x of exts) x.toolChanged?.(name);
   }
   for (const b of ui.tools) b.addEventListener('click', () => setTool(b.dataset.mtool));
+  /** 0.7 BIM-MLWALL: where the walls being drawn end up: the level above, a level further up ('level:<GlobalId>'), or a fixed height. */
+  function drawTop(above) {
+    const m = /^level:(.+)$/.exec(S.wall.top || '');
+    const far = m && topLevelChoices(S.data.levels, S.level).find((l) => l.guid === m[1]);
+    if (far) return { topLevel: far.guid };
+    return S.wall.top !== 'fixed' && above ? { topLevel: above.guid } : { height: S.wall.top === 'fixed' ? S.wall.height : level()?.height || 2438.4 };
+  }
+  /** The Wall tool's "up to" list: the level above, each level further up (a wall through several levels), a fixed height. */
+  function fillTopOpts() {
+    if (!ui.wallTop) return;
+    const up = topLevelChoices(S.data.levels, S.level);
+    const opts = [['level', t('model.wall.top.level')], ...up.slice(1).map((l) => ['level:' + l.guid, t('model.wall.top.upto', { name: l.name })]), ['fixed', t('model.wall.top.fixed')]];
+    if (!opts.some((o) => o[0] === S.wall.top)) S.wall.top = 'level';
+    ui.wallTop.replaceChildren(...opts.map(([v, label]) => el('option', { value: v, selected: v === S.wall.top }, label)));
+    ui.wallH.hidden = S.wall.top !== 'fixed';
+  }
   function fillWallOpts() {
-    if (!ui.wallType) return;
-    if (ui.wallType.options.length) {
-      for (const x of WALL_TYPES) { const o = [...ui.wallType.options].find((v) => v.value === x.key); if (o) o.textContent = typeName(x) + ' (' + fmtLen(typeThickness(x), S.units) + ')'; }
-      if (ui.wallH && document.activeElement !== ui.wallH) ui.wallH.value = fmtLen(S.wall.height, S.units);
-      return;
+    fillTopOpts();
+    if (!ui.wallType) { if (ui.wallH && document.activeElement !== ui.wallH) ui.wallH.value = fmtLen(S.wall.height, S.units); return; }
+    const types = wallTypes(famW());
+    if (!types.some(x => x.key === S.wall.typeKey)) S.wall.typeKey = types[0].key;
+    const signature = types.map(x => x.key + ':' + typeName(x) + ':' + typeThickness(x)).join('|');
+    if (ui.wallType.dataset.signature !== signature) {
+      ui.wallType.dataset.signature = signature;
+      ui.wallType.replaceChildren(...types.map((x) => el('option', { value: x.key, selected: x.key === S.wall.typeKey }, typeName(x) + ' (' + fmtLen(typeThickness(x), S.units) + ')')));
     }
-    ui.wallType.replaceChildren(...WALL_TYPES.map((x) => el('option', { value: x.key, selected: x.key === S.wall.typeKey }, typeName(x) + ' (' + fmtLen(typeThickness(x), S.units) + ')')));
+    if (document.activeElement !== ui.wallType) ui.wallType.value = S.wall.typeKey;
+    if (ui.wallType.dataset.bound) { if (ui.wallH && document.activeElement !== ui.wallH) ui.wallH.value = fmtLen(S.wall.height, S.units); return; }
+    ui.wallType.dataset.bound = '1';
     ui.wallType.addEventListener('change', () => { endChain(); S.wall.typeKey = ui.wallType.value; drawOverlay(); });
-    for (const [input, key] of [[ui.wallRef, 'reference'], [ui.wallSide, 'side'], [ui.wallShape, 'shape']]) input?.addEventListener('change', () => { endChain(); S.wall[key] = input.value; if (ui.hint && S.tool === 'wall') ui.hint.textContent = t(S.wall.shape === 'arc' ? 'comforts.hint.arcwall' : 'model.hint.wall'); drawOverlay(); });
-    ui.wallTop.addEventListener('change', () => { S.wall.top = ui.wallTop.value; ui.wallH.hidden = S.wall.top !== 'fixed'; });
-    ui.wallH.addEventListener('change', () => { const mm = parseLen(ui.wallH.value, S.units); if (mm > 100) S.wall.height = mm; else host.status(t('model.err.length'), true); ui.wallH.value = fmtLen(S.wall.height, S.units); });
+    for (const [input, key] of [[ui.wallRef, 'reference'], [ui.wallSide, 'side'], [ui.wallShape, 'shape']]) input?.addEventListener('change', () => {
+      if ((key === 'shape' && input.value === 'arc' && S.wall.reference.startsWith('core')) || (key === 'reference' && input.value.startsWith('core') && S.wall.shape === 'arc')) { input.value = S.wall[key]; host.status(t('wall.err.core_arc'), true); return; }
+      endChain(); S.wall[key] = input.value; if (ui.hint && S.tool === 'wall') ui.hint.textContent = t(S.wall.shape === 'arc' ? 'comforts.hint.arcwall' : 'model.hint.wall'); drawOverlay(); });
+    ui.wallTop.addEventListener('change', () => { S.wall.top = ui.wallTop.value; ui.wallH.hidden = S.wall.top !== 'fixed'; });   // 'level' | 'level:<guid>' | 'fixed'
+    ui.wallH.addEventListener('change', () => { const mm = parseLen(ui.wallH.value, S.units); if (mm > 100) { S.wall.height = mm; host.status(t('model.wall.height') + ': ' + fmtLen(mm, S.units)); } else host.status(t('model.err.length'), true); ui.wallH.value = fmtLen(S.wall.height, S.units); });
     ui.wallH.hidden = S.wall.top !== 'fixed';
     ui.wallH.value = fmtLen(S.wall.height, S.units);
   }
@@ -505,7 +634,8 @@ export function mountModel(host) {
     for (const b of root.querySelectorAll('[data-model-flip]')) if (!b.dataset.bound) { b.dataset.bound = '1'; b.addEventListener('click', () => flipHand()); }
   }
   /** A writer on the open model for the family lists (null without one). */
-  function famW() { if (!ed()) return null; const w = new ModelWriter(ed().W, ed().api, ed().mid); familyWriter(w); return w; }
+  function famW() { if (!ed()) return null; try { const w = new ModelWriter(ed().W, ed().api, ed().mid); familyWriter(w); return w; } catch (e) { return null; } }   // 0.7: null too while the model is being rebuilt (a pointer move then asked for it)
+  function projectWallType(key) { return wallType(key, famW()); }
   const near = (a, b) => Math.abs(a - b) < 0.5;
   /** The sizes the tool offers for its family (the file's sizes of it, then its own default when the file has none). */
   function toolSizes(kind, key = S.open[kind].family || S.open[kind].typeKey) {
@@ -582,6 +712,10 @@ export function mountModel(host) {
     else {
       const rf = S.slab.roof, g = roofEdges(h.loop.poly, rf.ends, h.seed);
       if (g === null) { host.status(t('model.err.gable4'), true); return; }
+      // These walls already carry a roof: change that one to the new settings instead of putting a second roof over it
+      // (2026-10-24: a hip roof and a gable roof on the same walls cut through each other — fascia, gables, stray lines).
+      const had = S.data?.derived?.roofs.find((r) => r.walls === st && r.seed && inPoly(r.seed[0], r.seed[1], h.loop.poly));
+      if (had) { commit(changeDerived(had.guid, { pitch: rf.pitch, overhang: rf.overhang, edges: g, gables: [], ...roofOpts(rf) }), { label: t('model.roof'), verb: t('model.verb.changed') }); return; }
       commit(placeRoof({ storey: st, seed: h.seed, pitch: rf.pitch, overhang: rf.overhang, edges: g, ...roofOpts(rf) }), { label: t('model.roof'), verb: t('model.verb.placed') });
     }
   }
@@ -602,7 +736,7 @@ export function mountModel(host) {
   function hoverOpening(p, kind, width) {
     const tol = pv.pxToMm(16);
     let best = null;
-    for (const w of wallsHere()) {
+    for (const w of [...wallsHere(), ...throughHere()]) {   // 0.7 BIM-MLWALL: walls running through this level take doors and windows too
       const L = w.len, u = [(w.b[0] - w.a[0]) / L, (w.b[1] - w.a[1]) / L], n = [-u[1], u[0]];
       const rx = p[0] - w.a[0], ry = p[1] - w.a[1], q = w.bulge ? wallGeom(w).param(p) : null;   // a curved wall: along its arc
       const s = q ? q.s : rx * u[0] + ry * u[1], d = q ? q.off : rx * n[0] + ry * n[1];
@@ -645,7 +779,7 @@ export function mountModel(host) {
     if (!h.ok) { host.status(t('model.err.nofit'), true); return; }
     const type = openingType(o.typeKey);
     const fam = familyFor(famW(), o.family || o.typeKey);
-    commit(placeOpening({ wall: h.wall.guid, typeKey: o.typeKey, family: o.family || o.typeKey, values: o.values || {}, sizeName: sizeName({ Width: o.width, Height: o.height }), offset: h.offset, width: o.width, height: o.height, sill: kind === 'window' ? o.sill : 0, hand: o.hand, face: h.face }),
+    commit(placeOpening({ wall: h.wall.guid, typeKey: o.typeKey, family: o.family || o.typeKey, values: o.values || {}, sizeName: sizeName({ Width: o.width, Height: o.height }), offset: h.offset, width: o.width, height: o.height, sill: (kind === 'window' ? o.sill : 0) + (h.wall.storey === S.level ? 0 : riseOver(h.wall.storey)), hand: o.hand, face: h.face }),
       { label: fam?.name || openingTypeName(type), verb: t('model.verb.placed') });
   }
   // dragging a door or window along its wall (or onto another one) with Select
@@ -791,10 +925,10 @@ export function mountModel(host) {
     let bg = bulgeTyped ?? bulgeThrough(a, q, b);
     if (!(Math.abs(bg) <= BULGE_MAX)) { host.status(t('comforts.err.arc'), true); return; }
     if (Math.abs(bg) < 1e-6) bg = 0;
-    const type = wallType(S.wall.typeKey), th = typeThickness(type);
+    const type = projectWallType(S.wall.typeKey), th = typeThickness(type);
     const above = levelAbove();
-    const top = S.wall.top === 'level' && above ? { topLevel: above.guid } : { height: S.wall.top === 'fixed' ? S.wall.height : level()?.height || 2438.4 };
-    const side = S.wall.reference === 'center' ? 'left' : S.wall.side;
+    const top = drawTop(above);
+    const side = S.wall.side;   // 0.6.1 FIX-061-WALL-SIDE: the Outside select counts on the centre line too (it was always left)
     const seg = arcCentre(a, b, bg, th);
     S.arcEnd = null;
     const closing = closesChain(pts, b, 1);
@@ -817,12 +951,31 @@ export function mountModel(host) {
     if (Math.hypot(q[0] - a[0], q[1] - a[1]) < 1) return;
     const closing = closesChain(pts, q, 1);
     const b = closing ? pts[0] : q;
-    const type = wallType(S.wall.typeKey);
+    const type = projectWallType(S.wall.typeKey);
+    // Live straight placement uses all six existing location lines and the chosen exterior orientation.
+    // Legacy three-reference and curved behavior remains unchanged in the established layout.
+    if (root.classList.contains('ws-active') || S.wall.reference.startsWith('core')) {
+      let spec;
+      const side = S.wall.side;
+      try { spec = placementReference(S.wall.reference, type, side); } catch (e) { host.status(e.message, true); return; }
+      const above = levelAbove();
+      if (S.wall.top === 'level' && !above) { host.status(t('model.err.notop'), true); return; }
+      const top = S.wall.top === 'level' ? { topLevel: above.guid } : { height: S.wall.height };
+      const segs = placementPath([...pts, b], type, S.wall.reference, side);
+      pts.push(b);
+      commit(drawWallPath({ storey: level().guid, points: pts.slice(), guids: S.chain.guids, typeKey: S.wall.typeKey,
+        thickness: spec.thickness, reference: S.wall.reference, extSide: side, axisOffset: spec.axisOffset, justification: spec.justification, ...top }),
+        { label: typeName(type), verb: t('model.verb.drew'), preview: [segs.at(-1)], chain: S.chain });
+      if (closing) endChain();
+      drawOverlay(); return;
+    }
     const above = levelAbove();
-    const top = S.wall.top === 'level' && above ? { topLevel: above.guid } : { height: S.wall.top === 'fixed' ? S.wall.height : level()?.height || 2438.4 };
+    const top = drawTop(above);
     const seg = { a, b, t: typeThickness(type) };
     // closing a room: every wall of the chain gets its outside to the outside of the loop
-    const side = S.wall.reference === 'center' ? (closing ? loopSide(pts) : 'left') : S.wall.side;
+    // the Outside select (left / right of the way you draw) — on the centre line too (0.6.1 FIX-061-WALL-SIDE: it was always
+    // left there); closing a room drawn on the centre line still puts every wall's outside to the outside of the loop
+    const side = S.wall.reference === 'center' && closing ? loopSide(pts) : S.wall.side;
     const flips = closing ? S.chain.guids.slice() : [];
     pts.push(b);
     const run = S.wall.reference === 'center'
@@ -899,7 +1052,7 @@ export function mountModel(host) {
       for (const q of pts) o.points.push(q);
       if (S.arcEnd) o.points.push(S.arcEnd);
       if (p && S.arcEnd) {
-        const bg = Math.max(-BULGE_MAX, Math.min(BULGE_MAX, bulgeThrough(a, p, S.arcEnd))), th = typeThickness(wallType(S.wall.typeKey));
+        const bg = Math.max(-BULGE_MAX, Math.min(BULGE_MAX, bulgeThrough(a, p, S.arcEnd))), th = typeThickness(projectWallType(S.wall.typeKey));
         const c = arcCentre(a, S.arcEnd, bg, th);
         o.walls.push(previewOutline({ a: c.a, b: c.b, t: th, bulge: Math.abs(bg) < 1e-6 ? 0 : bg }));
         const g = wallGeom({ a, b: S.arcEnd, bulge: bg });
@@ -914,8 +1067,8 @@ export function mountModel(host) {
       if (lst) {
         const b = lst.snap.p, L = Math.hypot(b[0] - a[0], b[1] - a[1]);
         if (L >= 1) {
-          const type = wallType(S.wall.typeKey), seg = { a, b, t: typeThickness(type) };
-          const path = wallPath([...pts, b], seg.t, S.wall.reference, S.wall.side);
+          const type = projectWallType(S.wall.typeKey), seg = { a, b, t: typeThickness(type) };
+          const path = root.classList.contains('ws-active') || S.wall.reference.startsWith('core') ? placementPath([...pts, b], type, S.wall.reference, S.wall.side) : wallPath([...pts, b], seg.t, S.wall.reference, S.wall.side);
           o.walls.push(previewOutline(path.at(-1) || seg));
           const ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
           o.hud = { p: b, text: fmtLen(L, S.units) + '  ' + fmtAngle(ang) + (closesChain(pts, b, 1) ? '\n' + t('model.hud.close') : '') };
@@ -985,7 +1138,7 @@ export function mountModel(host) {
   async function scheduleRebuild(selectKey) {
     if (S.busy) { S.again = true; return; }
     S.busy = true;
-    try { await host.rebuild(null); } catch (e) { console.error(e); host.status(t('model.err.failed', { why: e.message || e }), true); } finally { S.busy = false; S.reloading = false; }
+    try { await host.rebuild(null); } catch (e) { console.error(e); host.status(t('model.err.failed', { why: e.message || e }), true); } finally { S.busy = false; S.reloading = false; for (const x of exts) x.settled?.(); }
     // what was clicked meanwhile, then once more if it changed anything
     const q = S.queue.splice(0);
     for (const [run, meta] of q) apply0(run, meta);
@@ -1010,7 +1163,7 @@ export function mountModel(host) {
 
   // ---- keys (capture: the plan's own keys win while Draw is on) ----
   document.addEventListener('keydown', (e) => {
-    if (!S.on || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (!S.on || root.classList.contains('ws-active') || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
     const tgt = e.target;
     if (tgt.closest?.('dialog, [data-help-panel], [data-app-settings]') || document.querySelector('dialog[open]')) return;   // i18n-ignore: CSS selectors
     if (tgt === ui.typed) return;
@@ -1135,25 +1288,32 @@ export function mountModel(host) {
       const w0 = walls[0], many = walls.length > 1, guids = walls.map((w) => w.guid);
       title = many ? t('model.walls', { n: walls.length }) : t('model.wall');
       const sameType = walls.every((w) => w.typeKey === w0.typeKey);
-      const typeOpts = WALL_TYPES.map((x) => [x.key, typeName(x)]);
-      if (sameType && !WALL_TYPES.some((x) => x.key === w0.typeKey) && wallType(w0.typeKey)) typeOpts.unshift([w0.typeKey, typeName(wallType(w0.typeKey))]);
+      const typeOpts = wallTypes(famW()).map((x) => [x.key, typeName(x)]);
+      if (sameType && !typeOpts.some((x) => x[0] === w0.typeKey) && projectWallType(w0.typeKey)) typeOpts.unshift([w0.typeKey, typeName(projectWallType(w0.typeKey))]);
       if (!sameType) typeOpts.unshift(['', t('model.prop.changetype')]);
       field(t('model.wall.type'), select(typeOpts, sameType ? w0.typeKey : '', 'data-mp-type', (v) => { if (v) commit(many ? changeWalls(guids, { typeKey: v }) : changeWall(w0.guid, { typeKey: v }), one(title)); }));
+      if (sameType) field('', button(t('assembly.open'), 'data-mp-assembly', () => api.ask('openAssembly', w0.typeKey, guids)));
       const above = (w) => { const i = levels.findIndex((l) => l.id === w.storey); return i >= 0 ? levels[i + 1] || null : null; };
       if (!many) {
-        field(t('model.prop.thickness'), lenInput(w0.t, 'data-mp-thick', (mm) => { const key = typeAt(w0.typeKey, mm); if (!key) { host.status(t('model.err.thin'), true); return; } commit(changeWall(w0.guid, { typeKey: key }), one(title)); }, { min: 10 }));
+        field(t('model.prop.thickness'), w0.assembly?.custom ? el('span', {}, fmtLen(w0.t, S.units)) : lenInput(w0.t, 'data-mp-thick', (mm) => { const key = typeAt(w0.typeKey, mm); if (!key) { host.status(t('model.err.thin'), true); return; } commit(changeWall(w0.guid, { typeKey: key }), one(title)); }, { min: 10 }));
         field(t('model.prop.length'), lenInput(w0.len, 'data-mp-len', (mm) => { const u = [(w0.b[0] - w0.a[0]) / w0.len, (w0.b[1] - w0.a[1]) / w0.len]; commit(changeWall(w0.guid, { b: [w0.a[0] + u[0] * mm, w0.a[1] + u[1] * mm] }), one(title)); }, { min: 10 }));
       }
       // 0.6 round 2: the location line (what stays put when the wall gets thicker or its outside flips)
       const sameJ = walls.every((w) => (w.justification || 'center') === (w0.justification || 'center'));
-      const jOpts = JUSTIFICATIONS.map((j) => [j, t('comforts.just.' + j)]);
+      const jOpts = JUSTIFICATIONS.map((j) => [j, t('comforts.just.' + j.toLowerCase())]);
       if (!sameJ) jOpts.unshift(['', t('model.prop.mixed')]);
       field(t('comforts.prop.just'), select(jOpts, sameJ ? (w0.justification || 'center') : '', 'data-mp-just', (v) => { if (v) commit(many ? changeWalls(guids, { justification: v }) : changeWall(w0.guid, { justification: v }), one(title)); }));
-      const ab = !many ? above(w0) : null, toLevel = walls.every((w) => w.topLevel), fixed = walls.every((w) => !w.topLevel);
-      const topOpts = [['level', t('model.wall.top.level')], ['fixed', t('model.wall.top.fixed')]];
-      if (!toLevel && !fixed) topOpts.unshift(['', t('model.prop.mixed')]);
-      field(t('model.wall.top'), select(topOpts, toLevel ? 'level' : fixed ? 'fixed' : '', 'data-mp-top', (v) => {
-        if (v === 'level') {
+      const ab = !many ? levels.find((l) => l.guid === w0.topLevel) || null : null, toLevel = walls.every((w) => w.topLevel), fixed = walls.every((w) => !w.topLevel);
+      // 0.7 BIM-MLWALL: one wall can go up to any level above it (the nearest is "the level above")
+      const choices = !many ? topLevelChoices(levels, w0.storey) : [];
+      const topLv = !many && toLevel ? levels.find((l) => l.guid === w0.topLevel) || null : null;
+      const topOpts = !many ? [...choices.map((l, i) => ['level:' + l.guid, i === 0 ? t('model.wall.top.level') : t('model.wall.top.upto', { name: l.name })]), ['fixed', t('model.wall.top.fixed')]]
+        : [['level', t('model.wall.top.level')], ['fixed', t('model.wall.top.fixed')]];
+      if (many ? !toLevel && !fixed : toLevel && !topLv) topOpts.unshift(['', t('model.prop.mixed')]);
+      const topVal = many ? (toLevel ? 'level' : fixed ? 'fixed' : '') : topLv ? 'level:' + topLv.guid : toLevel ? '' : 'fixed';
+      field(t('model.wall.top'), select(topOpts, topVal, 'data-mp-top', (v) => {
+        if (v.startsWith('level:')) commit(changeWall(w0.guid, { topLevel: v.slice(6), topOffset: 0 }), one(title));
+        else if (v === 'level') {
           const ch = walls.map((w) => ({ w, a: above(w) }));
           if (ch.some((x) => !x.a)) { host.status(t('model.err.notop'), true); renderProps(); return; }
           commit((editor) => { let r = null; for (const x of ch) r = mergeR(r, changeWall(x.w.guid, { topLevel: x.a.guid, topOffset: 0 })(editor)); return r; }, one(title));
@@ -1174,6 +1334,8 @@ export function mountModel(host) {
           commit(changeWall(w0.guid, { bulge: Math.abs(bg) < 1e-9 ? 0 : bg }), one(title));
         }, { any: true }), w0.bulge ? el('span', { className: 'bc-sub' }, ' ' + t('comforts.prop.radius', { r: fmtLen(wallGeom(w0).arc.R, S.units) })) : null);
         rows.push(el('dt', {}, t('model.level')), el('dd', {}, levels.find((l) => l.id === w0.storey)?.name || ''));
+        const passed = wallLevelsPassed(w0, levels);
+        if (passed.length) rows.push(el('dt', {}, t('model.wall.passes')), el('dd', {}, passed.map((l) => l.name).join(', ')));   // 0.7 BIM-MLWALL
       }
     } else if (ops.length && !walls.length && ops.every((o) => o.kind === ops[0].kind)) {
       const o0 = ops[0], many = ops.length > 1, guids = ops.map((o) => o.guid), door = o0.kind === 'door';
@@ -1195,6 +1357,7 @@ export function mountModel(host) {
         const so = sz.map((z) => [z.guid, z.name + ' (' + z.count + ')']);
         if (!sameSize) so.unshift(['', t('fam.size.pick')]);
         field(t('fam.size'), select(so, sameSize ? sz.find((z) => z.typeId === o0.typeId).guid : '', 'data-mp-osize', (v) => { if (v) commit(setFamilySize(guids, v), one(title)); }));
+        famUi?.instanceFields?.(ops, { field }, one(title));   // 0.7 BIM-FAM-MORE (7): what each door or window sets itself
       }
       const sized = (ch) => run({ ...ch, sizeName: sizeName({ Width: ch.width ?? o0.width, Height: ch.height ?? o0.height }) });
       field(t('model.ot.width'), lenInput(same('width') ? o0.width : NaN, 'data-mp-ow', (mm) => sized({ width: mm }), { min: 100 }));
@@ -1334,6 +1497,29 @@ export function mountModel(host) {
   /** What an extension (extend()) may use. */
   const api = {
     S, root, host, t, ed, kb, commit, refresh, buildScene, drawOverlay, setTool, level, levelAbove, wallsHere, wallsOn, snapAt,
+    workspaceWallControls: () => ({ row: ui.wallOpts, type: ui.wallType, reference: ui.wallRef, side: ui.wallSide, shape: ui.wallShape, top: ui.wallTop, height: ui.wallH, typedRow: ui.typedRow, typed: ui.typed, units: ui.units }),
+    workspaceCancel(finishOnly = false) { if (S.chain) { endChain(); host.status(t('model.chain.ended')); } else if (!finishOnly) setTool('select'); for (const x of exts) x.toolChanged?.(S.tool); },
+    workspaceTyped(key) { ui.typed.focus(); ui.typed.value += key; },
+    /** F28: prepare real browser data without creating/replacing a canvas or activating a drawing tool. */
+    prepareWorkspace() {
+      S.data = ed() ? snapshotModel(ed()) : null;
+      if (S.data?.levels.length && !S.data.levels.some(l => l.id === S.level)) S.level = (S.data.levels.find(l => Math.abs(l.elevation) < 1) || S.data.levels[0]).id;
+      for (const x of exts) x.refresh?.();
+    },
+    /** F28: a floor plan uses the existing PlanView and picking transform; a restored camera is in model mm. */
+    activateWorkspaceView(levelId, camera = null) {
+      if (levelId === null) { show(false); return; }
+      const same = S.on && S.level === levelId && S.kind === 'plan' && !S.callout;
+      S.layout = 'plan';
+      if (!same) showKind(levelId, 'plan');
+      applyLayout();
+      requestAnimationFrame(() => {
+        if (!pv || !S.on || S.level !== levelId) return;
+        pv.resize();
+        if (camera) { Object.assign(pv, camera); pv.render(); }
+        else if (!same) fitPlan();
+      });
+    },
     /** Snap as the Wall tool does, from a point of the extension's own (0.6: outlines drawn by hand): angles, Shift, lengths. */
     snapFrom: (p, e, from) => snapPoint(p, snapCtx(), { tol: pv.pxToMm(SNAP_PX), from, ortho: !!e?.shiftKey, step: 15, round: from ? round() : 0 }),
     pv: () => pv, units: () => S.units, round, selectedKeys, renderProps: () => renderProps(), loopsOf: (st) => loopsOf(ed(), st), fitPlan, mergeJournals,
@@ -1357,16 +1543,18 @@ export function mountModel(host) {
   return {
     decorate,
     // another file: its 3D view first (Draw off); New building turns Draw on again right after
-    opened() { S.cutFor = null; S.level = null; endChain(); S.queue = []; S.empty3d = !(host.viewer()?.allKeys?.().size); if (S.on) show(false); },
+    opened() { S.cutFor = null; S.level = null; S.autoFit3d = false; endChain(); S.queue = []; S.empty3d = !(host.viewer()?.allKeys?.().size); if (S.on) show(false); },
     stage(which) { if (which !== 'ifc' && S.on) show(false); },
     rebuilding() { S.reloading = true; S.reloadT = Date.now(); },
     rebuilt() {
       S.reloading = false; S.cutFor = null;
       // a new building's first walls: frame the 3D view once (it had nothing to look at)
       const v = host.viewer(), n = v?.allKeys?.().size || 0;
-      if (S.empty3d && n > 0) v.view('iso');
+      if (v && !v._ccAutoWatch && v.canvas) { v._ccAutoWatch = true; for (const ev of ['pointerdown', 'wheel']) v.canvas.addEventListener(ev, () => { S.autoFit3d = false; }, { passive: true }); }
+      if ((S.empty3d || S.autoFit3d) && n > 0) { v.view('iso'); S.autoFit3d = true; }   // 0.7 SU.751: keeps framing the new building as it grows until you move the camera
       S.empty3d = n === 0;
       if (S.on) refresh();
+      else if (root.classList.contains('ws-active')) { api.prepareWorkspace(); fillWallOpts(); }
       if (S.reselect && !S.queue.length) { try { const ks = S.reselect(); if (ks?.length) S.keepSel = ks; } catch (e) { /* gone */ } S.reselect = null; }
       if (S.keepSel && !S.queue.length) {
         const have = v?.allKeys?.() || new Set(), keys = S.keepSel.filter((k) => have.has(k));

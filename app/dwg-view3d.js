@@ -329,7 +329,14 @@ export class DrawingView3D {
 
   render() {
     if (this._raf) return;
-    this._raf = requestAnimationFrame(() => { this._raf = 0; this.draw(); });
+    this._raf = requestAnimationFrame(() => {
+      this._raf = 0;
+      try { this.draw(); } finally { const w = this.drawnWaiters; this.drawnWaiters = null; w?.forEach((f) => f()); }
+    });
+  }
+  /** Resolves once the next frame is drawn (bimcraft.js times a drawing's first frame). */
+  whenDrawn() {
+    return new Promise((resolve) => { (this.drawnWaiters ||= []).push(resolve); this.render(); });
   }
   draw() {
     const cam = this.cam;

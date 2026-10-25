@@ -1,3 +1,4 @@
+import { documentPages } from './assembly-schedule-layout.js';
 /* SPDX-License-Identifier: Apache-2.0 */
 /**
  * res-ui.js — the residential tools in BimCraft's plan view (0.5 part 4, track RC; session bim-residential). Mounted
@@ -53,9 +54,12 @@ import { newHandoffId, putHandoff } from './handoff.js';
 import { loadTin, readTerrain, readPads, readHardscape, finishedSurface, existingSurface, placeTerrain, changeTerrain, removeTerrain, placePad, changePad, removePads, placeHardscape, changeHardscape, removeHardscape,
   parsePointText, drawingContours, thinToGrid, toModel, autoOffset, landXml, readLandXmlSurfaces, padShape, PAD_DEFAULTS, HARD_KINDS } from './res-terrain.js';
 import { modelTriangles, projectView, elevationDirs } from './res-views.js';
+import { sectionModel, straightElevationWidth } from './wall-section-graphics.js';
+import { readProjectedView, projectedBox } from './projected-views.js';
+import { readMaterials } from './project-materials.js';
 import { buildSet, setPdf, sheetSvg, PAPERS, readSectionLines, placeSectionLine, changeSectionLine, removeSectionLines, sectionDir } from './res-sheets.js';
 import { viewerToPlan } from './model-plan.js';
-import { DEVICES, symbolPlan, symbolScale, wallSpot, readDevices, placeDevice, changeDevice, linkLight, removeDevices, deviceSchedule, circuitSchedule, isLight, isSwitch } from './res-elec.js';
+import { DEVICES, symbolPlan, symbolScale, wallSpot, readDevices, placeDevice, changeDevice, linkLight, removeDevices, deviceSchedule, circuitSchedule, isLight, isSwitch, isBoard } from './res-elec.js';
 import { GROUPS as EL_GROUPS, SYMBOLS as EL_SYMBOLS } from './res-elec-symbols.js';
 import { counterCabinets, counterRuns, readCountertops, countertopState, placeCountertop, changeCountertop, fitCountertop, removeCountertops, COUNTER_DEFAULTS } from './res-counter.js';
 
@@ -467,7 +471,7 @@ export function mountRes(modelUi) {
   }
   const frameOpts = () => ({ spacing: R.frame.spacing, corners: R.frame.corners, blocking: R.frame.blocking, roofMode: R.frame.roofMode, floorMode: R.frame.floorMode, floorDir: R.frame.floorDir });
   function frameAllWalls() {
-    const hosts = A.wallsHere().filter((w) => wallType(w.typeKey)?.layers.some((l) => l.mat === 'studs')).map((w) => w.guid);
+    const hosts = A.wallsHere().filter((w) => (w.assembly || wallType(w.typeKey))?.layers.some((l) => l.mat === 'studs')).map((w) => w.guid);
     if (!hosts.length) { A.host.status(t('res.err.noframe'), true); return; }
     A.commit(frameHosts({ hosts, ...frameOpts() }), { label: t('res.fr.walls', { n: hosts.length }), verb: t('res.verb.framed') });
   }
@@ -822,7 +826,7 @@ export function mountRes(modelUi) {
     const ci = el('input', { type: 'text', className: 'bc-input', value: d.circuit, maxLength: 20, 'data-mp-elcircuit': '' });
     ci.addEventListener('change', () => run({ circuit: ci.value }));
     kit.field(t('res.el.sch.circuit'), ci);
-    if (d.kind !== 'board') {
+    if (!isBoard(d.kind)) {
       const ld = el('input', { type: 'text', className: 'bc-input bc-num', value: String(Math.round(d.load)), 'data-mp-elload': '' });
       ld.addEventListener('change', () => { const v = Number(ld.value); if (v >= 0) run({ load: v }); else ld.value = ld.defaultValue; });
       kit.field(t('res.el.load'), ld, el('span', { className: 'bc-sub' }, ' W'));   // i18n-ignore: watts
@@ -849,7 +853,7 @@ export function mountRes(modelUi) {
     const sc = circuitSchedule(R.devs, { units: A.units(), t }), row = sc.rows[i];
     if (!row) return [];
     const c = row[0] === t('res.el.nocircuit') ? '' : row[0];
-    return R.devs.filter((d) => d.kind !== 'board' && d.circuit === c).map((d) => k + d.id);
+    return R.devs.filter((d) => !isBoard(d.kind) && d.circuit === c).map((d) => k + d.id);
   }
 
   // ---- the takeoff (RC.8) ----
@@ -858,7 +862,7 @@ export function mountRes(modelUi) {
     const w = writer(), D = A.S.data;
     if (!w || !D) return null;
     const levels = D.levels || [];
-    const walls = (D.walls || []).map((x) => { const ty = wallType(x.typeKey); return { ...x, typeName: ty ? wallTypeName(ty) : (x.typeName || x.typeKey), exterior: ty?.exterior !== false }; });
+    const walls = (D.walls || []).map((x) => { const ty = (x.assembly || wallType(x.typeKey)); return { ...x, typeName: ty ? wallTypeName(ty) : (x.typeName || x.typeKey), exterior: ty?.exterior !== false }; });
     const openings = readOpenings(w, null, D.walls || []).map((o) => { const ty = openingType(o.typeKey); return { ...o, typeName: ty ? openingTypeName(ty) : o.typeName }; });
     const loops = new Map();
     const loopsFor = (id) => { if (!loops.has(id)) loops.set(id, A.loopsOf(id)); return loops.get(id); };
@@ -957,6 +961,8 @@ export function mountRes(modelUi) {
     const g = groundLevel() || levels[0];
     const Mg = viewerToPlan(C, w.storeyWorld(g.id));
     const els = modelTriangles(model, Mg, { skip });
+    let cutMaterials = null;
+    try { cutMaterials = readMaterials(w); } catch (e) { /* Layer diagnostics accompany envelope fallback. */ }
     const input = { plans: [], rcps: [], elevations: [], sections: [], schedules: [], framing: [] };
     interiorCtx.clear();
     for (const lv of levels.slice().filter((l) => (A.S.data.walls || []).some((x) => x.storey === l.id) || l.id === g.id)) {
@@ -975,14 +981,22 @@ export function mountRes(modelUi) {
     const widthOn = (dir) => { const r = [dir[1], -dir[0]], xs = []; for (const x of A.S.data.walls || []) for (const q of [x.a, x.b]) xs.push(q[0] * r[0] + q[1] * r[1] - x.t / 2, q[0] * r[0] + q[1] * r[1] + x.t / 2); /* the outside faces (square walls exactly) */ return xs.length ? { x0: Math.min(...xs), x1: Math.max(...xs) } : null; };
     const noted = (view, ctx) => { try { return viewNotes(view, { ...ctx, levels: lvls, fmt: fmtN }); } catch (e) { console.error(e); return []; } };
     for (const [side, dir] of Object.entries(elevationDirs)) {
-      const view = { ...projectView(els, { dir }), grids: gridsInView(gAxes, dir) };
-      view.notes = noted(view, { kind: 'elevation', dir, base: g.elevation, openings: facts, width: widthOn(dir) });
+      const settings=readProjectedView(w,'elevation:'+side);
+      const view = { ...projectView(els, { dir, box:projectedBox(settings), ...sectionModel(w,g.id,k) }), scale:settings.scale, grids: gridsInView(gAxes, dir) };
+      if(settings.issue)view.warnings=[{reason:settings.issue}];
+      view.notes = noted(view, { kind: 'elevation', dir, base: g.elevation, openings: facts, width: straightElevationWidth(sectionModel(w,g.id,k).walls,dir)||widthOn(dir) });
       input.elevations.push({ ref: side, title: t('res.sh.elev.' + side), view });
     }
     for (const sl of R.secs) {
+      if(!levels.some(l=>l.id===sl.storey)||![...sl.a,...sl.b,sl.depth].every(Number.isFinite)||Math.hypot(sl.b[0]-sl.a[0],sl.b[1]-sl.a[1])<100||sl.depth<0) {
+        input.sections.push({ref:sl.guid,title:t('res.sec.name',{name:sl.name}),view:{bounds:null,warnings:[{reason:t('proj.section_invalid')}]}});
+        continue;
+      }
       const M = viewerToPlan(C, w.storeyWorld(sl.storey));
       const { o, dir } = sectionDir(sl);
-      const view = { ...projectView(modelTriangles(model, M, { skip }), { dir, cut: { o }, far: sl.depth }), grids: gridsInView(gridsOn(sl.storey), dir) };
+      const settings=readProjectedView(w,'section:'+sl.guid);
+      const view = { ...projectView(modelTriangles(model, M, { skip }), { dir, cut: { o }, far: sl.depth, ...sectionModel(w,sl.storey,k), materials:cutMaterials, detail:settings.detail, scale:settings.scale||50, box:projectedBox(settings) }), scale:settings.scale, groundY:g.elevation-(levels.find(l=>l.id===sl.storey)?.elevation??g.elevation), grids: gridsInView(gridsOn(sl.storey), dir) };
+      if(settings.issue)view.warnings.push({reason:settings.issue});
       view.notes = noted(view, { kind: 'section', dir, base: levels.find((l) => l.id === sl.storey)?.elevation || 0 });
       input.sections.push({ ref: sl.guid, title: t('res.sec.name', { name: sl.name }), view });
     }
@@ -1011,6 +1025,7 @@ export function mountRes(modelUi) {
     const sch = A.schedules?.() || {};
     const schTitle = { lumber: t('res.fr.sch.lumber'), devices: t('res.el.sch.devicesched'), circuits: t('res.el.sch.circuitsched') };
     for (const kind of ['doors', 'windows', 'rooms', 'devices', 'circuits', 'lumber']) if (sch[kind]?.rows?.length) input.schedules.push({ ref: kind, title: schTitle[kind] || t('model.sch.' + kind), ...sch[kind] });
+    for (const [kind,key] of [['assemblies','assemblies'],['materialLegend','materials']]) if(sch[kind]) input.schedules.push(...documentPages(sch[kind],key));
     for (const fr of R.frames) if (fr.kind === 'wall' && fr.wallPieces?.pieces?.length) { const wall = A.S.data.walls.find((x) => x.guid === fr.host); input.framing.push({ title: t('res.sh.framewall', { len: L(wall?.len || 0), level: levels.find((l) => l.id === fr.storey)?.name || '' }), pieces: fr.wallPieces.pieces }); }
     return input;
   }
@@ -1094,7 +1109,7 @@ export function mountRes(modelUi) {
         for (const fr of R.frames) {
           fr.qty = w.readPset(fr.id, 'CadCraft_FramingQuantities') || {};
           fr.notes = w.readPset(fr.id, 'CadCraft_Framing')?.Notes || 'ok';
-          if (fr.kind === 'wall') { const wall = walls.find((x) => x.guid === fr.host); if (wall) { const r2 = frameWall(wall, { walls: walls.filter((x) => x.storey === wall.storey), openings: ops.filter((o) => o.wallGuid === wall.guid), spacing: fr.spacing, corners: fr.corners, blocking: fr.blocking, bearing: wallType(wall.typeKey)?.exterior !== false }); fr.wallPieces = r2.pieces ? r2 : null; } }
+          if (fr.kind === 'wall') { const wall = walls.find((x) => x.guid === fr.host); if (wall) { const r2 = frameWall(wall, { walls: walls.filter((x) => x.storey === wall.storey), openings: ops.filter((o) => o.wallGuid === wall.guid), spacing: fr.spacing, corners: fr.corners, blocking: fr.blocking, bearing: (wall.assembly || wallType(wall.typeKey))?.exterior !== false }); fr.wallPieces = r2.pieces ? r2 : null; } }
         }
       }
       queueMicrotask(() => applyFrameVis());

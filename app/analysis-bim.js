@@ -38,6 +38,7 @@ import { cleanFrame, sectionOf, torsionJ, polySection, STEEL, RELEASES, FORMAT, 
 import { solveFrame } from './frame/frame-solve.js';
 import { cleanAnalysis } from './frame/frame-panel.js';
 import { op } from './model-ops.js';
+import { findSection } from './shapes/sections.js';
 
 export const ANALYSIS_PSET = 'CadCraft_Analysis';
 export const MERGE_TOL = 10;          // mm: points this close are one node
@@ -62,6 +63,26 @@ const apply = (M, p) => add(add(add(M.O, mul(M.X, p[0])), mul(M.Y, p[1])), mul(M
 const applyDir = (M, d) => add(add(mul(M.X, d[0]), mul(M.Y, d[1])), mul(M.Z, d[2] || 0));
 const compose = (A, B) => ({ X: applyDir(A, B.X), Y: applyDir(A, B.Y), Z: applyDir(A, B.Z), O: apply(A, B.O) });
 const txt = (s, max = 60) => String(s ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max);
+
+/**
+ * Is this IFC I-shape a rolled section? (0.7 SU.878, honesty-fixes.) IFC has no "rolled" flag, so a profile counts as rolled
+ * only when its name (ProfileName, else the element's ObjectType) is a hot-rolled I-shape of the shared section table
+ * (shapes/sections.js: AISC W and S, EN 10365 IPE, HEA, HEB; "IPE 300", "W12x26", "HE 200 A" all match) AND the file's
+ * d, bf, tw and tf agree with that row within 1 % (at least 0.5 mm). Anything else (a plate girder, a custom name, a
+ * renamed or edited size) stays welded, which the Design checks report as "not checked". Exported for the tests.
+ */
+export function rolledIShape(names, dims) {
+  for (const raw of names) {
+    if (typeof raw !== 'string' || !raw.trim()) continue;
+    let key = raw.replace(/\s+/g, '').toUpperCase();
+    key = key.replace(/^HE(\d+)([AB])$/, 'HE$2$1');            // "HE200A" (the older European way) → "HEA200"
+    const row = findSection(key);
+    if (!row || row.kind !== 'I' || !['W', 'S', 'IPE', 'HEA', 'HEB'].includes(row.family)) continue;
+    const near = (a, b) => Number.isFinite(a) && Math.abs(a - b) <= Math.max(0.5, 0.01 * b);
+    if (near(dims.d, row.d) && near(dims.bf, row.bf) && near(dims.tw, row.tw) && near(dims.tf, row.tf)) return row.name;
+  }
+  return null;
+}
 
 /** The beams, columns and members of a model, ready for the analysis. */
 export function readFrameElements(W, api, mid) {
@@ -277,7 +298,7 @@ export function readFrameElements(W, api, mid) {
     const size = Math.max(bb[1] - bb[0], bb[3] - bb[2]);
     const mname = matName.get(id) || matName.get(typeOf.get(id)) || '';
     const kind = materialKind(mname);
-    elements.push({ id, gid, cls, type, name: txt(val(el.Name) || val(el.Tag) || '', 60), a, b: e, U, V, sec: { ...sec, J, name: sec.name || txt(val(el.ObjectType) || '', 40) || prof.kind }, size, mat: { name: mname || kind, ...MATS[kind] }, approxJ: prof.kind === 'POLY' });
+    elements.push({ id, gid, cls, type, name: txt(val(el.Name) || val(el.Tag) || '', 60), a, b: e, U, V, sec: { ...sec, J, name: sec.name || txt(val(el.ObjectType) || '', 40) || prof.kind, ...(prof.kind === 'I' && prof.dims.d > 0 && prof.dims.bf > 0 && prof.dims.tw > 0 && prof.dims.tf > 0 ? { shape: { kind: 'I', d: prof.dims.d, bf: prof.dims.bf, tw: prof.dims.tw, tf: prof.dims.tf, r: prof.dims.r || 0, ...(rolledIShape([prof.name, val(el.ObjectType)], prof.dims) ? {} : { welded: true }) } } : {}) }, size, mat: { name: mname || kind, ...MATS[kind] }, approxJ: prof.kind === 'POLY' });   // (sec.shape, 0.7 SU.878: the I shape the Design checks need; rolled when its name and size are a table row — rolledIShape — else welded)
   }
   return { elements, skipped, unit };
 }
@@ -360,7 +381,7 @@ export function frameOfElements(elements, analysis, { name = '' } = {}) {
     const at = cuts.filter((s, i) => i === 0 || s - cuts[i - 1] > MERGE_TOL);
     if (L - at[at.length - 1] > MERGE_TOL) at.push(L); else at[at.length - 1] = L;
     const skey = el.sec.name + '|' + [el.sec.A, el.sec.Iy, el.sec.Iz, el.sec.J].map((v) => v.toPrecision(8)).join('|');
-    if (!sections.has(skey)) sections.set(skey, { id: 's' + (sections.size + 1), name: el.sec.name || 's' + (sections.size + 1), A: el.sec.A, Iy: el.sec.Iy, Iz: el.sec.Iz, J: el.sec.J });
+    if (!sections.has(skey)) sections.set(skey, { id: 's' + (sections.size + 1), name: el.sec.name || 's' + (sections.size + 1), A: el.sec.A, Iy: el.sec.Iy, Iz: el.sec.Iz, J: el.sec.J, ...(el.sec.shape ? { shape: el.sec.shape } : {}) });
     const mkey = el.mat.kind + '|' + el.mat.name;
     if (!materials.has(mkey)) materials.set(mkey, { id: 'g' + (materials.size + 1), name: el.mat.name, E: el.mat.E, G: el.mat.G, rho: el.mat.rho });
     // roll: the drawn section axes against the default local axes (frame-model.js axesOf), plus the principal turn

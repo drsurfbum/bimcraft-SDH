@@ -17,6 +17,7 @@
  * (the cloud in the model's projected system); "Centered on the model" — the cloud's middle on the model's middle, its
  * bottom on the model's bottom. On open: map when the model has a map conversion and the cloud names a system, else model
  * coordinates when they put the cloud near the model, else centered (said). Alone, a cloud sits round the origin.
+ * The placement is worked out when it is chosen and then kept: drawing or editing the model never moves the cloud.
  * The bar (`[data-cloudbar]`): colour by, point size, points to show (re-reads the file), units when the file does not
  * say, placement, the slice (off / top / front / side, where, how thick — the as-built cut to trace from), Trace in CadCraft
  * (hands the file over; CadCraft attaches it under the drawing), hide, remove. Its choices persist in localStorage
@@ -46,7 +47,8 @@ export function installClouds(host) {
 
   let layer = null, cloud = null, file = null, info = null, place = 'own', unit = null, slice = null, notes = [];
   let abort = null;
-  let adjustM = null;   // DF.22 (bim-draw): an extra viewer-space 4 × 4 after the placement (pc.adjust)
+  let adjustM = null;   // DF.22 (bim-draw): the alignment (pc.adjust), kept in the placement's own frame: placed = placeM · adjustM
+  let placeM = null;    // the placement, worked out when it is chosen (open, Place, Units, another model) and then kept
   const bar = buildBar();
   const secBar = host.root.querySelector('[data-sectionbar]'), toolbar = host.root.querySelector('[data-toolbar]');
   secBar.after(bar.el);
@@ -118,6 +120,7 @@ export function installClouds(host) {
     layer.setColors(colorize(c, pref.color));
     v.extraBoxes = [() => layer?.box()];
     place = autoPlace();
+    settle();
     applyPlace(true);
     slice = null;
     layer.setSlice(null);
@@ -189,8 +192,13 @@ export function installClouds(host) {
     notes.push(t('pc.place.centered'));
     return 'center';
   }
-  /** The placement, then pc.adjust's matrix. */
-  const placed = () => { const m = matrixFor(place) || matrixFor('center'); return adjustM ? M4.mul(adjustM, m) : m; };
+  /** Work the placement out now and keep it: walls drawn later change the model's box ("Centered on the model"), and an
+   *  alignment (pc.adjust) is made against the cloud where it is — so the cloud stays put while the model changes. */
+  function settle() { placeM = matrixFor(place) || matrixFor('center'); }
+  /** The placement with the alignment inside it (pc.adjust). The alignment is kept in the cloud's own frame, not the scene's:
+   *  when the cloud is placed again (another model, Place, Units, a re-read) it moves with the cloud. Kept in the scene, a turn
+   *  made about the cloud's walls would be made about a point the cloud has left, and swing it away (0.6.1 FIX-061-SQUARE). */
+  const placed = () => { if (!placeM) settle(); return adjustM ? M4.mul(placeM, adjustM) : placeM; };
   function applyPlace(fit = false) {
     layer.setMatrix(placed());
     const v = host.viewer();
@@ -272,8 +280,8 @@ export function installClouds(host) {
     b.color.addEventListener('change', () => { pref.color = b.color.value; save(); layer.setColors(colorize(cloud, pref.color)); });
     b.size.addEventListener('input', () => { pref.size = Number(b.size.value); save(); layer.setSize(pref.size); });
     b.budget.addEventListener('change', () => { pref.budget = Number(b.budget.value); save(); if (file) host.guard(() => open(file, true)); });
-    b.units.addEventListener('change', () => { unit = b.units.value; applyPlace(true); fillBar(); });
-    b.place.addEventListener('change', () => { place = b.place.value; applyPlace(); host.viewer().view('iso'); });
+    b.units.addEventListener('change', () => { unit = b.units.value; settle(); applyPlace(true); fillBar(); });
+    b.place.addEventListener('change', () => { place = b.place.value; settle(); applyPlace(); host.viewer().view('iso'); });
     root.addEventListener('click', (e) => {
       const s = e.target.closest('[data-cloud-slice]');
       if (s) setSlice(s.dataset.cloudSlice === 'off' ? null : s.dataset.cloudSlice);
@@ -328,7 +336,7 @@ export function installClouds(host) {
   function remove() {
     abort?.abort();
     if (layer) layer.dispose();
-    cloud = null; file = null; info = null; slice = null; adjustM = null;
+    cloud = null; file = null; info = null; slice = null; adjustM = null; placeM = null;
     bar.el.hidden = true;
     const v = host.viewer();
     if (v) { v.extraBoxes = []; v.relist(); v.render(); }
@@ -339,15 +347,23 @@ export function installClouds(host) {
   return {
     open, snap, locate, remove,
     /** A model opened or closed: place the cloud again (the automatic choice). */
-    modelChanged() { if (!cloud) return; notes = []; place = autoPlace(); applyPlace(); fillBar(); },
+    modelChanged() { if (!cloud) return; notes = []; place = autoPlace(); settle(); applyPlace(); fillBar(); },
     has: () => !!cloud,
     toggleBar() { if (cloud) bar.el.hidden = !bar.el.hidden; return cloud ? !bar.el.hidden : false; },
     barShown: () => !!cloud && !bar.el.hidden,
     state: () => cloud && { name: cloud.name, kept: cloud.n, read: cloud.read, place, unit, color: pref.color, size: pref.size, budget: pref.budget, slice: slice && { ...slice, thick: pref.thick }, notes: [...notes], visible: layer.visible, box: layer.box() && [layer.box().min.toArray(), layer.box().max.toArray()] },
     layer: () => layer,
-    /** DF.22: adjust(m) sets an extra viewer-space 4 × 4 (column-major, after the placement; null = none) and places the cloud
-     *  again; adjust() → the current one (identity when none). Kept across modelChanged() and a budget re-read. */
-    adjust(...a) { if (!a.length) return adjustM || M4.I(); adjustM = a[0] || null; if (cloud) applyPlace(); return adjustM || M4.I(); },
+    /** DF.22: adjust(m) sets an extra viewer-space 4 × 4 (column-major, applied after the placement as it is now; null = none)
+     *  and places the cloud again; adjust() → the current one in the viewer's space (identity when none). Stored in the cloud's
+     *  own frame (see placed), so it is kept across modelChanged(), Place, Units and a budget re-read and moves with the cloud. */
+    adjust(...a) {
+      const scene = () => (adjustM && placeM ? M4.mul(M4.mul(placeM, adjustM), M4.inv(placeM)) : M4.I());
+      if (!a.length) return scene();
+      if (cloud && !placeM) settle();
+      adjustM = a[0] && placeM ? M4.mul(M4.mul(M4.inv(placeM), a[0]), placeM) : null;
+      if (cloud) applyPlace();
+      return scene();
+    },
     card: () => card?.dataset.cloudCard || null,
     toCloud,
   };

@@ -59,9 +59,10 @@ export function schedules(snap, loops, { fmtLen, fmtArea, t }) {
   };
   return { doors: opening('door'), windows: opening('window'), walls, rooms };
 }
-const wallTypeName = (w) => (w ? (wallType(w.typeKey) ? typeName(wallType(w.typeKey)) : w.typeName) : '');
+const wallTypeName = (w) => (w ? ((w.assembly || wallType(w.typeKey)) ? typeName((w.assembly || wallType(w.typeKey))) : w.typeName) : '');
 
 /** One schedule as CSV (the total row last). */
 export function scheduleCsv(s) {
+  if (s.csvHead) return tableCsv(s.csvHead, s.csvRows);
   return tableCsv(s.head, s.total ? [...s.rows, s.total.concat(Array(Math.max(0, s.head.length - s.total.length)).fill(''))] : s.rows);
 }

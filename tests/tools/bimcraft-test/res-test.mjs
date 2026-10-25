@@ -935,6 +935,23 @@ export async function resMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, arg
       const id = a2.OpenModel(saved.electrical);
       ok(a2.GetLineIDsWithType(id, Wi.IFCOUTLET).size() === 1 && a2.GetLineIDsWithType(id, Wi.IFCLIGHTFIXTURE).size() === 2 && a2.GetLineIDsWithType(id, Wi.IFCSWITCHINGDEVICE).size() === 1, 'web-ifc (oracle): the outlet, two lights, the switch');
     } catch (e) { console.log('  --   web-ifc not installed: oracle check skipped'); }
+    // every kind (the add-on's 0.7 symbols too, 0.7 closing fixes): placed once, read back with its kind, written as its own IFC class
+    {
+      const all = await building({ loops: [B] });
+      const Wa = OPS.snapshotModel(all.ed).walls.filter((x) => x.storey === all.levels[0].id).map((x) => ({ guid: x.guid, a: x.a, b: x.b, t: x.t }));
+      EL.KINDS.forEach((kind, i) => {
+        const p = [300 + (i % 16) * 340, i < 16 ? 300 : 3700];
+        const spot = EL.DEVICES[kind].mount === 'wall' ? EL.wallSpot(Wa, p) : { at: [p[0], 2000] };
+        all.ed.modelChange(EL.placeDevice({ level: all.levels[0].guid, kind, units: 'mm', ...spot }));
+      });
+      const back = EL.readDevices(new ModelWriter(all.ed.W, all.ed.api, all.ed.mid));
+      const txt = txtOf(all.ed);
+      const missing = EL.KINDS.filter((k) => !back.some((d) => d.kind === k));
+      const wrongClass = EL.KINDS.filter((k) => !new RegExp(EL.DEVICES[k].ifc4[0] + '\\([^;]*\\.' + EL.DEVICES[k].ifc4[1] + '\\.\\)').test(txt));
+      ok(back.length === EL.KINDS.length && !missing.length && !wrongClass.length && !danglingRefs(txt).length, 'all ' + EL.KINDS.length + ' kinds placed and read back, each as its own IFC4 class and type' + (missing.length ? '; not read back: ' + missing.join(', ') : '') + (wrongClass.length ? '; wrong class: ' + wrongClass.join(', ') : ''));
+      ok(EL.circuitSchedule(back).rows.reduce((n, r) => n + Number(r[1]), 0) === back.length - 2 && EL.isBoard('board.sub'), 'the sub-board is a panel too: no circuit row of its own');
+      saved.devices = all.ed.save();
+    }
   }
 
   // ================================================================================================ RC.8 TakeoffCraft

@@ -57,7 +57,7 @@ const TJI_SPANS = [
 export function tjiFor(span, spacing) {
   const col = Math.abs(spacing - 609.6) < 50 ? 4 : 3;
   const row = TJI_SPANS.find((r) => span <= (r[col][0] * 12 + r[col][1]) * IN + 1e-6);
-  return row ? { size: `TJI ${row[2]} ${row[0]}`, depth: row[1], series: row[2] } : null;
+  return row ? { size: `TJI ${row[2]} ${row[0]}`, depth: row[1], series: row[2] } : null;   // i18n-ignore: product size designations, written as the IFC 'Size' label (data, not words)
 }
 /** Rafters, max horizontal span — labelled defaults (30 psf snow). */
 export const RAFTER_TABLE = { 406.4: [['2x6', 13.5 * FT], ['2x8', 17 * FT], ['2x10', 21 * FT], ['2x12', 25 * FT]], 609.6: [['2x6', 11 * FT], ['2x8', 14 * FT], ['2x10', 17 * FT], ['2x12', 20.5 * FT]] };
@@ -84,7 +84,7 @@ const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
 // ------------------------------------------------------------------------------------------------------------ walls
 /** The stud layer's band across a wall (y in the wall's axes: +y = its left), or null for a wall with no studs. */
 export function studBand(wall) {
-  const ty = wallType(wall.typeKey);
+  const ty = (wall.assembly || wallType(wall.typeKey));
   if (!ty) return null;
   const t = ty.layers.reduce((s, l) => s + l.t, 0);
   let cum = 0, band = null;
@@ -308,7 +308,7 @@ export function frameFloor(poly, ctx) {
   const rim = insetPoly(poly, 0.75 * IN);
   for (let i = 0; i < rim.length; i++) {
     const a = rim[i], b = rim[(i + 1) % rim.length];
-    pieces.push({ role: 'rim', size: engineered ? `Rim ${pick.size}` : pick.size, line: [[...a, top - D / 2], [...b, top - D / 2]], depth: D, width, length: Math.hypot(b[0] - a[0], b[1] - a[1]), flat: true });
+    pieces.push({ role: 'rim', size: engineered ? `Rim ${pick.size}` : pick.size, line: [[...a, top - D / 2], [...b, top - D / 2]], depth: D, width, length: Math.hypot(b[0] - a[0], b[1] - a[1]), flat: true });   // i18n-ignore: product size designations, written as the IFC 'Size' label (data, not words)
   }
   return { pieces, size: pick.size, span, notes, dir: ax };
 }
@@ -473,7 +473,7 @@ function piecesFor(w, fr, h, cache) {
   if (h.kind === 'wall') {
     const walls = cache.walls.filter((x) => x.storey === h.storey);
     const ops = (cache.openings || (cache.openings = readOpenings(w, null, cache.walls))).filter((o) => o.wallGuid === h.host.guid);
-    const bearing = wallType(h.host.typeKey)?.exterior !== false;
+    const bearing = (h.host.assembly || wallType(h.host.typeKey))?.exterior !== false;
     const r = frameWall(h.host, { ...opts, walls, openings: ops, bearing });
     const key = shapeKey('wall', h.host.a, h.host.b, h.host.t, h.host.height, h.host.typeKey, h.host.extSide, h.host.z, ops.map((o) => [o.kind, o.offset, o.width, o.sill, o.height]),
       walls.filter((x) => x.guid !== h.host.guid).map((x) => [x.guid, x.a, x.b, x.t, x.typeKey, x.extSide]), opts);

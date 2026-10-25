@@ -19,6 +19,8 @@ Change your mind about an item without moving it again, and keep the library ite
 
 The element keeps its place, turn, storey, item number, quantity and notes. Its type, shape and item data change to the new item. Items placed the same way share one type, as when you place them.
 
+An item that has variants (see [Place and swap a library item that has variants](topic:library-variants)) lists its other variants at the top of the {{ui:Library}} tab when you swap it: one click each.
+
 When the new item is a different kind of thing, for example a sink in place of a table, the element's IFC class changes to match (here from furnishing element to sanitary terminal), so other software schedules it correctly. It stays the same element, with the same GlobalId, so links to it still work. {{key:Mod+Z}} brings the old class back with the old item.
 
 ## Check for updates
@@ -37,4 +39,5 @@ When the new item is a different kind of thing, for example a sink in place of a
 - Only items that came from LibraryCraft can be checked. Items from files carry no library id.
 - When a license changed, the copy you already placed keeps the license it came with until you update it.
 - A **Withdrawn** item is not offered for new placements. One withdrawn for copyright reasons cannot be downloaded at all; replace it with {{ui:Swap item…}}.
+- A placed variant stays that variant when the newer version of the item still has it; otherwise it takes the item's default variant.
 - Checking sends only the item ids and versions, never your model.

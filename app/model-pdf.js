@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
+import { layerPrimitives, colorRgb } from './wall-plan-graphics.js';
+import { dimensionFootprint } from './dimension-geometry.js';
 /**
  * model-pdf.js — the plan of a level as a vector PDF (0.5 part 3, BM.7). No DOM, no library: bin/test-bimcraft.mjs --model
  * writes one and checks it (and with poppler's pdfinfo / pdftotext when they are installed).
@@ -41,6 +43,9 @@ function lit(s) {
 }
 const n = (v) => { const s = (Math.abs(v) < 5e-5 ? 0 : v).toFixed(3); return s.replace(/\.?0+$/, '') || '0'; };
 
+// Vector coordinates retain sub-0.005 mm model precision at supported drawing scales.
+const coord = v => String(Number(v.toFixed(6)));
+
 export function planPdf(scene, { title = '', lines = [], paper = 'letter', units = 'ftin', scale = null } = {}) {
   const [PW, PH] = PAPER[paper] || PAPER.letter;
   const margin = 12, strip = 16;
@@ -56,7 +61,7 @@ export function planPdf(scene, { title = '', lines = [], paper = 'letter', units
   const ops = ['1 J 1 j'];
   let missing = 0;
   const pen = (w, gray = 0, dash = null) => ops.push(n(w * PT) + ' w ' + n(gray) + ' G ' + (dash ? '[' + dash.map((d) => n(d * PT)).join(' ') + '] 0 d' : '[] 0 d'));
-  const path = (pts, close) => { pts.forEach((p, i) => { const q = P(p); ops.push(n(q[0] * PT) + ' ' + n(q[1] * PT) + (i ? ' l' : ' m')); }); if (close) ops.push('h'); };
+  const path = (pts, close) => { pts.forEach((p, i) => { const q = P(p); ops.push(coord(q[0] * PT) + ' ' + coord(q[1] * PT) + (i ? ' l' : ' m')); }); if (close) ops.push('h'); };
   const seg = (a) => { for (let i = 0; i < a.length; i += 4) { path([[a[i], a[i + 1]], [a[i + 2], a[i + 3]]]); } };
   const text = (s, x, y, size, { align = 'center', rot = 0, bold = false, gray = 0 } = {}) => {
     const l = lit(s); missing += l.missing;
@@ -87,7 +92,13 @@ export function planPdf(scene, { title = '', lines = [], paper = 'letter', units
     pen(0.25, 0); seg(c.segs); ops.push('S');
   }
   // walls: grey fill, heavy outline
-  for (const w of scene.walls || []) for (const p of w.pieces || [w.poly]) { if (!p?.length) continue; ops.push('0.55 g'); path(p, true); ops.push('f'); if (!scene.wallEdges) { pen(0.5, 0); path(p, true); ops.push('S'); } }
+  for (const w of scene.walls || []) {
+    if (w.layers) for (const it of layerPrimitives(w)) {
+      if (it.t === 'fill') { ops.push(colorRgb(it.color).map(coord).join(' ') + ' rg'); for (const p of it.polys) path(p, true); ops.push('f*'); }
+      else { pen(it.w, 0, it.dash); ops.push(colorRgb(it.color).map(coord).join(' ') + ' RG'); path(it.pts); ops.push('S'); }
+    }
+    for (const p of w.pieces || [w.poly]) { if (!p?.length) continue; if (!w.layers) { ops.push('0.55 g'); path(p, true); ops.push('f'); } if (!scene.wallEdges) { pen(0.5, 0); path(p, true); ops.push('S'); } }
+  }
   if (scene.wallEdges) { pen(0.5, 0); for (const p of scene.wallEdges) path(p, true); ops.push('S'); }   // one outline round the walls: joins not drawn
   // doors, windows, roofs
   for (const s of scene.symbols || []) {
@@ -113,9 +124,13 @@ export function planPdf(scene, { title = '', lines = [], paper = 'letter', units
     const A = [d.a[0] + nn[0] * off, d.a[1] + nn[1] * off], B = [d.b[0] + nn[0] * off, d.b[1] + nn[1] * off];
     pen(0.13, 0);
     path([A, B]);
-    const ext = 1.5 / k, gap = 0.8 / k, sg = Math.sign(off) || 1;
-    path([[d.a[0] + nn[0] * gap * sg, d.a[1] + nn[1] * gap * sg], [A[0] + nn[0] * ext * sg, A[1] + nn[1] * ext * sg]]);
-    path([[d.b[0] + nn[0] * gap * sg, d.b[1] + nn[1] * gap * sg], [B[0] + nn[0] * ext * sg, B[1] + nn[1] * ext * sg]]);
+    const ext = 1.5 / k, gap = 0.8 / k;
+    for (const [i, q] of [A, B].entries()) {
+      const source = d.witnesses?.[i] || (i ? d.b : d.a), distance = Math.hypot(q[0]-source[0],q[1]-source[1]);
+      if (distance < 0.001) continue;
+      const dir = [(q[0]-source[0])/distance,(q[1]-source[1])/distance];
+      path([source.map((v,j)=>v+dir[j]*Math.min(gap,distance/2)),q.map((v,j)=>v+dir[j]*ext)]);
+    }
     const tk = 1 / k, tick = [(u[0] - nn[0]) * tk, (u[1] - nn[1]) * tk];
     for (const q of [A, B]) path([[q[0] - tick[0], q[1] - tick[1]], [q[0] + tick[0], q[1] + tick[1]]]);
     ops.push('S');
@@ -161,7 +176,7 @@ function bounds(scene) {
   for (const w of scene.walls || []) for (const q of w.poly || []) g(q[0], q[1]);
   for (const c of [...(scene.cut || []), ...(scene.below || [])]) for (let i = 0; i + 1 < c.segs.length; i += 2) g(c.segs[i], c.segs[i + 1]);
   for (const s of scene.symbols || []) for (const q of s.poly || []) g(q[0], q[1]);
-  for (const d of scene.dims || []) { g(d.a[0], d.a[1]); g(d.b[0], d.b[1]); }
+  for (const d of scene.dims || []) for (const q of dimensionFootprint(d)) g(q[0], q[1]);
   for (const x of scene.grids || []) { g(x.a[0], x.a[1]); g(x.b[0], x.b[1]); }
   for (const d of scene.drafting || []) for (const l of d.lines || []) for (const q of l) g(q[0], q[1]);   // 0.6 DC.117 (d)
   if (!Number.isFinite(b.x0)) return { x0: 0, y0: 0, x1: 10000, y1: 10000 };

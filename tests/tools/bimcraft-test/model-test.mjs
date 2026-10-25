@@ -491,7 +491,7 @@ export async function modelMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, a
       const W = require('web-ifc');
       const a = new W.IfcAPI(); await quiet(() => a.Init())();
       const id = a.OpenModel(ed4.save());
-      ok(a.GetLineIDsWithType(id, W.IFCROOF).size() === 1 && a.GetLineIDsWithType(id, W.IFCSPACE).size() === 2 && a.GetLineIDsWithType(id, W.IFCCOVERING).size() === 2, 'web-ifc (oracle): the roof, two spaces, the ceiling and the roof\'s soffit');
+      ok(a.GetLineIDsWithType(id, W.IFCROOF).size() === 1 && a.GetLineIDsWithType(id, W.IFCSPACE).size() === 2 && a.GetLineIDsWithType(id, W.IFCCOVERING).size() === 1, 'web-ifc (oracle): the roof, two spaces and the ceiling (the roof\'s soffit was turned off above, PR #4)');
     } catch (e) { console.log('  --   web-ifc not installed: oracle check skipped'); }
     saved.rooms = ed4.save(); saved.lroof = ed5.save();
     if (args.includes('--keep')) { const out = path.join(ROOT, 'tmp/bimcraft-rooms.ifc'); fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, ed4.save()); fs.writeFileSync(path.join(ROOT, 'tmp/bimcraft-lroof.ifc'), ed5.save()); console.log('  (kept ' + out + ')'); }

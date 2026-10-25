@@ -78,6 +78,16 @@ export function mountBundle(ctx) {
     ctx.status(t('bundle.view.shown', { name: v.name, what: bits.join('; ') || t('bundle.view.whole') }), false, true);
   }
 
+  /** 0.7 BIM-BUNDLE-OPEN: a layout's file to the app that can work on it, in a new tab (handoff.js). */
+  async function layoutHand(l, kind) {
+    const app = ctx.apps?.[kind], path = kind === 'pdf' ? l.pdf : l.dwg;
+    if (!app || !ctx.handoff) return;
+    const name = path.split('/').pop();
+    try {
+      await ctx.handoff(app, async () => new File([await b.index.read(path)], name, { type: kind === 'pdf' ? 'application/pdf' : 'application/acad' }));
+      ctx.status(t('bundle.layout.sent', { file: name, app: app.name }), false, true);
+    } catch (e) { console.error(e); ctx.status(e.code && ERR.includes(e.code) ? bundleError(e, b.file.name) : t(e.code === 'blocked' ? 'handoff.blocked' : 'handoff.failed'), true); }
+  }
   async function layoutFile(l, kind) {
     const path = kind === 'pdf' ? l.pdf : l.dwg;
     let data;
@@ -107,6 +117,8 @@ export function mountBundle(ctx) {
       el('span', { className: 'bc-bundle-acts' },
         l.pdf && b.index.has(l.pdf) ? el('button', { type: 'button', className: 'bc-linkbtn', 'data-bundle-pdf': l.id, title: t('bundle.layout.pdf.title'), onClick: () => layoutFile(l, 'pdf') }, t('bundle.layout.pdf')) : null,
         l.dwg && b.index.has(l.dwg) ? el('button', { type: 'button', className: 'bc-linkbtn', 'data-bundle-dwg': l.id, title: t('bundle.layout.dwg.title'), onClick: () => layoutFile(l, 'dwg') }, t('bundle.layout.dwg')) : null,
+        l.pdf && b.index.has(l.pdf) && ctx.apps?.pdf ? el('button', { type: 'button', className: 'bc-linkbtn', 'data-bundle-pdf-hand': l.id, title: t('bundle.layout.hand.title', { app: ctx.apps.pdf.name }), onClick: () => layoutHand(l, 'pdf') }, t('bundle.layout.hand', { app: ctx.apps.pdf.name })) : null,
+        l.dwg && b.index.has(l.dwg) && ctx.apps?.dwg ? el('button', { type: 'button', className: 'bc-linkbtn', 'data-bundle-dwg-hand': l.id, title: t('bundle.layout.hand.title', { app: ctx.apps.dwg.name }), onClick: () => layoutHand(l, 'dwg') }, t('bundle.layout.hand', { app: ctx.apps.dwg.name })) : null,
         !(l.pdf && b.index.has(l.pdf)) && !(l.dwg && b.index.has(l.dwg)) ? el('span', { className: 'bc-muted' }, t('bundle.layout.nofile')) : null),
       l.drawings.length ? el('span', { className: 'bc-muted bc-bundle-drawings' }, t('bundle.layout.drawings', { list: l.drawings.map((d) => d.name).filter(Boolean).join(', ') })) : null)));
   }

@@ -52,6 +52,8 @@
  *                                                   #   original), never more; no complete file is reported partial. Also runs
  *                                                   #   after the default (no folder) run. A cut-off file found in the folder
  *                                                   #   passes only as a correct partial open (checkPartialOpen).
+ *   node bin/test-bimcraft.mjs --walls             # 0.7 contributions (Doc, achartt): wall assemblies, the project material library and
+ *                                                   #   reference dimensions: tools/bimcraft-test/{wall-precision,material-library}.test.mjs (node:test)
  *
  * Drawings live OUTSIDE the repo (/var/www/CADCRAFT/testfiles): client work never goes in git.
  * IFC is read by cc-ifc, the build's own engine (dev/ifc/api.js; lib/ifc/api.js for a frozen release, which shipped web-ifc),
@@ -140,14 +142,39 @@ if (args.includes('--geo')) process.exit(await geoMode());
 if (args.includes('--dynamic')) process.exit(await dynamicMode());
 if (args.includes('--new')) process.exit(await newMode());
 if (args.includes('--rotated')) process.exit(await rotatedMode());
+// 0.7 contributions (Doc, achartt/bimcraft-SDH): the two node:test files that came with the wall assemblies
+if (args.includes('--walls')) {
+  const { spawnSync } = await import('node:child_process');
+  const r = spawnSync(process.execPath, ['--test', path.join(ROOT, 'tools/bimcraft-test/wall-precision.test.mjs'), path.join(ROOT, 'tools/bimcraft-test/material-library.test.mjs')], { stdio: 'inherit' });
+  process.exit(r.status ?? 1);
+}
+// 0.7 BIM-MLWALL (session bim-07): walls that run through several levels — tools/bimcraft-test/mlwall-test.mjs
+if (args.includes('--mlwall')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/mlwall-test.mjs'))).mlwallMode({ APP, ROOT, WebIFC, IfcModel, quiet }));
+// 0.7 BIM-BUNDLE-OPEN (session bim-07): bundles in a folder scan — tools/bimcraft-test/bundle-open-test.mjs
+if (args.includes('--bundle-open')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/bundle-open-test.mjs'))).bundleOpenMode({ APP, ROOT }));
+// 0.7 DC.116 (session trace): walls from a set of plans (vector PDF, raster PDF, scan) — tools/bimcraft-test/plans-test.mjs
+if (args.includes('--variants')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/variants-test.mjs'))).variantsMode({ APP, ROOT, WebIFC, IfcModel, quiet }));   // 0.7 W3.19 (configurator)
+if (args.includes('--plans')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/plans-test.mjs'))).plansMode({ APP, ROOT, WebIFC, IfcModel, quiet }));
+// 0.7 SU.461 (session bim-07): copy a level's drawing — tools/bimcraft-test/copylevel-test.mjs
+if (args.includes('--copylevel')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/copylevel-test.mjs'))).copyLevelMode({ APP, ROOT, WebIFC, IfcModel, quiet }));
+// 0.7 BIM-FAM-SOLID (session bim-07): families used hard, broken, round-tripped, timed — tools/bimcraft-test/families-solid-test.mjs
+if (args.includes('--famsolid')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/families-solid-test.mjs'))).famSolidMode({ APP, ROOT, WebIFC, IfcModel, quiet, args }));
+// 0.7 BIM-FAM-MORE (session bim-07): families like parametric objects — tools/bimcraft-test/families-more-test.mjs
+if (args.includes('--fammore')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/families-more-test.mjs'))).famMoreMode({ APP, ROOT, WebIFC, IfcModel, quiet, args }));
+// 0.7 SU.878 (session bim-07): the I shape of BimCraft's analytical sections — tools/bimcraft-test/su878-test.mjs
+if (args.includes('--su878')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/su878-test.mjs'))).su878Mode({ APP, ROOT, WebIFC, IfcModel, quiet }));
 // 0.5 part 3 track BM (session bim-model): the building tools — tools/bimcraft-test/model-test.mjs
 if (args.includes('--model')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/model-test.mjs'))).modelMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));
 // 0.5 part 4 track RC (session bim-residential): the residential tools — tools/bimcraft-test/res-test.mjs
 if (args.includes('--res')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/res-test.mjs'))).resMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));
 // 0.6 (session bim-draw): the 0.6 drawing work — tools/bimcraft-test/draw06-test.mjs
+// 0.7 (session massing): CivilCraft's building masses developed in BimCraft — tools/bimcraft-test/mass07-test.mjs
+if (args.includes('--mass07')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/mass07-test.mjs'))).mass07Mode({ APP, ROOT, WebIFC, IfcModel, quiet }));
 if (args.includes('--draw06')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/draw06-test.mjs'))).draw06Mode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));
 // 0.6 DF.29 (session bim-draw): pipes and ducts — tools/bimcraft-test/mep-test.mjs
 if (args.includes('--mep')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/mep-test.mjs'))).mepMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));
+// 0.7 LC.9 (session mep-07): add-on API 1.1, equipment with ports, connected runs, clash sets, spools — tools/bimcraft-test/mep07-test.mjs
+if (args.includes('--mep07')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/mep07-test.mjs'))).mep07Mode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));
 // 0.6 DC.114 (session bim-families_PART_2): families on IFC types — tools/bimcraft-test/families-test.mjs
 if (args.includes('--families')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/families-test.mjs'))).familiesMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));
 // 0.6 round 2 (session bim-fixes_PART_2): DC.53 / DC.57 — tools/bimcraft-test/fixes2-test.mjs
@@ -155,6 +182,7 @@ if (args.includes('--fixes2')) process.exit(await (await import(path.join(ROOT, 
 if (args.includes('--views2')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/views2-test.mjs'))).views2Mode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));   // 0.6 DC.117 (bim-views_PART_2)
 // 0.6 round 2 (session bim-comforts_PART_2): curved walls, justification, moving items, dormers, spiral stairs, interior elevations — tools/bimcraft-test/comforts-test.mjs
 if (args.includes('--comforts')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/comforts-test.mjs'))).comfortsMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));
+if (args.includes('--ops')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/ops-test.mjs'))).opsMode({ APP, ROOT, WebIFC, IfcModel, quiet, args }));   // 0.7 LC.12 / LC.20 (bim-ops)
 if (args.includes('--extra2')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/extra2-test.mjs'))).extra2Mode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));   // 0.6 DC.22 / LC.12 / LC.20 (bim-extra_PART_2)
 if (args.includes('--render')) process.exit(await (await import(path.join(ROOT, 'tools/bimcraft-test/render-test.mjs'))).renderMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, args }));   // 0.5 RC.7 / RC.11 (session render)
 // 0.5 part 4 track IP.1: menu styles, keys and mouse — tools/bimcraft-test/input-test.mjs
@@ -451,7 +479,12 @@ async function readDrawing(bytes, f, rel) {
   const count = (s, k) => [...s.batches.values()].reduce((n, b) => n + b[k].length, 0);
   const sheets = d.spaces.map((s) => `${s.name}${s.kind === 'paper' ? ' (sheet, ' + s.viewports.length + ' viewports)' : ''}: ${count(s, 'lines')} lines, ${count(s, 'fills')} fills, ${count(s, 'texts')} texts`);
   const empty = !d.spaces.some((s) => s.batches.size);
-  if (empty && d.stats.entities > 0) throw new Error('nothing to draw from ' + d.stats.entities + ' entities');
+  // A drawing whose every entity is a kind BimCraft's 2D view deliberately lists as "Not drawn yet" (ACIS solids, 0.7 acis;
+  // PDF/DWF/DGN underlays, 0.7 cad-bugs) reads correctly and shows that list: not a failure. Anything else drawn as nothing is.
+  const NOT_DRAWN_ON_PURPOSE = new Set(['3DSOLID', 'BODY', 'REGION', 'SURFACE', 'PDFUNDERLAY', 'DWFUNDERLAY', 'DGNUNDERLAY']);
+  const unsup = Object.entries(d.stats.unsupported || {});
+  const onPurpose = empty && d.stats.entities > 0 && unsup.length > 0 && unsup.every(([k]) => NOT_DRAWN_ON_PURPOSE.has(k)) && unsup.reduce((n, [, c]) => n + c, 0) === d.stats.entities;
+  if (empty && d.stats.entities > 0 && !onPurpose) throw new Error('nothing to draw from ' + d.stats.entities + ' entities');
   const bad = d.spaces.flatMap((s) => [...s.batches.values()]).some((b) => b.lines.some((l) => l.some((v) => !Number.isFinite(v))));
   if (bad) throw new Error('non-finite coordinates in output');
   // Print view: every batch has a line weight in mm (AutoCAD's table, 0–2.11).
@@ -490,7 +523,7 @@ async function readDrawing(bytes, f, rel) {
     release: d.release ? 'AutoCAD ' + d.release + ' (' + tag + ')' : tag || 'DXF', units: d.units || null,
     layers: d.layers.length, entities: d.stats.entities,
     spaces: sheets.join(' | '),
-    note: empty ? 'empty drawing: the file holds no entities (valid, nothing to show)' : null,
+    note: onPurpose ? 'nothing BimCraft draws in 2D: listed as Not drawn yet (' + unsup.map(([k, c]) => k + ' ×' + c).join(', ') + ')' : empty ? 'empty drawing: the file holds no entities (valid, nothing to show)' : null,
     linked: d.xrefs.length ? d.xrefs.map((x) => x.name + (x.loaded ? ' (loaded)' : ' (NOT FOUND)')).join('; ') + (d.stats.xrefEntities ? ' — ' + d.stats.xrefEntities + ' entities drawn from links' : '') : null,
     weights: [...lws].filter(([, n]) => n).sort((x, y) => x[0] - y[0]).map(([w, n]) => w.toFixed(2) + ' mm × ' + n).join(', ') + (noPlot ? ' | ' + noPlot + ' non-printing layers' : ''),
     equipment,
@@ -2541,6 +2574,19 @@ async function geoMode() {
   } else console.log('  skip PROJ checks (no tools/civilcraft-test/venv)');
   ifcm.close?.();
 
+  console.log('== a map unit that is a conversion-based unit (US survey foot, EPSG:2277; found by the 0.7 site-concept spike)');
+  // fixtures/ifc/site-masses.ifc (CivilCraft's ifc-massing.js): written in US survey feet, MapUnit the same foot, IfcMapConversion
+  // at E 2080150, N 6150220, H 254.5 ftUS with no scale; the origin is the middle of the two masses
+  const FTUS = 1200 / 3937;
+  const ifcu = await quiet(() => IfcModel.create(WebIFC, null))();
+  const mu = await quiet((b) => ifcu.load(b, () => {}))(new Uint8Array(fs.readFileSync(path.join(ROOT, 'fixtures/ifc/site-masses.ifc'))));
+  const gu = G.readGeoref(ifcu.api, mu.modelID);
+  ok(gu && gu.kind === 'map' && gu.crs.code === 2277 && Math.abs(gu.mapUnitM - FTUS) < 1e-12 && Math.abs(gu.fileUnitM - FTUS) < 1e-12, 'read: EPSG:2277, map unit and file unit 0.3048006096 m, not 0.3048 (' + (gu && gu.mapUnitM) + ')');
+  // Block A's far corner: (2080130, 6150240) ftUS on the map is (−20, +20) ft from the file's origin
+  const cu = G.fileToMap(gu, [-20, 20, 0]);
+  ok(Math.abs(cu[0] - 2080130 * FTUS) < 0.001 && Math.abs(cu[1] - 6150240 * FTUS) < 0.001, 'the corner round-trips to under 1 mm: ' + [cu[0] - 2080130 * FTUS, cu[1] - 6150240 * FTUS].map((v) => (v * 1000).toFixed(4)).join(', ') + ' mm off');
+  ifcu.close?.();
+
   console.log('== only IfcSite latitude / longitude');
   const ifcs = await quiet(() => IfcModel.create(WebIFC, null))();
   const ms = await quiet((b) => ifcs.load(b, () => {}))(await fixtureBytes({ georef: 'site' }));
@@ -2650,7 +2696,7 @@ async function handoffMode() {
   const canon = fs.readFileSync(path.join(APP, 'handoff.js'));
   const apps = path.resolve(APP, '..', '..');
   console.log('== copies');
-  for (const a of ['cadcraft', 'modelcraft', 'detailcraft', 'markupcraft', 'takeoffcraft']) {
+  for (const a of ['cadcraft', 'modelcraft', 'detailcraft', 'markupcraft', 'takeoffcraft', 'civilcraft']) {   // civilcraft: 0.7 LC.1, "Develop in BimCraft"
     const f = path.join(apps, a, 'dev', 'handoff.js');
     if (!fs.existsSync(path.join(apps, a, 'dev'))) { console.log('  skip ' + a + ' (not in this clone)'); continue; }
     ok(fs.existsSync(f) && Buffer.compare(fs.readFileSync(f), canon) === 0, a + '/dev/handoff.js is byte-identical to the canonical copy');
@@ -2666,6 +2712,9 @@ async function handoffMode() {
   const ids2 = new Set(Array.from({ length: 200 }, () => H.newHandoffId()));
   if (ru) Object.defineProperty(globalThis.crypto, 'randomUUID', ru); else delete globalThis.crypto.randomUUID;
   ok(ids2.size === 200 && [...ids2].every((x) => /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(x) && H.handoffParam('?handoff=' + x) === x), 'without crypto.randomUUID (plain http): version-4 UUIDs from getRandomValues, 200 different, each read back');
+  console.log('== meta (0.7 LC.1: what a file is for)');
+  ok(JSON.stringify(H.cleanMeta({ kind: 'mass', n: 3, ok: true, 'bad key': 'x', big: 'y'.repeat(500), nested: { a: 1 }, nan: NaN })) === JSON.stringify({ kind: 'mass', n: 3, ok: true, big: 'y'.repeat(200) }), 'cleanMeta keeps short plain values under plain keys, cuts strings at 200, drops objects, NaN and odd keys');
+  ok(JSON.stringify(H.cleanMeta(null)) === '{}' && JSON.stringify(H.cleanMeta('x')) === '{}', 'no meta is {}');
   console.log('== sendHandoff');
   const saved = globalThis.window;
   const opened = [];
