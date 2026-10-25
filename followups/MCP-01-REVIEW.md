@@ -27,3 +27,7 @@ MCP-01 remains bounded to materials, assemblies, authored wall types and existin
 The connection guide is an example for a selected client's supported settings; it is not proof of installed Codex configuration. Persistent user-client setup remains unperformed and is not the only outstanding item: MCP01-PM-01 requires a fix first. No credential, global configuration or account-permission changes were made by PM. No agent was messaged, no PR review comment was posted, and no feature branch was modified.
 
 [Exact-head MCP CI](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40136712385) · [Handoff](https://github.com/drsurfbum/bimcraft-SDH/blob/64000d39e6a194e83053a84c90c95d349125ef6c/docs/features/MCP-01-HANDOFF.md) · [Connection guide](https://github.com/drsurfbum/bimcraft-SDH/blob/64000d39e6a194e83053a84c90c95d349125ef6c/docs/features/MCP-01-CONNECTION.md)
+
+## Submitted fix candidate — October 25, 2026
+
+PR #16 now publishes 9224167fe3e2e856c57679065b545d834f52ade1. The owner submitted guarded history/session callbacks and new live project-switch regression evidence; all eight workflows pass on this exact candidate. PM re-review is still required, and MCP01-PM-01 remains OPEN. The historical reproduction above refers to 64000d3; do not describe it as a reproduction against the new fix. Preserve this candidate during the [0.7 integration plan](UPSTREAM-0.7-PLAN.md). No readiness or merge transition occurred.
