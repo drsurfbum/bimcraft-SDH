@@ -93,6 +93,13 @@ export class IfcEditor {
     const set = api.GetLine(mid, ref.psetId, false);
     const protectedSets = new Set(['CadCraft_WallType', 'CadCraft_Wall', 'CadCraft_MaterialLibrary', 'CadCraft_Material', 'CadCraft_WallDimension', 'CadCraft_PlanView', 'CadCraft_CeilingPlan', 'CadCraft_ViewTemplates', 'CadCraft_Sheets', 'CadCraft_CalloutViews', 'CadCraft_Room', 'CadCraft_Floor', 'CadCraft_Ceiling', 'CadCraft_Roof', 'CadCraft_Door', 'CadCraft_Window', 'CadCraft_Opening']);
     if (protectedSets.has(set?.Name?.value) || protectedSets.has(ref.setName)) throw new Error(t('ifcedit.err.domain_record'));
+    if (!set?.HasProperties?.some(h => h.value === ref.propId)) throw new Error(t('ifcedit.err.single_value'));
+    // IFC permits shared property entities. An ordinary set must not be an alternate route into a domain record.
+    const sets = api.GetLineIDsWithType(mid, this.W.IFCPROPERTYSET);
+    for (let i = 0; i < sets.size(); i++) {
+      const owner = api.GetLine(mid, sets.get(i), false);
+      if (protectedSets.has(owner?.Name?.value) && owner.HasProperties?.some(h => h.value === ref.propId)) throw new Error(t('ifcedit.err.domain_record'));
+    }
     const prop = api.GetLine(mid, ref.propId, false);
     if (!prop || !prop.NominalValue) throw new Error(t('ifcedit.err.single_value'));
     const old = prop.NominalValue.value;

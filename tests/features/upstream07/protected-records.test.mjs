@@ -46,3 +46,15 @@ test('0.7 element_set uses the shared refusal, preserves other projects and stil
   const edited = fingerprint(a.ed); a.ed.undo(); assert.deepEqual(fingerprint(a.ed), original); a.ed.redo(); assert.deepEqual(fingerprint(a.ed), edited);
   assert.deepEqual(fingerprint(b.ed), other);
 });
+
+
+test('forged set ids and shared ordinary-set references cannot alias protected property entities',async()=>{
+ const m=await model(bytes),api=m.ed.api,mid=m.ed.mid,W=m.ed.W,sets=api.GetLineIDsWithType(mid,W.IFCPROPERTYSET);
+ const all=Array.from({length:sets.size()},(_,i)=>api.GetLine(mid,sets.get(i),false));
+ const protectedSet=all.find(s=>s.Name?.value==='CadCraft_Wall');
+ const ordinary=all.find(s=>!s.Name?.value?.startsWith('CadCraft_')&&s.HasProperties?.length);assert.ok(ordinary);
+ const propId=protectedSet.HasProperties[0].value,ref={psetId:ordinary.expressID,propId,setName:ordinary.Name.value};
+ const original=fingerprint(m.ed);assert.throws(()=>m.ed.setProperty(0,ref,9999),/single-value/);assert.equal(fingerprint(m.ed),original);
+ ordinary.HasProperties.push(new W.Handle(propId));api.WriteLine(mid,ordinary);
+ const aliased=fingerprint(m.ed);assert.throws(()=>m.ed.setProperty(0,ref,9999),/protected model record/);assert.equal(fingerprint(m.ed),aliased);assert.equal(m.ed.changes.length,0);
+});
