@@ -27,10 +27,13 @@ export const elevationDirs = { north: [0, -1], east: [-1, 0], south: [0, 1], wes
 
 export function modelTriangles(model, M, { skip = null, classes = null } = {}) {
   const map = new Map();
-  const ap = (x, y, z) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]];
+  // Canonicalize sub-nanometre transform cancellation in drawing coordinates only.
+  // The IFC, raw dimensions and 0.005 mm fixture acceptance bounds are unchanged.
+  const canonical = v => Number(v.toFixed(9));
+  const ap = (x, y, z) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]].map(canonical);
   for (const b of model.batches || []) {
     if (b.space) continue;
-    const P = b.positions, I = b.indices, T = b.triIds, kb = model.keyBase || 0;
+    const P = b.documentPositions || b.positions, I = b.indices, T = b.triIds, kb = model.keyBase || 0;
     for (let t = 0; t < I.length / 3; t++) {
       const key = T[t];
       if (skip && skip.has(key)) continue;

@@ -54,5 +54,5 @@ jobs:
           path: |
             .cc-test/upstream-browser/*.json
             .cc-test/upstream-browser/*.png
-            .cc-test/upstream-mcp/*.json
+            .cc-test/upstream-mcp/summary.json
           retention-days: 30

@@ -41,6 +41,13 @@ jobs:
           python -m venv .cc-test/reader
           .cc-test/reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
           .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
+          node .cc-test/tools/mcp/pack.mjs --bimcraft-only --out .cc-test/packed
+          MCP_SERVER=.cc-test/packed/mcp/server.mjs .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
+      - name: Three browser controls, real catalogs and same-environment timings
+        run: |
+          npm install --prefix .cc-test/shell-deps --no-package-lock playwright@1.56.1
+          .cc-test/shell-deps/node_modules/.bin/playwright install --with-deps chromium
+          node tests/features/upstream07/shell-controls.mjs --accepted .cc-test/accepted --release .cc-test/release
       - name: Retain sanitized control evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,5 +56,7 @@ jobs:
           path: |
             .cc-test/upstream07/*.json
             .cc-test/upstream07/*.log
-            .cc-test/upstream-mcp/report.json
+            .cc-test/upstream-mcp/summary.json
+            .cc-test/upstream07-shell/*.json
+            .cc-test/upstream07-shell/*.png
           retention-days: 30

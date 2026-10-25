@@ -43,6 +43,18 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
   const soon = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; engine?.refresh(); }); };
   const A = modelUi.extend({ refresh: soon, settled: soon, toolChanged: soon });
   const T = (k, v) => A.t(k, v);
+  // Retain the accepted direct fallback through the shared layout controller.
+  // Removing a one-page query override is necessary for an explicit in-page choice.
+  function chooseLayout(layout) {
+    const url = new URL(location.href); url.searchParams.delete('workspace');
+    history.replaceState(history.state, '', url);
+    window.ccShellWorkspace?.set(layout);
+  }
+  const launch = button(T('ws.layout.try'), { className: 'btn-line btn-sm-cc', 'data-ws-launch': '' });
+  launch.addEventListener('click', () => chooseLayout('docked'));
+  (document.querySelector('.app-bar') || root).append(launch);
+  const fallback = button(T('ws.layout.established'), { 'data-ws-fallback': '' });
+  fallback.addEventListener('click', () => chooseLayout('standard'));
   const docked = () => !!engine?.has('ribbon');   // Doc's command layer (ribbon, walls, keys) is on
   const mode = () => ctx?.block('viewtabs')?.mode || null;
 
@@ -207,7 +219,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
       fit: { label: T('ws.tool.fit'), nodes: (c) => [c.tool('fit', 'viewbar', true)] },
     },
     palettes: {
-      properties: { label: T('ws.props'), title: propHeading, actions: [button(T('ws.props.view'), { 'data-ws-view-props': '' })], body: () => propsBody, foot: unitsSlot },
+      properties: { label: T('ws.props'), title: propHeading, actions: [button(T('ws.props.view'), { 'data-ws-view-props': '' }), fallback], body: () => propsBody, foot: unitsSlot },
       browser: { label: T('ws.browser'), hint: T('ws.browser.hint'), body: () => browserEl() },
       panel: { label: T('ws.model') },   // in the right panel (the toolbox layout) the shell names it "More panels"
     },
@@ -224,6 +236,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     },
     entered(c) {
       ctx = c;
+      launch.hidden = true;
       if (c.has('palettes')) {
         elementProps.append(props);
         if (c.has('ribbon')) walls.setActive(true);   // Doc's wall placement belongs to his ribbon; the toolbox layout keeps the app's own Wall tool
@@ -238,7 +251,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
         walls.setActive(false); rememberCamera(); propsHome.after(props); restoreBrowser();
       }
     },
-    left(c) { if (c.was && root.querySelector('.bc-right [data-rtab="props"]')) root.querySelector('.bc-right [data-rtab="props"]').click(); ctx = null; },
+    left(c) { if (c.was && root.querySelector('.bc-right [data-rtab="props"]')) root.querySelector('.bc-right [data-rtab="props"]').click(); ctx = null; launch.hidden = false; },
     resized() { current().viewer?.resize(); A.pv()?.resize(); },
     refresh(c) {
       root.classList.toggle('tbx-noifc', c.has('toolbox') && !current().editor);

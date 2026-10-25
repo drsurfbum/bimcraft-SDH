@@ -20,13 +20,14 @@ const REPO = path.resolve(HERE, '..', '..', '..');
 const isDir = (p) => { try { return fs.statSync(p).isDirectory(); } catch { return false; } };
 
 /** The folder an app's modules are loaded from. */
-export function appDir(slug) {
+export function appDir(slug, { optional = false } = {}) {
   if (!/^[a-z]{2,20}$/.test(slug)) throw new Error('unknown app ' + slug);
   const env = process.env.CADCRAFT_APPS;
   const tries = [];
   if (env) tries.push(path.join(env, slug, 'dev'), path.join(env, slug));
   tries.push(path.join(PACKED, slug), path.join(REPO, 'public_html/assets/apps', slug, 'dev'));
   for (const t of tries) if (isDir(t)) return t;
+  if (optional && tries.every(t => { try { fs.lstatSync(t); return false; } catch (e) { if (e.code === 'ENOENT') return true; throw e; } })) return null;
   throw new Error('CadCraft could not find the ' + slug + ' modules (looked in ' + tries.join(', ') + ').');
 }
 

@@ -50,4 +50,6 @@ jobs:
           name: f28-browser
           path: |
             .cc-test/f28-browser/
+            !.cc-test/f28-browser/**/*.ifc
+            !.cc-test/f28-browser/expected.json
             evidence/f28/performance-node.json

@@ -264,6 +264,8 @@ function finishBatch(b) {
     space: b.space,          // IfcSpace volumes: hidden by default in the viewer
     color: b.color,
     positions: Float32Array.from(b.pos),
+    // Drawings must not round-trip through GPU floats when a coordination frame changes.
+    documentPositions: Float64Array.from(b.pos),
     normals: Float32Array.from(b.nrm),
     indices: Uint32Array.from(b.idx),
     triIds: Uint32Array.from(b.ids),   // element key per triangle (faceIndex → element)

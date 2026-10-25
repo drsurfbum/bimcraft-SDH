@@ -7798,5 +7798,7 @@
   "compute.card.share.on": "Shared with CadCraft (anonymous, at most once a month). Turn it off in Settings › Global › Hardware specs.",
   "compute.card.share.off": "Not shared. Settings › Global › Hardware specs turns sharing on.",
   "ws.why.wallcopy": "Wall Copy is not supported in the authored-wall paths. Use the supported wall operations.",
-  "ifcedit.err.domain_record": "This property is a protected model record. Use its dedicated modeling operation; generic property edits cannot change it."
+  "ifcedit.err.domain_record": "This property is a protected model record. Use its dedicated modeling operation; generic property edits cannot change it.",
+  "ws.layout.try": "Try ribbon workspace",
+  "ws.layout.established": "Established layout"
 }

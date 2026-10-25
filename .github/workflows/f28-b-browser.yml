@@ -54,4 +54,6 @@ jobs:
           name: f28-b-browser
           path: |
             .cc-test/f28-b-browser/
+            !.cc-test/f28-b-browser/**/*.ifc
+            !.cc-test/f28-b-browser/expected.json
             evidence/f28-b/performance-node.json

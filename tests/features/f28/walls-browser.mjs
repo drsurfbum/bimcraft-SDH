@@ -60,7 +60,7 @@ try{
  await open(page,fixture);const initial=await snapshot(page);report.after=await measure(page);await settle(page);
  check('same-environment baseline and F28-B Fine CPU submission workload',JSON.stringify(report.before.canvas)===JSON.stringify(report.after.canvas)&&JSON.stringify(report.before.camera)===JSON.stringify(report.after.camera)&&report.before.raw.some(x=>x>0)&&report.after.raw.some(x=>x>0));
  check('real core-anchored fixture has cavity, zero membrane and persistent dimensions',initial.dims.length===2&&initial.assemblies.some(t=>t.layers.some(l=>l.kind==='cavity')&&t.layers.some(l=>l.t===0)));
- await page.locator('[data-ws-tab="Architecture"]').click();await page.locator('.ws-ribbon [data-ws-command="wall"]').click();await settle(page);
+ await page.locator('[data-ws-tab="architecture"]').click();await page.locator('.ws-ribbon [data-ws-command="wall"]').click();await settle(page);
  check('Architecture Wall keeps the live layout and actual default controls',await page.locator('[data-model-wallref]').isVisible()&&await page.locator('[data-model-walltype]').isVisible()&&await page.locator('.bc').evaluate(e=>e.classList.contains('ws-active')));
  check('six location lines are discoverable',await page.locator('[data-model-wallref] option').count()===6);
  check('unsupported curved placement is unavailable in this slice',await page.locator('[data-model-wallshape]').isDisabled()&&await page.locator('[data-model-wallshape] option[value="arc"]').evaluate(o=>o.disabled));

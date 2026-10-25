@@ -17,8 +17,8 @@ import { load, appDir, vendorDir } from './apps.mjs';
 // each given a `doc` handle here. A build without them (an older package) simply lists none.
 let BIM = null;
 // block_insert's arguments: the live window's (cadcraft/dev/agents.js), so both paths take the same ones
-const BLOCK_SCHEMA = () => JSON.parse(JSON.stringify(CAD_AGENTS.BLOCK_INSERT_SCHEMA));
-const CAD_AGENTS = await load('cadcraft', 'agents.js');
+const CAD_AGENTS = appDir('cadcraft', { optional: true }) ? await load('cadcraft', 'agents.js') : null;
+const BLOCK_SCHEMA = () => CAD_AGENTS ? JSON.parse(JSON.stringify(CAD_AGENTS.BLOCK_INSERT_SCHEMA)) : { type: 'object', properties: {}, required: [], additionalProperties: false };
 // param_set's arguments: the live window's (partcraft/dev/agents.js)
 const M_PART_SCHEMA = () => JSON.parse(JSON.stringify(PART_AGENTS.PARAM_SET_SCHEMA));
 let PART_AGENTS = null;
@@ -29,7 +29,7 @@ try { CIVIL = await import('./civil.mjs'); M_CIVIL = await CIVIL.civilModules();
 // PartCraft (0.7 AS.4): its part, mesh kernel and assistant functions (part.mjs); a package without them lists none
 let PART = null;
 try { PART = await import('./part.mjs'); await PART.partModules(); } catch { PART = null; }
-try { BIM = await load('bimcraft', 'agents.js'); } catch { BIM = null; }
+BIM = await load('bimcraft', 'agents.js');   // required in this BimCraft distribution: broken registration must fail clearly
 // TakeoffCraft (0.7 AS.6): the window's CAD counting and measuring functions (agents.js); a package without them lists none
 let TAKEOFF_AGENTS = null;
 try { TAKEOFF_AGENTS = await load('takeoffcraft', 'agents.js'); } catch { TAKEOFF_AGENTS = null; }
@@ -221,9 +221,9 @@ export function headlessTools(env) {
     } });
 
   T({ name: 'block_insert', group: 'edit', title: 'Insert a block',
-    description: 'Place a block of the drawing at a point with its attribute values in one call (as INSERT does, its questions answered), optionally on a layer; one undo step. A block from another drawing: command_run with ["INSERT", "F", …] and openFiles.',
+    description: CAD_AGENTS ? 'Place a block of the drawing at a point with its attribute values in one call (as INSERT does, its questions answered), optionally on a layer; one undo step. A block from another drawing: command_run with ["INSERT", "F", …] and openFiles.' : 'Unavailable in this standalone BimCraft distribution: the CadCraft application modules are not installed. No drawing is changed.',
     inputSchema: (() => { const sc = BLOCK_SCHEMA(); return { ...sc, properties: { doc: S.doc, ...sc.properties }, required: ['doc', ...sc.required] }; })(),
-    run: async (a) => { const { doc, ...o } = a; const r = await get(env, doc, 'cad').s.insert(o); if (!r.id) throw new Error(r.error || 'The block was not placed.'); return r; } });
+    run: async (a) => { if (!CAD_AGENTS) throw new Error('block_insert requires the CadCraft application modules.'); const { doc, ...o } = a; const r = await get(env, doc, 'cad').s.insert(o); if (!r.id) throw new Error(r.error || 'The block was not placed.'); return r; } });
 
   T({ name: 'undo', group: 'edit', title: 'Undo',
     description: 'Undo the assistant\'s last steps on a drawing, an IFC model, a civil site, a part or a takeoff (only steps labelled "Assistant:" unless any is true).',

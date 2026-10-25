@@ -60,6 +60,23 @@ function copyClosure(src, dst, entries, { staticOnly = [] } = {}) {
   return seen.size;
 }
 
+// A testable standalone fork package must not require unrelated sibling apps.
+// This mode preserves the upstream closure/dispatcher and never publishes to npm.
+if (args.includes('--bimcraft-only')) {
+  const project = path.resolve(ROOT, '..');
+  mk(OUT);
+  fs.writeFileSync(path.join(OUT, 'package.json'), JSON.stringify({ name: '@bimcraft-sdh/foundation-mcp', version: '0.7.0', private: true, type: 'module', license: 'Apache-2.0', engines: { node: '>=20.19' } }, null, 2));
+  for (const f of ['server.mjs','core.mjs','live-server.mjs']) cp(path.join(ROOT,'tools/mcp',f),path.join(OUT,'mcp',f));
+  for (const f of fs.readdirSync(path.join(ROOT,'tools/cli/headless'))) if (f.endsWith('.mjs')) cp(path.join(ROOT,'tools/cli/headless',f),path.join(OUT,'cli/headless',f));
+  const source = path.join(ROOT,'public_html/assets/apps/bimcraft/dev');
+  copyClosure(source,path.join(OUT,'cli/apps/bimcraft'),['agents.js','ifc-edit.js','new-model.js'],{staticOnly:['render-tools.js']});
+  copyCode(path.join(source,'ifc'),path.join(OUT,'cli/lib/ifc'));
+  for (const f of ['LICENSE','NOTICE','THIRD_PARTY.md']) cp(path.join(project,f),path.join(OUT,f));
+  fs.writeFileSync(path.join(OUT,'README.md'),'# Standalone BimCraft foundation MCP test package\n\nPrivate local validation artifact. Uses the fork modules and upstream dispatcher. Other CadCraft applications and live-only rendering are unavailable. Do not publish.\n');
+  console.log('Packed standalone BimCraft closure: ' + OUT);
+  process.exit(0);
+}
+
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/mcp/package.json'), 'utf8'));
 pkg.bin = { 'cadcraft-mcp': 'mcp/server.mjs', cadcraft: 'cli/cadcraft.mjs' };
 pkg.files = ['mcp/', 'cli/', 'LICENSE', 'README.md', 'THIRD_PARTY.md'];
