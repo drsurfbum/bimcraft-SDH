@@ -1,0 +1,283 @@
+{
+  "inputs": {
+    "accepted": "1afe80e78a42aa27ee9af5d1ac937cd38cd1b711",
+    "upstream": "c778c7ca3f83eeecc3e815078417f152b2ca7a94",
+    "release": "bimcraft-v0.7.0"
+  },
+  "implementation": "5347d26cf39a230142eafe6398b141fbdde30eac",
+  "delivery": "This evidence commit; verify its exact SHA in PR #17 checks.",
+  "localDirectStages": {
+    "runtime": "v26.9.0",
+    "passed": 702,
+    "failed": 0,
+    "stages": [
+      {
+        "name": "precision",
+        "status": "PASS",
+        "passed": 7,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "materials",
+        "status": "PASS",
+        "passed": 8,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "model",
+        "status": "PASS",
+        "passed": 131,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 1,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "comforts",
+        "status": "PASS",
+        "passed": 106,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "views2",
+        "status": "PASS",
+        "passed": 105,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "res",
+        "status": "PASS",
+        "passed": 206,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 6,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "f02-contract",
+        "status": "PASS",
+        "passed": 21,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "f04-graphics",
+        "status": "PASS",
+        "passed": 13,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "f05-sections",
+        "status": "PASS",
+        "passed": 18,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "f06-schedules",
+        "status": "PASS",
+        "passed": 23,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "fixture",
+        "status": "PASS",
+        "passed": 1,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "source-sync-contract",
+        "status": "PASS",
+        "passed": 44,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      },
+      {
+        "name": "runner-contract",
+        "status": "PASS",
+        "passed": 19,
+        "failed": 0,
+        "availabilityNotices": {
+          "count": 0,
+          "classification": "Optional reader/cross-app availability; never counted as passing assertions. Exact notices retained in local and CI logs."
+        }
+      }
+    ]
+  },
+  "localVendorLimit": "Full offline entry blocked by missing newly pinned CPython-WASI/PDF.js/OIDN assets; CI retrieves and verifies complete pins.",
+  "focusedTests": 15,
+  "independentF02": {
+    "files": 16,
+    "boundMm": 0.005,
+    "maxPointMm": 0.0020386012624830437,
+    "maxDimensionMm": 0.0009286677004638477,
+    "maxShapeMm": 0.0014559999999619322
+  },
+  "modelPerformance": {
+    "environment": {
+      "node": "v26.9.0",
+      "cpu": "Apple M5 Pro",
+      "platform": "darwin",
+      "arch": "arm64"
+    },
+    "fixtureSha256": "168be011e64585f757934c3775ce83ae47c86a97eda98734e720fcda3ffc7058",
+    "limits": "Thirty process-cold samples; thirty warm samples after five warmups. Same fixture bytes and synchronous boundaries. Whole-process memory, no forced GC. No interactive, GPU, large-model or performance-issue closure claim.",
+    "controls": [
+      {
+        "name": "accepted",
+        "summary": {
+          "process-cold-open": {
+            "n": 30,
+            "p50Ms": 2.278000000000006,
+            "p95Ms": 2.459292000000005
+          },
+          "warm-open": {
+            "n": 30,
+            "p50Ms": 0.7304169999999885,
+            "p95Ms": 0.9569580000000428
+          },
+          "unchanged-read": {
+            "n": 30,
+            "p50Ms": 0.1117500000000291,
+            "p95Ms": 0.1205410000000029
+          },
+          "forced-height-regeneration": {
+            "n": 30,
+            "p50Ms": 3.8729999999999905,
+            "p95Ms": 4.584290999999979
+          }
+        }
+      },
+      {
+        "name": "release",
+        "summary": {
+          "process-cold-open": {
+            "n": 30,
+            "p50Ms": 2.3564580000000035,
+            "p95Ms": 2.570915999999997
+          },
+          "warm-open": {
+            "n": 30,
+            "p50Ms": 0.73599999999999,
+            "p95Ms": 0.9063339999999869
+          },
+          "unchanged-read": {
+            "n": 30,
+            "p50Ms": 0.11804200000000264,
+            "p95Ms": 0.13858399999998028
+          },
+          "forced-height-regeneration": {
+            "n": 30,
+            "p50Ms": 4.216499999999996,
+            "p95Ms": 4.985958000000011
+          }
+        }
+      },
+      {
+        "name": "candidate",
+        "summary": {
+          "process-cold-open": {
+            "n": 30,
+            "p50Ms": 2.3460409999999996,
+            "p95Ms": 2.5367079999999973
+          },
+          "warm-open": {
+            "n": 30,
+            "p50Ms": 0.772041999999999,
+            "p95Ms": 0.97362499999997
+          },
+          "unchanged-read": {
+            "n": 30,
+            "p50Ms": 0.1133750000000191,
+            "p95Ms": 0.12795900000000415
+          },
+          "forced-height-regeneration": {
+            "n": 30,
+            "p50Ms": 4.227374999999995,
+            "p95Ms": 5.238625000000013
+          }
+        }
+      }
+    ]
+  },
+  "packageClosure": {
+    "matchedFiles": 84,
+    "requiredNotices": [
+      "LICENSE",
+      "NOTICE",
+      "THIRD_PARTY.md"
+    ],
+    "private": true,
+    "version": "0.7.0"
+  },
+  "MCP": {
+    "headlessCatalogEntries": 38,
+    "functionalSliceOnly": [
+      "initialize",
+      "tools/list",
+      "ifc_new",
+      "walls_add",
+      "walls_list",
+      "element_set refusal",
+      "ifc_save",
+      "ifc_open",
+      "undo"
+    ],
+    "permissions": "read-only catalog filtering, mutation/save refusal; allowed-root and no-overwrite refusal",
+    "live": "host JSON-RPC default-off refusal, initialize/list, protected-record refusal, ordinary edit/Undo, person-step refusal",
+    "limits": "No MCP-01 project-switch fix or recipe/document/join parity claim."
+  },
+  "controlFailures": [
+    "draw06: absent CivilCraft dependency, suite incomplete after 130 named assertions",
+    "families: absent PartCraft sibling source",
+    "mep: absent CadCraft sibling source"
+  ],
+  "resolvedControlDependency": "plans: pinned test-only PDF.js installed; both controls pass 41 assertions.",
+  "openFindings": [
+    "PERF-F04-01",
+    "PERF-F05-01",
+    "TEST-F28-01",
+    "MCP01-PM-01",
+    "broader semantic MCP catch-up"
+  ],
+  "publication": "Named metadata summaries only. Earlier inherited F03/F06 artifacts containing synthetic IFC require cleanup confirmation; no user project payload used."
+}
