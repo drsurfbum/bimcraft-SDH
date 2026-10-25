@@ -54,6 +54,7 @@ jobs:
           npm install --prefix .cc-test/shell-deps --no-package-lock playwright@1.56.1
           .cc-test/shell-deps/node_modules/.bin/playwright install --with-deps chromium
           node tests/features/upstream07/shell-controls.mjs --accepted .cc-test/accepted --release .cc-test/release
+          node tests/features/upstream07/lifecycle-browser.mjs
       - name: Retain sanitized control evidence
         if: always()
         uses: actions/upload-artifact@v4
