@@ -1,0 +1,54 @@
+{
+  "transport": "existing token-protected Streamable HTTP \u2192 browser host.control",
+  "switch": "native active-model radio during the real Undo rebuild",
+  "mockedDispatcher": false,
+  "mockedHistoryMutation": false,
+  "requestedDocument": "bim-5de5ce6b-bfbc-462e-b561-df06fee0b22b",
+  "status": "PASS",
+  "normalSameProject": {
+    "documentId": "bim-5de5ce6b-bfbc-462e-b561-df06fee0b22b",
+    "revision": 4,
+    "projectId": "0F04000000000000000000",
+    "units": "mm",
+    "mcp01Version": "1.0.0",
+    "undone": [
+      "Assistant: material_edit",
+      "Assistant: material_edit"
+    ],
+    "requestedSteps": 2,
+    "completedSteps": 2,
+    "complete": true
+  },
+  "switchResult": {
+    "documentId": "bim-5de5ce6b-bfbc-462e-b561-df06fee0b22b",
+    "revision": 7,
+    "projectId": "0F04000000000000000000",
+    "units": "mm",
+    "mcp01Version": "1.0.0",
+    "undone": [
+      "Assistant: material_edit"
+    ],
+    "requestedSteps": 2,
+    "completedSteps": 1,
+    "complete": false,
+    "stopped": {
+      "code": "document_changed",
+      "message": "The active document changed. Further history steps were refused."
+    },
+    "error": "The active document changed. Further history steps were refused.",
+    "isError": true
+  },
+  "proof": {
+    "switch": {
+      "armed": false,
+      "switched": true,
+      "observedSteps": 1
+    },
+    "AChanges": 1,
+    "BChanges": 1,
+    "BBytesUnchanged": true,
+    "BHistoryUnchanged": true,
+    "replacementIsActive": true
+  },
+  "errors": []
+}
