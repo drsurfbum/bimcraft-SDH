@@ -38,7 +38,6 @@ jobs:
       - name: Bounded commands and model invariants
         run: node --test tests/features/f28/*.test.mjs
       - name: Real browser acceptance
-        env:
         run: node tests/features/f28/browser.mjs
       - name: Independent downloaded IFC validation
         run: .cc-test/f28-reader/bin/python -I tests/features/f28/independent.py

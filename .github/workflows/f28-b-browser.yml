@@ -38,7 +38,6 @@ jobs:
       - name: Wall command and model invariants
         run: npm run test:f28
       - name: Real wall workspace browser acceptance
-        env:
         run: node tests/features/f28/walls-browser.mjs
       - name: Independent actual downloaded IFC and exports
         if: ${{ always() && hashFiles('.cc-test/f28-b-browser/saved.ifc') != '' && hashFiles('.cc-test/f28-b-browser/assemblies.csv') != '' && hashFiles('.cc-test/f28-b-browser/plan.pdf') != '' }}
