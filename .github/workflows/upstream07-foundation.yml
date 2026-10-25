@@ -1,5 +1,7 @@
 name: 0.7 foundation controls
 on:
+  push:
+    branches: [integration/upstream-0.7-20261025]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -36,6 +38,10 @@ jobs:
         run: node --test tests/features/upstream07/*.test.mjs tests/features/f28/*.test.mjs
       - name: Compare executed release and candidate domain cases
         run: node tests/features/upstream07/matrix.mjs --release .cc-test/release
+      - name: Same-environment model timing and memory controls
+        run: |
+          node tests/features/f03/fixtures.mjs
+          node tests/features/upstream07/model-controls.mjs --accepted .cc-test/accepted --release .cc-test/release
       - name: Actual MCP lifecycle and independent saved output
         run: |
           python -m venv .cc-test/reader

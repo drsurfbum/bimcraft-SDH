@@ -2,7 +2,7 @@ name: F05 browser acceptance
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, integration/upstream-0.7-20261025]
   workflow_dispatch:
 permissions:
   contents: read

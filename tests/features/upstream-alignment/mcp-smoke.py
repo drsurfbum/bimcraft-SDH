@@ -55,7 +55,8 @@ try:
    if response.get('id')==number:return response['result']
  try:
   ro('initialize',{'protocolVersion':'2025-03-26','capabilities':{},'clientInfo':{'name':'readonly-control','version':'1'}},1)
-  catalog=ro('tools/list',{},2)['tools'];assert catalog==tools
+  catalog=ro('tools/list',{},2)['tools'];assert catalog==[t for t in tools if t['description'].endswith('(Permission: read.)')]
+  assert 'walls_list' in [t['name'] for t in catalog] and 'walls_add' not in [t['name'] for t in catalog]
   rdoc=ro('tools/call',{'name':'ifc_open','arguments':{'path':saved['path']}},3);assert not rdoc.get('isError'),rdoc
   rdoc=(rdoc.get('structuredContent') or json.loads(next(b['text'] for b in rdoc['content'] if b['type']=='text')))['doc']
   for number,(name,args) in enumerate([('walls_add',{'doc':rdoc,'points':[[0,0],[3000,0]],'height':2700,'type':'ext-2x6'}),('ifc_save',{'doc':rdoc,'path':str(out/'forbidden.ifc'),'overwrite':True})],4):

@@ -5,7 +5,7 @@ name: Tests
 on:
   pull_request:
   push:
-    branches: [main, feature/f04-layered-plan-graphics]
+    branches: [main, feature/f04-layered-plan-graphics, integration/upstream-0.7-20261025]
   workflow_dispatch:
 
 permissions:
@@ -77,4 +77,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: f01-baseline
-          path: .cc-test/baseline/
+          path: |
+            .cc-test/baseline/summary.json
+            .cc-test/baseline/readers/summary.json
+            .cc-test/baseline/independent-ifc.jsonl
+            .cc-test/baseline/f02-independent-ifc.jsonl
