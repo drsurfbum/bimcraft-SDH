@@ -7,8 +7,8 @@ import assert from 'node:assert/strict';
 import {createLiveServer} from '../../tools/mcp/live-server.mjs';
 import {initialized,tool} from './client.mjs';
 export async function historyBrowser(context, out, check) {
- const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));let server;
- const report={transport:'existing token-protected Streamable HTTP → browser host.control',switch:'native active-model radio during the real Undo rebuild',mockedDispatcher:false,mockedHistoryMutation:false};
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.stack||e.message));let server;
+ const report={transport:'existing token-protected Streamable HTTP → browser host.control',switch:'native active-model radio after the first rebuild settles, before the pending request continues',mockedDispatcher:false,mockedHistoryMutation:false};
  const settle=()=>page.waitForFunction(()=>bimcraftLive?.editor&&!bimcraftWorkspace.snapshot().busy&&!bimcraftPlan?.state.reloading&&!bimcraftPlan?.state.busy,null,{timeout:90000});
  try {
   await page.goto('http://127.0.0.1:8046/?workspace=live',{waitUntil:'networkidle'});
@@ -37,11 +37,12 @@ export async function historyBrowser(context, out, check) {
   check('live HTTP same-project two-step Undo and subsequent Redo preserve normal history');
   s=await call('model_describe');report.requestedDocument=s.documentId;
   await page.evaluate(mi=>{
-   window.__mcpUndoSwitch={armed:true,switched:false,observedSteps:null};
-   const poll=()=>{const state=window.__mcpUndoSwitch;if(!state.armed)return;
-    if(window.__mcpHistoryA.changes.length===1){state.observedSteps=1;document.querySelector(`[data-model-active="${mi}"]`).click();state.switched=true;state.armed=false;}
-    else requestAnimationFrame(poll);
-   };requestAnimationFrame(poll);
+   window.__mcpUndoSwitch={armed:true,switched:false,observedSteps:null,uiIdle:false};
+   const observer=new MutationObserver(()=>{const state=window.__mcpUndoSwitch;if(!state.armed)return;
+    if(window.__mcpHistoryA.changes.length===1&&Number.isInteger(window.__mcpHistoryA.mid)&&Number.isInteger(window.__mcpHistoryB.ed.mid)&&!bimcraftPlan.state.reloading&&!bimcraftPlan.state.busy&&!bimcraftWorkspace.snapshot().busy){
+     state.observedSteps=1;state.uiIdle=true;state.armed=false;observer.disconnect();document.querySelector(`[data-model-active="${mi}"]`).click();state.switched=true;
+    }
+   });observer.observe(document.body,{subtree:true,childList:true,attributes:true});window.__mcpUndoObserver=observer;
   },b);
   const refused=await call('undo',{documentId:s.documentId,expectedRevision:s.revision,steps:2},true);
   const result=refused.structuredContent;assert.equal(result.documentId,s.documentId);assert.equal(result.stopped.code,'document_changed');assert.equal(result.completedSteps,1);assert.equal(result.requestedSteps,2);assert.equal(result.complete,false);assert.equal(result.undone.length,1);
@@ -49,12 +50,12 @@ export async function historyBrowser(context, out, check) {
    const b=window.__mcpHistoryB,bytes=b.ed.api.file(b.ed.mid).save({timeStamp:'2026-10-24T12:00:00'});
    return{switch:window.__mcpUndoSwitch,AChanges:window.__mcpHistoryA.changes.length,BChanges:b.ed.changes.length,BBytesUnchanged:bytes.length===b.bytes.length&&bytes.every((x,i)=>x===b.bytes[i]),BHistoryUnchanged:b.ed.changes.length===b.changes.length&&b.ed.changes.every((x,i)=>x===b.changes[i])&&b.ed.undone.length===b.undone.length&&b.ed.undone.every((x,i)=>x===b.undone[i]),replacementIsActive:bimcraftLive.editor===b.ed};
   });
-  assert.equal(proof.switch.switched,true);assert.equal(proof.switch.observedSteps,1);assert.equal(proof.AChanges,1);assert.equal(proof.BChanges,1);assert.equal(proof.BBytesUnchanged,true);assert.equal(proof.BHistoryUnchanged,true);assert.equal(proof.replacementIsActive,true);
+  assert.equal(proof.switch.switched,true);assert.equal(proof.switch.uiIdle,true);assert.equal(proof.switch.observedSteps,1);assert.equal(proof.AChanges,1);assert.equal(proof.BChanges,1);assert.equal(proof.BBytesUnchanged,true);assert.equal(proof.BHistoryUnchanged,true);assert.equal(proof.replacementIsActive,true);
   check('live HTTP project switch after one Undo leaves replacement IFC bytes and history unchanged; partial progress is explicit');
   await page.screenshot({path:path.join(out,'history-document-switch.png')});
   await activate(a);s=await call('model_describe');assert.equal((await call('redo',{documentId:s.documentId,expectedRevision:s.revision})).complete,true);
   check('live normal Redo still works on the original project after the interrupted request');
   assert.deepEqual(errors,[]);Object.assign(report,{status:'PASS',normalSameProject:normal,switchResult:result,proof,errors});
   fs.writeFileSync(path.join(out,'history-regression.json'),JSON.stringify(report,null,2)+'\n');return report;
- } finally {await page.evaluate(()=>{if(window.__mcpUndoSwitch)window.__mcpUndoSwitch.armed=false;}).catch(()=>{});await server?.close();await page.close();}
+ } finally {await page.evaluate(()=>{if(window.__mcpUndoSwitch)window.__mcpUndoSwitch.armed=false;window.__mcpUndoObserver?.disconnect();}).catch(()=>{});await server?.close();await page.close();}
 }
