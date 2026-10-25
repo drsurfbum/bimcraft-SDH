@@ -46,7 +46,24 @@ try:
   logger=ifcopenshell.validate.json_logger();ifcopenshell.validate.validate(str(file),logger,express_rules=True);assert not logger.statements,logger.statements
   model=ifcopenshell.open(str(file));assert len(model.by_type('IfcWall'))==count
   independent.append({'file':file.name,'walls':count,'schemaFindings':0})
- report={'status':'PASS','head':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'catalogCount':len(names),'toolNames':names,'independent':independent,'negativeRefusals':negative,'calls':calls,'publication':'No raw IFC artifact upload. This basic lifecycle does not establish audited MCP parity.'}
+ # A second, ephemeral read-only process must expose a compatible catalog and refuse mutation/save.
+ readonly=subprocess.Popen(['node',os.environ.get('MCP_SERVER','.cc-test/tools/mcp/server.mjs'),'--root',str(out),'--allow','read'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+ def ro(method,params,number):
+  readonly.stdin.write(json.dumps({'jsonrpc':'2.0','id':number,'method':method,'params':params})+'\n');readonly.stdin.flush()
+  while True:
+   response=json.loads(readonly.stdout.readline())
+   if response.get('id')==number:return response['result']
+ try:
+  ro('initialize',{'protocolVersion':'2025-03-26','capabilities':{},'clientInfo':{'name':'readonly-control','version':'1'}},1)
+  catalog=ro('tools/list',{},2)['tools'];assert catalog==tools
+  rdoc=ro('tools/call',{'name':'ifc_open','arguments':{'path':saved['path']}},3);assert not rdoc.get('isError'),rdoc
+  rdoc=(rdoc.get('structuredContent') or json.loads(next(b['text'] for b in rdoc['content'] if b['type']=='text')))['doc']
+  for number,(name,args) in enumerate([('walls_add',{'doc':rdoc,'points':[[0,0],[3000,0]],'height':2700,'type':'ext-2x6'}),('ifc_save',{'doc':rdoc,'path':str(out/'forbidden.ifc'),'overwrite':True})],4):
+   denied=ro('tools/call',{'name':name,'arguments':args},number);assert denied.get('isError'),denied
+  assert not (out/'forbidden.ifc').exists()
+ finally:
+  readonly.stdin.close();readonly.wait(timeout=10)
+ report={'status':'PASS','head':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'catalogCount':len(names),'toolNames':names,'independent':independent,'negativeRefusals':negative,'readOnlyPermissionRefusals':['walls_add','ifc_save'],'readOnlyCatalogCompatible':True,'calls':calls,'publication':'No raw IFC artifact upload. This basic lifecycle does not establish audited MCP parity.'}
  (out/'report.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps({'status':'PASS','catalogCount':len(names),'independent':independent}))
  (out/'summary.json').write_text(json.dumps({k:v for k,v in report.items() if k!='calls'},indent=2)+'\n')
 finally:

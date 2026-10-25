@@ -772,7 +772,7 @@ export function mountWorkspaces(A) {
     const wrap = (e) => { if (cur) fn(e); };
     root.addEventListener(type, wrap, capture);
     // top and bottom come and go: delegate from the document for them
-    document.addEventListener(type, (e) => { if (cur && (top?.contains(e.target) || bottom?.contains(e.target) || e.target.closest?.('.ws-dialog'))) fn(e); }, capture);
+    document.addEventListener(type, (e) => { if (cur && !root.contains(e.target) && (top?.contains(e.target) || bottom?.contains(e.target) || e.target.closest?.('.ws-dialog'))) fn(e); }, capture);
   }
   listen('click', (e) => {
     const b = e.target.closest('button, [data-ws-reason]'); if (!b) return;
