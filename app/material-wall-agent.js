@@ -21,7 +21,7 @@ const writeRequired = ['documentId', 'expectedRevision'];
 const states = new WeakMap(), locked = new WeakSet();
 let serial = 0;
 const writer = ed => new ModelWriter(ed.W, ed.api, ed.mid);
-export function documentState(ed) {
+export function documentHistoryState(ed) {
   let state = states.get(ed);
   if (!state) {
     state = { documentId: 'bim-' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + '-' + ++serial), revision: 0 };
@@ -31,8 +31,12 @@ export function documentState(ed) {
     if (state.changes) state.revision++;
     Object.assign(state, { changes: ed.changes, undone: ed.undone, last: ed.changes.at(-1), redo: ed.undone.at(-1), count: ed.changes.length });
   }
+  return { documentId: state.documentId, revision: state.revision };
+}
+export function documentState(ed) {
+  const state = documentHistoryState(ed);
   const w = writer(ed), project = ids(w.api, w.mid, 'IFCPROJECT')[0];
-  return { documentId: state.documentId, revision: state.revision, projectId: project ? w.guidOf(project) : null, units: 'mm', mcp01Version: MCP01_VERSION };
+  return { ...state, projectId: project ? w.guidOf(project) : null, units: 'mm', mcp01Version: MCP01_VERSION };
 }
 export function bindDocument(ed, args = {}) {
   const state = documentState(ed);

@@ -14,7 +14,7 @@ const env={...process.env,MCP01_SERVER:server,MCP01_OUT:path.join(out,'consumer'
 execFileSync(process.execPath,['tests/features/mcp01/headless.mjs'],{env,stdio:'inherit'});
 const manifest=JSON.parse(fs.readFileSync(path.join(packed,'package.json')));assert.equal(manifest.name,'@drsurfbum/bimcraft-mcp');assert.equal(manifest.version,'0.4.0-mcp01.1');
 const files=[];
-for(const name of ['agents.js','material-wall-agent.js','model-ops.js','model-walls.js','wall-assemblies.js','project-materials.js','ifc-edit.js']) {
+for(const name of ['agents.js','agent-history.js','material-wall-agent.js','model-ops.js','model-walls.js','wall-assemblies.js','project-materials.js','ifc-edit.js']) {
  const source=fs.readFileSync(path.join('app',name)),shipped=fs.readFileSync(path.join(packed,'cli/apps/bimcraft',name));assert.deepEqual(shipped,source);
  files.push({file:name,sha256:crypto.createHash('sha256').update(shipped).digest('hex')});
 }

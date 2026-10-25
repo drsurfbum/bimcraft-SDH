@@ -9,6 +9,7 @@ import { start } from '../../../devshell/serve.mjs';
 import { createLiveServer } from '../../tools/mcp/live-server.mjs';
 import { workflow, REQUIRED } from './workflow.mjs';
 import { initialized, tool } from './client.mjs';
+import {historyBrowser} from './history-browser.mjs';
 const {chromium}=await import(pathToFileURL(path.resolve(process.env.MCP01_PLAYWRIGHT||'.cc-test/mcp01-deps/node_modules/playwright/index.mjs')));
 const out=path.resolve('.cc-test/mcp01-browser');fs.mkdirSync(out,{recursive:true});
 const report={checks:[],errors:[],head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),platform:os.platform(),node:process.version,skips:[]};
@@ -63,6 +64,7 @@ try {
  assert.notEqual((await call('model_describe')).documentId,result.documentId);await call('walls_edit',{documentId:result.documentId,expectedRevision:result.revision,walls:[result.walls[0].guid],changes:{height:2500}},true);
  check('actual browser download reopens exactly and old document tokens are refused');
  fs.writeFileSync(path.join(out,'expected.json'),JSON.stringify({...result,dims},null,2)+'\n');
+ report.historyRegression=await historyBrowser(context,out,check);
  assert.deepEqual(report.errors,[]);report.status='PASS';report.catalogCount=catalog.length;
  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({status:'PASS',checks:report.checks.length,browser:report.browser}));

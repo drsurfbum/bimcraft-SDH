@@ -39,6 +39,7 @@ import { val } from './ifc-util.js';
 import { t } from './i18n.js';
 import { materialWallTools, documentState, bindDocument, exactWalls, BINDING, WALL_SETTINGS, requireType, validateTop } from './material-wall-agent.js';
 import { placementPath, placementReference } from './wall-placement.js';
+import { liveHistory } from './agent-history.js';
 export { BINDING, bindDocument, documentState } from './material-wall-agent.js';
 
 const LIMIT = 1000;
@@ -197,7 +198,15 @@ export function installAgents(modelUi, app) {
   const A = modelUi.extend({ tools: [] });
   const ed = () => A.ed();
   const busy = () => app.busy?.() || (A.S.chain?.points?.length ? 'drawing walls' : null) || (A.S.busy || A.S.reloading || A.S.queue?.length ? 'rebuilding the model' : null);
-  const settle = async (ms = 60000) => { const t0 = Date.now(); while ((A.S.busy || A.S.reloading || A.S.queue?.length) && Date.now() - t0 < ms) await new Promise((r) => setTimeout(r, 50)); };
+  const settle = async (ms = 60000, verify = null) => {
+    const check = verify || (() => {}), t0 = Date.now(); check();
+    while (A.S.busy || A.S.reloading || A.S.queue?.length) {
+      if (Date.now() - t0 >= ms) { if (verify) throw new Error('Timed out waiting for the model to settle.'); break; }
+      await new Promise(r => setTimeout(r, 50)); check();
+    }
+    check();
+  };
+  const history = liveHistory({ ed, busy, settle, undo: hooks => app.undo(hooks), redo: hooks => app.redo(hooks) });
   /** One undo step through the Draw module (the plan and the 3D view follow), labelled as the assistant's. */
   const apply = async (label, op) => {
     const why = busy();
@@ -241,29 +250,9 @@ export function installAgents(modelUi, app) {
       name: 'undo', group: 'edit', title: 'Undo',
       description: 'Undo the assistant\'s last steps (labelled "Assistant: …"); steps the person made are only undone with any: true.',
       inputSchema: obj({ steps: { type: 'integer', minimum: 1, maximum: 50 }, any: { type: 'boolean' }, ...BINDING }),
-      run: async (a) => {
-        if (busy()) throw new Error('Document is busy.');
-        if (!ed()) throw new Error('No IFC model.'); bindDocument(ed(), a);
-        const undone = [];
-        for (let i = 0; i < (a.steps || 1); i++) {
-          const e = ed(), top = e?.changes[e.changes.length - 1];
-          if (!top) break;
-          const label = top.label || top.kind;
-          if (!a.any && !String(label).startsWith('Assistant: ')) { if (!undone.length) throw new Error('The last step is the person\'s ("' + label + '"): pass any: true to undo it.'); break; }
-          await settle();
-          await app.undo();
-          await settle();
-          undone.push(label);
-        }
-        return { undone };
-      },
+      run: a => history('undo', a),
     },
-    { name: 'redo', group: 'edit', title: 'Redo', description: 'Redo an Assistant-owned model step. Person steps require any: true.', inputSchema: obj({ any: { type: 'boolean' }, ...BINDING }), run: async a => {
-      const e = ed(); if (!e) throw new Error('No IFC model.'); bindDocument(e, a); if (busy()) throw new Error('Document is busy.');
-      const top = e.undone.at(-1); if (!top) return { redone: [] };
-      if (!a.any && !String(top.label).startsWith('Assistant: ')) throw new Error('The redo step belongs to the person.');
-      await app.redo(); await settle(); return { ...documentState(ed()), redone: [top.label] };
-    } },
+    { name: 'redo', group: 'edit', title: 'Redo', description: 'Redo an Assistant-owned model step. Person steps require any: true.', inputSchema: obj({ any: { type: 'boolean' }, ...BINDING }), run: a => history('redo', a) },
     { name: 'model_save', group: 'save', title: 'Save the model', description: 'BimCraft\'s own Save as IFC: a new file with every change (desktop: the save dialog; browser: a download). The original file is never changed.', inputSchema: obj(BINDING), run: async a => { if (busy()) throw new Error('Document is busy.'); if (!ed()) throw new Error('No IFC model.'); bindDocument(ed(), a); return { saved: await app.save(), ...info(), ...documentState(ed()) }; } },
   ];
   for (const def of [...live.slice(0, 1), ...modelTools({ ed, apply, busy }), ...live.slice(1)]) C.tool(def);
