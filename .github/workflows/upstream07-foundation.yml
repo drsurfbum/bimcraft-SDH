@@ -1,0 +1,53 @@
+name: 0.7 foundation controls
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: upstream07-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Exact controls
+        run: |
+          git worktree add --detach .cc-test/release c778c7ca3f83eeecc3e815078417f152b2ca7a94
+          git worktree add --detach .cc-test/accepted 1afe80e78a42aa27ee9af5d1ac937cd38cd1b711
+          git diff --exit-code c778c7ca3f83eeecc3e815078417f152b2ca7a94 -- .cc-test/release
+      - name: Pinned libraries and clean control mirrors
+        run: |
+          npm run fetch-vendor
+          cp -a devshell/vendor .cc-test/release/devshell/vendor
+          cp -a devshell/vendor .cc-test/accepted/devshell/vendor
+          node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror()"
+          (cd .cc-test/release && node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror()")
+          (cd .cc-test/accepted && node devshell/baseline.mjs --offline)
+      - name: Shared record guard and all retained F28 assertions
+        run: node --test tests/features/upstream07/*.test.mjs tests/features/f28/*.test.mjs
+      - name: Compare executed release and candidate domain cases
+        run: node tests/features/upstream07/matrix.mjs --release .cc-test/release
+      - name: Actual MCP lifecycle and independent saved output
+        run: |
+          python -m venv .cc-test/reader
+          .cc-test/reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
+          .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
+      - name: Retain sanitized control evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream07-controls
+          path: |
+            .cc-test/upstream07/*.json
+            .cc-test/upstream07/*.log
+            .cc-test/upstream-mcp/report.json
+          retention-days: 30

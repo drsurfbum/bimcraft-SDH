@@ -33,6 +33,14 @@
   <p class="shell-hint-text"><?= Lang::e('set.edges.hint') ?></p>
 </fieldset>
 <fieldset class="shell-set">
+  <legend><?= Lang::e('set.dwgstart') ?></legend>
+  <div class="shell-seg" role="radiogroup" aria-label="<?= Lang::e('set.dwgstart') ?>">
+    <label><input type="radio" name="bcDwgStart" value="3d"> <i class="bi bi-badge-3d" aria-hidden="true"></i> <?= Lang::e('set.dwgstart.3d') ?></label>
+    <label><input type="radio" name="bcDwgStart" value="2d"> <i class="bi bi-bounding-box-circles" aria-hidden="true"></i> <?= Lang::e('set.dwgstart.2d') ?></label>
+  </div>
+  <p class="shell-hint-text"><?= Lang::e('set.dwgstart.hint') ?></p>
+</fieldset>
+<fieldset class="shell-set">
   <legend><?= Lang::e('set.view') ?></legend>
   <div class="shell-seg bc-set-seg4" role="radiogroup" aria-label="<?= Lang::e('set.view') ?>">
     <label><input type="radio" name="bcView" value="iso"> <i class="bi bi-box" aria-hidden="true"></i> <?= Lang::e('ui.view.fit') ?></label>
@@ -110,8 +118,17 @@
   <label class="shell-check bc-set-sub"><input type="checkbox" name="bcAssistRead"> <?= Lang::e('set.assist.read') ?></label>
   <label class="shell-check bc-set-sub"><input type="checkbox" name="bcAssistEdit"> <?= Lang::e('set.assist.edit') ?></label>
   <label class="shell-check bc-set-sub"><input type="checkbox" name="bcAssistSave"> <?= Lang::e('set.assist.save') ?></label>
+  <label class="shell-check bc-set-sub"><input type="checkbox" name="bcAssistExport"> <?= Lang::e('set.assist.export') ?></label>
   <details class="bc-assist-log" data-bc-assist-log>
     <summary><?= Lang::e('set.assist.activity') ?></summary>
     <ol></ol>
   </details>
+</fieldset>
+<?php /* 0.7 CU.1 (session compute): what this machine can render with; compute-bim.js fills it from compute/probe.js */ ?>
+<fieldset class="shell-set" data-compute-set>
+  <legend><?= Lang::e('compute.set.title') ?></legend>
+  <p class="shell-hint-text"><strong><?= Lang::e('compute.card.title') ?></strong><br><?= Lang::e('compute.card.lede') ?></p>
+  <div data-compute-card><p class="shell-hint-text"><?= Lang::e('compute.card.wait') ?></p></div>
+  <?php /* 0.7 CU.7: other computers on the network — filled only inside CadCraft Studio, which can find them (lan-ui.js) */ ?>
+  <div data-compute-lan hidden></div>
 </fieldset>

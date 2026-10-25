@@ -11,7 +11,7 @@ import { fmtLen, parseLen } from './model-units.js';
 export function mountWallAssemblies(modelUi) {
   let A;
   const W=()=>A.ed()?new ModelWriter(A.ed().W,A.ed().api,A.ed().mid):null;
-  const t=k=>A.t('assembly.'+k), L=n=>fmtLen(n,A.units());
+  const t=k=>A.t('assembly.'+k.replace(/[A-Z]/g,c=>'_'+c.toLowerCase())), L=n=>fmtLen(n,A.units());
   const button=(text,fn,props={})=>el('button',{type:'button',className:'btn-line btn-sm-cc',onClick:fn,...props},text);
   function openAssembly(key=A.S.wall.typeKey,assign=[]) {
     let source;
@@ -21,16 +21,16 @@ export function mountWallAssemblies(modelUi) {
       const dlg=el('dialog',{className:'bc-dialog','aria-label':t('title')},el('h2',{},t('title')),el('p',{role:'alert'},e.message),button(t('cancel'),()=>dlg.close()));
       dlg.addEventListener('close',()=>dlg.remove());A.root.append(dlg);dlg.showModal();return;
     }
-    if(!source) { A.host.status('The wall type is missing or unsupported.',true); return; }
+    if(!source) { A.host.status(A.t('wall.err.type_missing'),true); return; }
     const recipe=structuredClone(source), editing=!!recipe.custom;
     let duplicate=!editing, materials=readMaterials(W(),recipe.layers);
     const instanceCount=readWalls(W()).filter(w=>w.typeKey===key).length;
     const effects=el('p',{'data-assembly-effects':'',role:'status'});
     const describeEffects=()=>{effects.textContent=duplicate
-      ? `New wall type with a distinct identity. Assign to ${assign.length} selected wall(s); the other ${Math.max(0,instanceCount-assign.length)} original instance(s) keep their type. This type becomes the future placement default.`
-      : `Type-wide edit: all ${instanceCount} wall instance(s) using “${typeName(source)}” will update. Duplicate type to edit only the selected wall(s). This type becomes the future placement default.`;};
+      ? A.t('assembly.effects.duplicate',{n:assign.length,rest:Math.max(0,instanceCount-assign.length)})
+      : A.t('assembly.effects.typewide',{n:instanceCount,name:typeName(source)});};
     recipe.layers=recipe.layers.map(normalizeLayer);
-    const mt=k=>A.t('materials.'+k);
+    const mt=k=>A.t('materials.'+k.replace(/[A-Z]/g,c=>'_'+c.toLowerCase()));
     const name=el('input',{className:'bc-input',value:editing?typeName(source):typeName(source)+' copy',maxlength:100,'aria-label':t('name'),'data-assembly-name':''});
     const exterior=el('input',{type:'checkbox',checked:recipe.exterior});
     const rows=el('tbody'), total=el('p',{className:'bc-muted','aria-live':'polite'}), error=el('p',{className:'bc-error',role:'alert'});
@@ -113,7 +113,10 @@ export function mountWallAssemblies(modelUi) {
   A=modelUi.extend({openAssembly});
   const row=A.root.querySelector('[data-mopts="wall"]');
   row?.append(button(t('open'),()=>openAssembly(),{'data-wall-assemblies':''}));
-  A.root.querySelector('[data-annot-tools]')?.before(button(A.t('materials.title'),()=>openMaterialLibrary(A),{'data-materials-menu':''}));
-  // A project-wide entry point remains available when the Wall tool is not active.
-  A.root.querySelector('[data-annot-tools]')?.before(button(t('open'),()=>openAssembly(),{'data-wall-assemblies-menu':''}));
+  // The Draw bar's Library group (ui.inc [data-mb-library]): flat tools like the rest of the bar (closing 0.7 part 2 § A).
+  // A project-wide entry point for assemblies remains available when the Wall tool is not active.
+  const tool=(icon,text,fn,props)=>el('button',{type:'button',className:'bc-tool',title:text,onClick:fn,...props},el('i',{className:'bi '+icon,'aria-hidden':'true'}),el('span',{},text));
+  const libRow=A.root.querySelector('[data-mb-library]');
+  if(libRow) libRow.append(tool('bi-palette',A.t('materials.title'),()=>openMaterialLibrary(A),{'data-materials-menu':''}),tool('bi-stack',t('open'),()=>openAssembly(),{'data-wall-assemblies-menu':''}));
+  else { A.root.querySelector('[data-annot-tools]')?.before(button(A.t('materials.title'),()=>openMaterialLibrary(A),{'data-materials-menu':''})); A.root.querySelector('[data-annot-tools]')?.before(button(t('open'),()=>openAssembly(),{'data-wall-assemblies-menu':''})); }
 }

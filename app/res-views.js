@@ -64,7 +64,7 @@ function clipTri(t, d0, side = 1) {
 
 export function projectView(elements, options = {}) {
   const { dir, cut, far = 0, walls, openings = [], materials = null } = options;
-  if (!Array.isArray(dir) || dir.length !== 2 || !dir.every(Number.isFinite) || Math.abs(Math.hypot(...dir)-1)>1e-8 || !Number.isFinite(far) || far<0 || (cut && (!Array.isArray(cut.o)||cut.o.length!==2||!cut.o.every(Number.isFinite)))) throw new Error('Invalid projected view plane/depth');
+  if (!Array.isArray(dir) || dir.length !== 2 || !dir.every(Number.isFinite) || Math.abs(Math.hypot(...dir)-1)>1e-8 || !Number.isFinite(far) || far<0 || (cut && (!Array.isArray(cut.o)||cut.o.length!==2||!cut.o.every(Number.isFinite)))) throw new Error('Invalid projected view plane/depth');   // i18n-ignore: a programming error
   const byKey = new Map((walls||[]).map(w=>[w.key??w.id,{...w,junctionUnsupported:!isolatedWall(w,walls)}]));
   const sourced = elements.map(e=>byKey.has(e.key)?{...e,edges:wallSurfaceEdges(byKey.get(e.key),openings)}:e);
   const view = projectMeshView(sourced, options);

@@ -31,7 +31,8 @@ export function validateTerrainLanguage(lang, keys, origin) {
 function validatePins(pins, kind) {
   if (!record(pins) || pins.schema !== 1 || !Object.hasOwn(files, kind)) invalid('schema or group');
   const p = pins.provenance;
-  if (!record(p) || typeof p.revision !== 'string' || !/^[a-f0-9]{40}$/.test(p.revision) || p.repository !== 'https://github.com/achartt/bimcraft-SDH' || p.path !== 'app/') invalid('provenance');
+  const repositories = ['https://github.com/achartt/bimcraft-SDH', 'https://github.com/drsurfbum/bimcraft-SDH', 'https://github.com/getcadcraft/bimcraft'];
+  if (!record(p) || typeof p.revision !== 'string' || !/^[a-f0-9]{40}$/.test(p.revision) || !repositories.includes(p.repository) || p.path !== 'app/') invalid('provenance');
   for (const [name, required] of Object.entries(files)) {
     const group = pins[name];
     if (!record(group) || !record(group.files) || !sameKeys(Object.keys(group.files), required)) invalid(`${name} required files`);

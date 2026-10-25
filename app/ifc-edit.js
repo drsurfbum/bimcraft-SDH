@@ -89,6 +89,10 @@ export class IfcEditor {
    */
   setProperty(elementId, ref, value, { record = true } = {}) {
     const api = this.api, mid = this.mid;
+    // Resolve the real set name; callers cannot bypass a domain contract with a forged display ref.
+    const set = api.GetLine(mid, ref.psetId, false);
+    const protectedSets = new Set(['CadCraft_WallType', 'CadCraft_Wall', 'CadCraft_MaterialLibrary', 'CadCraft_Material', 'CadCraft_WallDimension', 'CadCraft_PlanView', 'CadCraft_CeilingPlan', 'CadCraft_ViewTemplates', 'CadCraft_Sheets', 'CadCraft_CalloutViews', 'CadCraft_Room', 'CadCraft_Floor', 'CadCraft_Ceiling', 'CadCraft_Roof', 'CadCraft_Door', 'CadCraft_Window', 'CadCraft_Opening']);
+    if (protectedSets.has(set?.Name?.value) || protectedSets.has(ref.setName)) throw new Error(t('ifcedit.err.domain_record'));
     const prop = api.GetLine(mid, ref.propId, false);
     if (!prop || !prop.NominalValue) throw new Error(t('ifcedit.err.single_value'));
     const old = prop.NominalValue.value;

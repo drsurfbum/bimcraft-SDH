@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: Apache-2.0 */
+import { t as tr } from './i18n.js';
 // Fixed paper-mm continuation pages, shared by screen SVG, placed sheets and vector PDF.
 export const DOCUMENT_WIDTH=240, DOCUMENT_HEIGHT=138, DOCUMENT_FONT=8;
 const PT=72/25.4, lineH=3.8;
@@ -20,7 +21,7 @@ export function documentPages(sc,key) {
  const widths=columns(sc), header=sc.head.map((c,i)=>wrapDocument(c,widths[i]-3));
  const headerH=Math.max(...header.map(c=>c.length))*lineH+3, pages=[];
  let page;
- const next=()=>{page={...sc,ref:`f06-${key}:${pages.length+1}`,title:`${sc.title} - page ${pages.length+1}`,rows:[],rowInfo:[],document:{width:DOCUMENT_WIDTH,height:headerH+13,widths,header,headerH,rows:[]}};pages.push(page);};next();
+ const next=()=>{page={...sc,ref:`f06-${key}:${pages.length+1}`,title:tr('asched.page.n',{title:sc.title,n:pages.length+1}),rows:[],rowInfo:[],document:{width:DOCUMENT_WIDTH,height:headerH+13,widths,header,headerH,rows:[]}};pages.push(page);};next();
  let group=null;
  const append=(lines,info)=>{const h=Math.max(...lines.map(l=>l.length))*lineH+3;page.rows.push(lines.map(l=>l.join('\n')));page.rowInfo.push(info);page.document.rows.push({lines,info,h});page.document.height+=h;};
  for(let i=0;i<sc.rows.length;i++){
@@ -36,7 +37,7 @@ export function documentPages(sc,key) {
    append(part,{...info,continued:off>0||info.continued});
   }
  }
- for(const [i,p]of pages.entries())p.title=`${sc.title} - page ${i+1} of ${pages.length}`;
+ for(const [i,p]of pages.entries())p.title=tr('asched.page.nof',{title:sc.title,n:i+1,of:pages.length});
  return pages;
 }
 function symbol(s,x,y,w=10,h=4) {
@@ -51,7 +52,7 @@ export function documentItems(sc,x,yTop) {
  const d=sc.document,out=[],text=(s,x,y,bold=false)=>out.push({t:'text',s,x,y,size:DOCUMENT_FONT,align:'left',bold});
  let y=yTop;
  // Fixed short notes repeat on each page, so standalone placed pages state scope and units.
- text(sc.head.length===7?'All authored types, including unused. Exterior to interior. Nominal mm; not a takeoff.':'All project materials, including unused. Blank = cavity; dashed line = membrane.',x,y-3);
+ text(sc.head.length===7?tr('asched.page.assembly'):tr('asched.page.legend'),x,y-3);
  y-=7;
  const draw=(lines,h,group=false,swatch=null,bold=false)=>{
   if(group)out.push({t:'fill',polys:[[[x,y],[x+DOCUMENT_WIDTH,y],[x+DOCUMENT_WIDTH,y-h],[x,y-h]]],g:.94});
