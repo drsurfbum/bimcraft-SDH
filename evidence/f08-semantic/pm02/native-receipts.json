@@ -1,0 +1,148 @@
+{
+  "implementation": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+  "status": "PASS",
+  "cases": [
+    {
+      "action": "undo",
+      "status": "PASS",
+      "receipt": {
+        "documentId": "bim-d1a6d179-08c7-46da-9e53-db9fcdc8ca30",
+        "revision": 1,
+        "wall": "0F08W00000000000000014",
+        "end": "a",
+        "endId": "0F08W00000000000000014:a",
+        "changed": true,
+        "completedSteps": 1,
+        "complete": false,
+        "code": "POST_COMMIT_INTERRUPTED",
+        "stopped": {
+          "code": "history_changed",
+          "message": "History changed outside this request. Captured commit-time data may no longer describe the current model."
+        },
+        "before": {
+          "id": "0F08W00000000000000014:a",
+          "allow": true,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": true
+        },
+        "after": {
+          "id": "0F08W00000000000000014:a",
+          "allow": false,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": false
+        },
+        "affectedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "geometryChangedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "readback": {
+          "phase": "synchronous-commit",
+          "originalDocumentReadable": false,
+          "current": false
+        },
+        "undo": {
+          "owner": null,
+          "available": false,
+          "label": "Assistant: wall_join_end_set",
+          "documentId": "bim-d1a6d179-08c7-46da-9e53-db9fcdc8ca30",
+          "revision": 1
+        },
+        "error": "History changed outside this request after its confirmed edit. Inspect the document again before retrying."
+      },
+      "proof": {
+        "fired": true,
+        "changes": [],
+        "undone": [
+          [
+            "model",
+            "Assistant: wall_join_end_set"
+          ]
+        ]
+      },
+      "undoRefusal": "history_empty",
+      "refusalBytesAndBothHistoriesUnchanged": true,
+      "nativeReplayRestoresPhysicalProfile": true,
+      "mockedDispatcher": false,
+      "mockedMutation": false
+    },
+    {
+      "action": "person-edit",
+      "status": "PASS",
+      "receipt": {
+        "documentId": "bim-7fe5f1fd-b3f7-40de-96ff-73e86f046127",
+        "revision": 1,
+        "wall": "0F08W00000000000000014",
+        "end": "a",
+        "endId": "0F08W00000000000000014:a",
+        "changed": true,
+        "completedSteps": 1,
+        "complete": false,
+        "code": "POST_COMMIT_INTERRUPTED",
+        "stopped": {
+          "code": "history_changed",
+          "message": "History changed outside this request. Captured commit-time data may no longer describe the current model."
+        },
+        "before": {
+          "id": "0F08W00000000000000014:a",
+          "allow": true,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": true
+        },
+        "after": {
+          "id": "0F08W00000000000000014:a",
+          "allow": false,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": false
+        },
+        "affectedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "geometryChangedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "readback": {
+          "phase": "synchronous-commit",
+          "originalDocumentReadable": false,
+          "current": false
+        },
+        "undo": {
+          "owner": null,
+          "available": false,
+          "label": "Assistant: wall_join_end_set",
+          "documentId": "bim-7fe5f1fd-b3f7-40de-96ff-73e86f046127",
+          "revision": 1
+        },
+        "error": "History changed outside this request after its confirmed edit. Inspect the document again before retrying."
+      },
+      "proof": {
+        "fired": true,
+        "changes": [
+          [
+            "model",
+            "Assistant: wall_join_end_set"
+          ],
+          [
+            "model",
+            "Wall"
+          ]
+        ],
+        "undone": []
+      },
+      "undoRefusal": "person_owned",
+      "refusalBytesAndBothHistoriesUnchanged": true,
+      "nativeReplayRestoresPhysicalProfile": true,
+      "mockedDispatcher": false,
+      "mockedMutation": false
+    }
+  ]
+}

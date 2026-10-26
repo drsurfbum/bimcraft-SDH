@@ -2,8 +2,9 @@
 
 Draft PR [#13](https://github.com/drsurfbum/bimcraft-SDH/pull/13), still draft and
 unmerged. Owner: this F08 semantic/protection follow-up chat, October 26, 2026.
-F08-PM-01 is **OPEN pending PM verification** of the final delivery. Full F08 is
-partial beyond the bounded straight-wall slice.
+F08-PM-01 is **CLOSED by PM** at `78800041c6960d4081b5bcdacae3ca6a432ff591`.
+F08-PM-02 remains **OPEN pending PM verification** of this focused receipt correction.
+Full F08 is partial beyond the bounded straight-wall slice.
 
 ## Exact lineage and preservation
 
@@ -16,8 +17,10 @@ partial beyond the bounded straight-wall slice.
 | Complete CSV and actual live schema checks | `4866e5c5c7af05c5dab7c7a7e9a0451e2cce18da` |
 | Previous complete code/test cutoff | `2c1cb9e8df78d633874e88418d92acddb907ee11` |
 | Participating-neighbor identity refusal | `ae9e6394426a2330ef4134fe25981c268a3c740c` |
-| Final application implementation, including closed-owner progress | `9f9be939212be29fa2d3851fe2f44ac4eaff61a2` |
-| Complete final code/test cutoff | `9f9be939212be29fa2d3851fe2f44ac4eaff61a2` |
+| Previous implementation, including closed-owner progress | `9f9be939212be29fa2d3851fe2f44ac4eaff61a2` |
+| Prior PM-reviewed delivery; F08-PM-01 closed | `78800041c6960d4081b5bcdacae3ca6a432ff591` |
+| F08-PM-02 receipt correction and both native/focused regressions | `0b91ab1e064987e5bddfe08268e4e19980ea2e5a` |
+| Complete current code/test cutoff | `0b91ab1e064987e5bddfe08268e4e19980ea2e5a` |
 
 The final delivery is the latest evidence-only commit updating this handoff.
 Interim delivery `a6a525afc6ee1595e908b7a9e8332e61f524d042` is superseded by the
@@ -93,7 +96,50 @@ Headless binding rechecks that a handle still owns its session across awaits.
 Accepted MCP-01 person ownership, replay and native multi-step Undo switch tests
 are retained and independently repeated.
 
+## F08-PM-02 — interleaved person actions
+
+PM reproduced a new P2 receipt defect at `7880004`: the old history-length delta
+reported zero completed steps after native Undo and two after a native wall-height
+edit, and advertised Undo over the person's step. The retained MCP Undo guard
+correctly refused that person-owned entry; no person edit was undone.
+
+The correction at `0b91ab1e064987e5bddfe08268e4e19980ea2e5a` counts only the
+request's confirmed synchronous mutation (one; no-op zero). Availability matches
+its exact result-owned, Assistant-labeled history entry, unchanged prefix/ownership
+labels and the expected cleared Redo stack. An intervening person edit or Undo
+returns `POST_COMMIT_INTERRUPTED`, `stopped.code:'history_changed'`,
+`changed:true`, `completedSteps:1`, `complete:false`, `undo.available:false`,
+`undo.owner:null` and `readback.current:false`. Captured commit-time settings,
+geometry and affected neighbors are preserved and explicitly distinguished from
+current state. No rollback, automatic retry, production delay, UI disablement or
+new journal/model store was introduced. Replay does not overwrite the original
+request's captured commit data.
+
+Both added focused tests fail on the previous implementation (0 and 2 versus the
+required 1) and pass after the fix. Both additional real HTTP/browser tests observe
+the settled commit boundary and activate native `[data-undo]` or the selected-wall
+`[data-mp-height]` change handler with `2900 mm`. They assert current model values,
+real stack labels, one own commit, noncurrent captured data and unavailable Undo.
+The subsequent ordinary MCP Undo returns `history_empty` after the person already
+undid the only step, or `person_owned` after the height edit; unchanged normalized
+bytes and both stack fingerprints prove neither action is consumed. Native
+Undo/Redo then restores the original physical profile. Dispatchers, mutations and
+history are not mocked. Existing native project-switch, whole-project closure,
+rebind, no-op, alias, source/package and repeated replay assertions remain intact.
+
+The local HTTP runs passed 13 groups / 353 calls, zero application exceptions,
+and retained five verbatim platform warnings. Local reports before the implementation
+commit are exploratory evidence; the committed-cutoff repeat and every final-head
+workflow provide the delivery evidence. Previous failures and retries remain local.
+The new PM finding stays OPEN for PM re-review. No manual test is required.
+
 ## Executed evidence and limits
+
+Current correction evidence is in [evidence/f08-semantic/pm02](../../../evidence/f08-semantic/pm02).
+Reports outside that subdirectory retain their recorded prior cutoffs. The local
+709/32/legacy/full-browser/export rows below describe retained earlier execution;
+the current correction repeats 81 + 39, all three semantic transports and independent
+semantic saves. Every required workflow runs anew on the exact final head.
 
 Final application module hashes are verified against the isolated package. Local
 semantic reports are pinned to their recorded code/test cutoff and are
@@ -102,11 +148,11 @@ executed counts are in PR #13.
 
 | Check | Executed result |
 | --- | --- |
-| Combined F08/MCP focused tests | **79 passed**, zero failed/skipped: retained F08 20 + new semantic 17 + retained MCP-01 42 |
+| Combined F08/MCP focused tests | **81 passed**, zero failed/skipped: retained F08 20 + semantic 19 (including both PM-02 cases) + retained MCP-01 42 |
 | Retained foundation/F28 focused checks | **39 passed**, zero failed/skipped |
 | Source stdio MCP | **10 groups / 361 actual calls**; catalog 46 in exercised permission groups; all three schemas equal shared definitions plus doc |
 | Isolated packaged consumer | **10 groups / 361 calls**; catalog 46; fork name/version and nine application module hashes exact; deleting required module makes startup fail |
-| Live token-protected HTTP MCP | **11 groups / 335 calls**; catalog 32 in exercised permission groups; actual schemas equal shared definitions; native switch and seven negative-record/geometry fixtures |
+| Live token-protected HTTP MCP | **13 groups / 353 calls**; catalog 32 in exercised permission groups; actual schemas equal shared definitions; native switch and seven negative-record/geometry fixtures |
 | Each semantic surface | Both physically joined ends × all allow/cap combinations, T/node retention, **24 ordinary Undo/Redo cycles**, genuine no-ops, invalid/foreign/stale/permission refusals, actual save/reopen |
 | Independent semantic saved IFC | Three actual saves × 18 walls, zero EXPRESS/schema findings; all physical profiles within **0.005 mm**, two unchanged dimension records, hosted openings/types retained |
 | Existing MCP-01 regressions | Source/package/live workflows and independent saved-file checks pass; native multi-step Undo/project-switch assertions repeat twice (six checks); alias-owner behavior retained |
@@ -171,10 +217,11 @@ and independent saved-file validation to its existing browser/export/model check
 PR #13 records final evidence SHA, exact-head URLs, attempts and counts. A green
 implementation-head run alone is not final-delivery validation.
 
-PM should independently repeat the protected direct/forged/resolved-alias refusal,
-verify ordinary and interrupted ownership on the final published build, inspect
-actual catalogs/receipts/profiles and review exact final-head CI. No required
-human-only test can substitute for these automated gates. This delivery does not
+PM re-review should verify both corrected interleaved receipts and the retained
+person-owned Undo refusal on the final published build, then inspect the automated
+evidence and exact final-head CI. The closed F08-PM-01 protection finding remains
+closed; its regressions remain required. No required human-only test substitutes
+for these automated gates. This delivery does not
 request a mark-ready transition, merge, adoption or deployment.
 
 ## Preview and remaining scope
@@ -191,6 +238,6 @@ splitting, unequal-height carving, finish wrapping, F09 snapping, general Join
 Geometry and the dedicated workspace join UI adapter remain deferred. Full F08
 stays partial.
 
-**OPEN:** F08-PM-01 pending PM; PERF-F04-01; PERF-F05-01; TEST-F28-01; UP07-MEP-01;
+**OPEN:** F08-PM-02 pending PM; PERF-F04-01; PERF-F05-01; TEST-F28-01; UP07-MEP-01;
 broader semantic MCP catch-up; CI runtime headroom. **CLOSED, preserved:**
-MCP01-PM-01 and UP07-PM-01/02. No shared-roadmap, default-layout or cross-chat change.
+F08-PM-01 (PM verified at `7880004`), MCP01-PM-01 and UP07-PM-01/02. No shared-roadmap, default-layout or cross-chat change.

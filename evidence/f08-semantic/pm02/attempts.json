@@ -1,0 +1,35 @@
+{
+  "attempts": [
+    {
+      "check": "added focused interleaving cases before fix",
+      "result": "2 failures",
+      "observedCompletedSteps": {
+        "nativeDomainUndo": 0,
+        "personDomainHeightEdit": 2
+      },
+      "expected": 1,
+      "retry": "81 focused passed after correction"
+    },
+    {
+      "check": "real HTTP native interleavings before implementation commit",
+      "result": "13 groups / 353 calls passed; zero application exceptions",
+      "cutoff": "exploratory working tree at prior head; not relabeled as pinned execution"
+    },
+    {
+      "check": "pinned source / isolated package / live repeat",
+      "result": "10 / 10 / 13 groups; 361 / 361 / 353 calls passed",
+      "implementation": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a"
+    },
+    {
+      "check": "evidence collection wrapper",
+      "result": "refused to collect live independent report because its retained head field is null",
+      "resolution": "preserved null metadata and linked transport head plus actual saved-IFC hash; no reader assertion/tolerance changed"
+    },
+    {
+      "check": "preservation comparison wrapper",
+      "result": "default Git untracked status grouped one existing F28-C directory differently",
+      "resolution": "compared all file hashes and original heads; all eleven original F08 duplicate files unchanged. Fresh current pre-followup state retained for final comparison."
+    }
+  ],
+  "previousAttempts": "../attempts.json; all earlier failed/cancelled CI runs remain visible. No logs or attempts erased."
+}

@@ -1,0 +1,69 @@
+{
+  "approvedMain": "21ff2842e1925f148e9b75c404476b59333f7475",
+  "previousPMReviewedDelivery": "78800041c6960d4081b5bcdacae3ca6a432ff591",
+  "implementation": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+  "focused": {
+    "passed": 81,
+    "failed": 0,
+    "skipped": 0
+  },
+  "foundationF28": {
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0
+  },
+  "surfaces": {
+    "source": {
+      "groups": 10,
+      "calls": 361,
+      "catalogCount": 46,
+      "catalogSha256": "4029c12fbac5045f26097d0e9b43950a8350534798bb85a665a76eb47f18c4f0",
+      "schemaExpressFindings": 0,
+      "transportHead": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+      "independentReportHead": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+      "savedIfcSha256": "670d7a149854620162f647649172d37525cac85f820d87f4f8ea60388376f045"
+    },
+    "package": {
+      "groups": 10,
+      "calls": 361,
+      "catalogCount": 46,
+      "catalogSha256": "4029c12fbac5045f26097d0e9b43950a8350534798bb85a665a76eb47f18c4f0",
+      "schemaExpressFindings": 0,
+      "transportHead": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+      "independentReportHead": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+      "savedIfcSha256": "e4ff92bef0cc35fc4907e249641d583041c8482b27b6f892aca6d392fbeeedb4"
+    },
+    "live": {
+      "groups": 13,
+      "calls": 353,
+      "catalogCount": 32,
+      "catalogSha256": "d37f34ca26717de777371a0151227976152df7ecd0e37af1e0f7e90f48603ed9",
+      "schemaExpressFindings": 0,
+      "transportHead": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+      "independentReportHead": null,
+      "savedIfcSha256": "9bd43168b8e68cafd6b45c9fa34c5a30524ace6b3c81ebceba10279c3f39c4cc"
+    }
+  },
+  "beforeFixRegression": {
+    "undoCompletedSteps": 0,
+    "personEditCompletedSteps": 2,
+    "expectedOwnCommits": 1,
+    "focusedFailures": 2
+  },
+  "afterFix": {
+    "ownCommits": 1,
+    "complete": false,
+    "undoAvailable": false,
+    "undoOwner": null,
+    "capturedReadbackCurrent": false,
+    "code": "POST_COMMIT_INTERRUPTED",
+    "stoppedCode": "history_changed"
+  },
+  "F08-PM-01": "CLOSED by PM at prior delivery",
+  "F08-PM-02": "OPEN pending PM verification",
+  "localApplicationExceptions": 0,
+  "verbatimLocalConsoleWarnings": 5,
+  "provenanceLimit": "Retained semantic independent reader reports expected.json head; live expected data has no head. Its null is preserved, paired here with transport head and actual saved-IFC SHA256. No hash was fabricated.",
+  "finalHeadCI": "All eleven workflows must execute on the published evidence commit; exact SHA and links are in PR #13.",
+  "payloadPolicy": "No full snapshots, model/export payloads, recovery/package archives, tokens or private traces included."
+}
