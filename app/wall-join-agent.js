@@ -6,7 +6,7 @@ import { readWalls, wallOutlines, storedShape } from './model-walls.js';
 import { readLevels } from './model-levels.js';
 import { readJoinRecord, JOIN_PSET } from './wall-join-records.js';
 import { changeWall } from './model-ops.js';
-import { BINDING, bindDocument, documentState, objectSchema } from './material-wall-agent.js';
+import { BINDING, bindDocument, documentState, documentHistoryState, objectSchema } from './material-wall-agent.js';
 
 const guid = { type: 'string', pattern: '^[0-3][0-9A-Za-z_$]{21}$' };
 const writer = ed => new ModelWriter(ed.W, ed.api, ed.mid);
@@ -98,20 +98,32 @@ export function wallJoinTools(env) {
         if (before.record.classification === 'supported' && JSON.stringify(next) === JSON.stringify(before.record.effective))
           return { ...before, changed: false, affectedWalls: [], geometryChangedWalls: [], completedSteps: 0 };
         const prior = physical(ed), history = ed.changes.length, operation = changeWall(a.wall, { joinSettings: next });
-        let committed = false, error = null;
+        let committed = false, error = null, committedAfter = null, committedProfiles = null;
         try {
           await env.apply('wall_join_end_set', current => {
             uniqueWall(writer(current), a.wall);
             const result = operation(current);
-            committed = true; return result;
+            committed = true;
+            // A later file switch may close this editor's IFC. Capture confirmed domain readback
+            // before yielding to UI notification; a read failure must not erase a committed step.
+            try { committedAfter = readback(current, a.wall); committedProfiles = physical(current); } catch { /* report unavailable readback honestly below */ }
+            return result;
           });
           if (env.ed() !== ed) error = 'The active document changed after the original edit completed.';
         } catch (e) { if (!committed) throw e; error = e.message || String(e); }
-        const after = readback(ed, a.wall), now = physical(ed);
-        return { ...after, ok: !error, changed: committed, end: a.end, endId: a.wall + ':' + a.end, before: before.ends[a.end], after: after.ends[a.end],
-          affectedWalls: [...now].filter(([guid, value]) => prior.get(guid) !== value).map(([guid]) => guid),
-          geometryChangedWalls: [...now].filter(([guid, value]) => JSON.stringify(JSON.parse(prior.get(guid) || '{}').shape) !== JSON.stringify(JSON.parse(value).shape)).map(([guid]) => guid),
-          completedSteps: ed.changes.length - history, undo: { owner: 'assistant', label: 'Assistant: wall_join_end_set', documentId: after.documentId, revision: after.revision },
+        let after, now, readable = true;
+        try { after = readback(ed, a.wall); now = physical(ed); }
+        catch (e) {
+          readable = false; error ||= 'Original document readback is unavailable after the confirmed edit: ' + (e.message || String(e));
+          after = committedAfter || { ...before, record: null, ends: null, geometry: null, diagnostics: null };
+          now = committedProfiles;
+        }
+        after = { ...after, ...documentHistoryState(ed) };
+        return { ...after, ok: !error, changed: committed, end: a.end, endId: a.wall + ':' + a.end, before: before.ends[a.end], after: after.ends?.[a.end] ?? null,
+          readback: { phase: readable ? 'response' : committedAfter ? 'synchronous-commit' : 'unavailable', originalDocumentReadable: readable },
+          affectedWalls: now ? [...now].filter(([guid, value]) => prior.get(guid) !== value).map(([guid]) => guid) : null,
+          geometryChangedWalls: now ? [...now].filter(([guid, value]) => JSON.stringify(JSON.parse(prior.get(guid) || '{}').shape) !== JSON.stringify(JSON.parse(value).shape)).map(([guid]) => guid) : null,
+          completedSteps: ed.changes.length - history, undo: { owner: 'assistant', available: readable && ed.changes.length > history, label: 'Assistant: wall_join_end_set', documentId: after.documentId, revision: after.revision },
           ...(error ? { error, isError: true, code: 'POST_COMMIT_INTERRUPTED', complete: false } : { complete: true }) };
       } },
   ];
