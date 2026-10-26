@@ -1,4 +1,12 @@
 /* SPDX-License-Identifier: Apache-2.0 */
+// Upstream suites use several trailers (numeric totals, "all ok", or named
+// checks-passed text). Count executed outcomes rather than guessing the trailer.
+export function executedAssertions(log) {
+  return log.split(/\r?\n/).flatMap(line => {
+    const match = line.match(/^\s*(ok|FAIL)\s+(.+)$/);
+    return match ? [{ passed: match[1] === 'ok', name: match[2].replace(/ \([\[{].*$/, '') }] : [];
+  });
+}
 // Match multiplicities as well as names. Notices never stand in for assertions.
 export function compareAssertions(release, candidate, differences = []) {
   const remaining = [...candidate], missing = [], justified = [];

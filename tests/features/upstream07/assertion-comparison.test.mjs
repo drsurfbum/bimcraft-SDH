@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { compareAssertions, residentialDifferences, residentialAssertionName, assertionName } from './assertion-comparison.mjs';
+import { compareAssertions, residentialDifferences, residentialAssertionName, assertionName, executedAssertions } from './assertion-comparison.mjs';
 
 const kinds = 'all 33 kinds placed and read back, each as its own IFC4 class and type';
 const boards = 'the sub-board is a panel too: no circuit row of its own';
@@ -37,4 +37,12 @@ test('ops heat-loss labels ignore elapsed time while preserving physical values,
   assert.notEqual(assertionName('ops', a), assertionName('ops', b.replace('200 W', '300 W')));
   assert.equal(compareAssertions([assertionName('ops', a)], []).status, 'FAIL');
   assert.equal(assertionName('agent', a), a);
+});
+test('executed outcomes support every upstream trailer, retain failures and never count notices or empty success text', () => {
+  for (const trailer of ['2 passed, 0 failed', 'all ok', 'all 2 assistant tool checks passed']) {
+    const rows = executedAssertions('  ok   first\n  ok   second\n  SKIP optional reader\n' + trailer);
+    assert.deepEqual(rows, [{ passed: true, name: 'first' }, { passed: true, name: 'second' }]);
+  }
+  assert.deepEqual(executedAssertions('all ok\n  --   reader unavailable'), []);
+  assert.deepEqual(executedAssertions('  FAIL schema check (["private diagnostic"])\nall ok'), [{ passed: false, name: 'schema check' }]);
 });
