@@ -65,7 +65,17 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
   const planView = (l) => ({ id: 'plan:' + l.guid, kind: 'plan', levelId: l.id, guid: l.guid, name: l.name, icon: 'bi-square' });
   const threeView = () => ({ id: '3d:default', kind: '3d', name: mode() === 'all' ? T('tbx.tab.3d') : T('ws.view3d'), icon: 'bi-box' });
   const levels = () => (current().editor && (current().editor === documentToken || !docked()) ? A.S.data?.levels || [] : []);
-  const listViews = () => (current().editor && current().editor.mid != null ? [...views.workspaceSources().map(v => ({ ...v, icon: isPlanView(v) ? 'bi-square' : 'bi-file-earmark' })), threeView()] : []);
+  let sourceOwner = null, sourceCache = [];
+  function listViews() {
+    const c = current(), editor = c.editor;
+    if (!editor) { sourceOwner = null; sourceCache = []; return []; }
+    if (editor !== sourceOwner) { sourceOwner = editor; sourceCache = [threeView()]; }
+    // A replay closes/reopens the same editor's model. Keep that owner's descriptors while it is busy;
+    // an empty transient list would make the shared host discard all open drawing tabs.
+    if (c.busy || A.S.busy || A.S.reloading || editor.mid == null || !A.S.data) return sourceCache;
+    sourceCache = [...views.workspaceSources().map(v => ({ ...v, icon: isPlanView(v) ? 'bi-square' : 'bi-file-earmark' })), threeView()];
+    return sourceCache;
+  }
   const docs = mountDocumentation({ root, A, views, stage, current, status });
   const viewOf = (id) => listViews().find((v) => v.id === id) || null;
   const drawOn = () => root.querySelector('[data-model-toggle]')?.getAttribute('aria-pressed') === 'true';

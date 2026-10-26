@@ -711,7 +711,7 @@ export function mountViewsBim(modelUi, o = {}) {
   }
   // Read-only descriptors. IDs are source keys owned by the current editor, never display labels.
   function workspaceSources() {
-    if (!A.ed() || A.ed().mid == null) return [];
+    if (!A.ed() || A.ed().mid == null || !A.S.data) return [];
     const levels = A.S.data?.levels || [];
     const out = levels.flatMap(l => ['plan', 'rcp'].map(kind => ({ id: kind + ':' + l.guid, kind, ref: l.guid, guid: l.guid, levelId: l.id, name: l.name })));
     for (const c of R.callouts) { const r = rootOf(c.id), lv = r && levelByGuid(r.level); out.push({ id: 'callout:' + c.id, kind: 'callout', ref: c.id, name: c.name, levelId: lv?.id, guid: lv?.guid, rootKind: r?.kind, missing: !lv }); }

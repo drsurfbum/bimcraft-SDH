@@ -646,7 +646,8 @@ export function mountWorkspaces(A) {
           btn([el('i', { className: 'bi ' + (v.icon || 'bi-square'), 'aria-hidden': 'true' }), ' ' + v.name], { role: 'tab', 'data-ws-drawing': id, 'aria-selected': String(active === id) }),
           btn('×', { 'aria-label': T('shell.ws.close.view', { name: v.name }), 'data-ws-close': id })); }));   // i18n-ignore: a close glyph
       }
-      V.el.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      const selected = V.el.querySelector('[aria-selected="true"]');
+      if (selected) { const a = selected.getBoundingClientRect(), b = V.el.getBoundingClientRect(); if (a.left < b.left) V.el.scrollLeft += a.left - b.left; else if (a.right > b.right) V.el.scrollLeft += a.right - b.right; }
       stage.classList.toggle('ws-no-view', !!s.document && !active);
       V.empty.hidden = !s.document || !!active;
     } else {
