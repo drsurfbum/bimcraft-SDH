@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { model, inspect, generate, fixture } from './fixture.mjs';
 import { modelTools, installAgents, propRef } from '../../../app/agents.js';
 import { createDispatcher } from '../../../app/host.js';
+import { ModelWriter } from '../../../app/model-write.js';
 import { documentState } from '../../../app/material-wall-agent.js';
 import { readWalls, storedShape } from '../../../app/model-walls.js';
 import { changeWall } from '../../../app/model-ops.js';
@@ -124,4 +125,16 @@ test('closing the original IFC during postcommit notification retains confirmed 
  const s=r.structuredContent;assert.equal(s.changed,true);assert.equal(s.completedSteps,1);assert.equal(s.documentId,a.documentId);assert.equal(s.code,'POST_COMMIT_INTERRUPTED');
  assert.equal(s.readback.originalDocumentReadable,false);assert.equal(s.readback.phase,'synchronous-commit');assert.equal(s.after.allow,false);assert.equal(s.undo.available,false);
  assert.ok(s.affectedWalls.includes(a.wall));assert.deepEqual(fingerprint(other),untouched);
+});
+
+test('IFC handle reuse behind an unchanged editor cannot retarget precommit or postcommit join work', async () => {
+ for(const phase of ['before','after']){
+  const m=await model(),a=patch(m),file=bytes(m),targetId=target(m).id,originalFile=m.ed.api.file(m.ed.mid);
+  const replace=()=>{m.ed.api.CloseModel(m.ed.mid);m.ed.model.modelID=m.ed.api.OpenModel(file);assert.notEqual(m.ed.api.file(m.ed.mid),originalFile);};
+  const d=dispatcher(m,{apply:async(label,op)=>{if(phase==='before'){await Promise.resolve();replace();return m.ed.modelChange(op,{label});}const result=m.ed.modelChange(op,{label:'Assistant: '+label});await Promise.resolve();replace();return result;}});
+  const r=await d.call('wall_join_end_set',a);
+  assert.equal(readJoinRecord(new ModelWriter(m.ed.W,m.ed.api,m.ed.mid),targetId).settings.a.allow,true); // replacement retains its own settings.
+  if(phase==='before'){assert.match(JSON.stringify(r),/Original IFC instance changed before commit/);assert.equal(m.ed.changes.length,0);}
+  else{const s=r.structuredContent;assert.equal(s.changed,true);assert.equal(s.completedSteps,1);assert.equal(s.documentId,a.documentId);assert.equal(s.after.allow,false);assert.equal(s.readback.phase,'synchronous-commit');assert.ok(s.affectedWalls.includes(a.wall));}
+ }
 });

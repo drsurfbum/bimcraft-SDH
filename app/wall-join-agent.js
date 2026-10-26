@@ -98,9 +98,14 @@ export function wallJoinTools(env) {
         if (before.record.classification === 'supported' && JSON.stringify(next) === JSON.stringify(before.record.effective))
           return { ...before, changed: false, affectedWalls: [], geometryChangedWalls: [], completedSteps: 0 };
         const prior = physical(ed), history = ed.changes.length, operation = changeWall(a.wall, { joinSettings: next });
+        let originalFile = ed.api.file(ed.mid), firstCommit = true;
         let committed = false, error = null, committedAfter = null, committedProfiles = null;
         try {
           await env.apply('wall_join_end_set', current => {
+            if (firstCommit) {
+              if (current.api.file(current.mid) !== originalFile) fail('DOCUMENT_MISMATCH', 'Original IFC instance changed before commit.');
+              firstCommit = false; originalFile = null; // renderer rebuilds may reparse the same document; replay uses the existing journal owner.
+            }
             uniqueWall(writer(current), a.wall);
             const result = operation(current);
             committed = true;
@@ -109,18 +114,16 @@ export function wallJoinTools(env) {
             try { committedAfter = readback(current, a.wall); committedProfiles = physical(current); } catch { /* report unavailable readback honestly below */ }
             return result;
           });
-          if (env.ed() !== ed) error = 'The active document changed after the original edit completed.';
+          if (env.ed() !== ed || env.busy?.()) error = 'The active document changed or became busy after the original edit completed.';
         } catch (e) { if (!committed) throw e; error = e.message || String(e); }
-        let after, now, readable = true;
-        try { after = readback(ed, a.wall); now = physical(ed); }
-        catch (e) {
-          readable = false; error ||= 'Original document readback is unavailable after the confirmed edit: ' + (e.message || String(e));
-          after = committedAfter || { ...before, record: null, ends: null, geometry: null, diagnostics: null };
-          now = committedProfiles;
-        }
-        after = { ...after, ...documentHistoryState(ed) };
+        // Never reread an editor's rebound model handle after an awaited UI notification.
+        // A normal renderer rebuild reparses IFC too; the confirmed synchronous readback
+        // is the original mutation's result in both cases, without mistaking a new project for it.
+        if (!committedAfter) error ||= 'Confirmed edit completed, but commit readback is unavailable.';
+        const after = { ...(committedAfter || { ...before, record: null, ends: null, geometry: null, diagnostics: null }), ...documentHistoryState(ed) };
+        const now = committedProfiles, readable = !error;
         return { ...after, ok: !error, changed: committed, end: a.end, endId: a.wall + ':' + a.end, before: before.ends[a.end], after: after.ends?.[a.end] ?? null,
-          readback: { phase: readable ? 'response' : committedAfter ? 'synchronous-commit' : 'unavailable', originalDocumentReadable: readable },
+          readback: { phase: committedAfter ? 'synchronous-commit' : 'unavailable', originalDocumentReadable: readable },
           affectedWalls: now ? [...now].filter(([guid, value]) => prior.get(guid) !== value).map(([guid]) => guid) : null,
           geometryChangedWalls: now ? [...now].filter(([guid, value]) => JSON.stringify(JSON.parse(prior.get(guid) || '{}').shape) !== JSON.stringify(JSON.parse(value).shape)).map(([guid]) => guid) : null,
           completedSteps: ed.changes.length - history, undo: { owner: 'assistant', available: readable && ed.changes.length > history, label: 'Assistant: wall_join_end_set', documentId: after.documentId, revision: after.revision },
