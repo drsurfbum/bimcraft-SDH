@@ -76,4 +76,5 @@ jobs:
             .cc-test/mcp01-browser/catalog.json
             .cc-test/mcp01-browser/independent.json
             .cc-test/mcp01-browser/history-regression.json
+            .cc-test/mcp01-browser/alias-regression.json
             .cc-test/mcp01-browser/*.png

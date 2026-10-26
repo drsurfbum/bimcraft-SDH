@@ -28,3 +28,14 @@ export async function corruptFixtures(out) {
  }
  return files;
 }
+// Valid IFC sharing: an ordinary set aliases a property also owned by CadCraft_Wall.
+export async function protectedAliasFixture(out) {
+ const m=await model(fs.readFileSync('fixtures/f04/layered-plans.ifc')),w=m.w(),wall=readWalls(w)[0];
+ w.run(w=>{const protectedSet=w.defNamed(wall.id,'CadCraft_Wall').line;
+  const height=protectedSet.HasProperties.map(h=>w.api.GetLine(w.mid,h.value,false)).find(p=>val(p.Name)==='Height');
+  if(!height)throw new Error('Required protected Height fixture property missing.');
+  const id=w.upsertPset(wall.id,'OrdinaryAlias',[['Harmless','IFCLABEL','ok']]),set=w.touch(id);
+  set.HasProperties.push(w.H(height.expressID));w.write(set);return{};
+ });
+ const file=path.join(out,'alias-source.ifc');fs.writeFileSync(file,m.ed.save());return{file,guid:wall.guid};
+}

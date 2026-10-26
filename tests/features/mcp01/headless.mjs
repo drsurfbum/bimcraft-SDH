@@ -8,7 +8,7 @@ import { buildMirror } from '../../../devshell/test.mjs';
 import { stdio, initialized, tool } from './client.mjs';
 import { workflow, REQUIRED } from './workflow.mjs';
 import {compatibilityCalls} from './compatibility-calls.mjs';
-import { corruptFixtures } from './negative-fixtures.mjs';
+import { corruptFixtures, protectedAliasFixture } from './negative-fixtures.mjs';
 const out=path.resolve(process.env.MCP01_OUT || '.cc-test/mcp01-headless');fs.mkdirSync(out,{recursive:true});
 buildMirror();
 const server=path.resolve(process.env.MCP01_SERVER || '.cc-test/tools/mcp/server.mjs');
@@ -50,6 +50,14 @@ try {
  await tool(client,'ifc_save',{doc,path:path.join(os.tmpdir(),'mcp01-outside-roots.ifc')},true);
  const existing=path.join(out,'protected.ifc');fs.writeFileSync(existing,'Do not replace');await tool(client,'ifc_save',{doc,path:existing},true);assert.equal(fs.readFileSync(existing,'utf8'),'Do not replace');
  check('edit/save denial, allowed roots and overwrite protection refuse without changes');
+ const alias=await protectedAliasFixture(out),aliasDoc=(await tool(client,'ifc_open',{path:alias.file})).doc;
+ const aliasBefore=await tool(client,'ifc_save',{doc:aliasDoc,path:path.join(out,'alias-before.ifc'),overwrite:true});
+ const aliasError=await tool(client,'element_set',{doc:aliasDoc,guid:alias.guid,set:'OrdinaryAlias',property:'Height',value:9999},true);
+ assert.match(aliasError.content.map(c=>c.text||'').join(' '),/protected model record/);
+ const aliasAfter=await tool(client,'ifc_save',{doc:aliasDoc,path:path.join(out,'alias-after.ifc'),overwrite:true});
+ const aliasBytes=p=>fs.readFileSync(p,'utf8').replace(/FILE_NAME\([^;]+;/,'HEADER_TIMESTAMP');assert.equal(aliasBytes(aliasBefore.path),aliasBytes(aliasAfter.path));
+ assert.equal((await tool(client,'undo',{doc:aliasDoc})).undone.length,0);await tool(client,'doc_close',{doc:aliasDoc});
+ check('real stdio shared-property alias resolves its target and refuses protected ownership without byte/history changes');
  const fixtures=await corruptFixtures(out);
  for(const file of fixtures) {
   const bad=(await tool(client,'ifc_open',{path:file})).doc;

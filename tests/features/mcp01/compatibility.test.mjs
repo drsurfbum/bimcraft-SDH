@@ -50,7 +50,8 @@ test('generic and semantic edits share request exclusion without blocking later 
 test('generic element_set cannot reach a protected property through an ordinary shared alias',async()=>{
  const m=await model(fixture),w=readWalls(m.w())[0],ref=propRef(m.ed,w.id,'CadCraft_Wall','Height');
  m.w().run(writer=>{const ps=writer.upsertPset(w.id,'OrdinaryAlias',[['Harmless','IFCLABEL','ok']]);const set=writer.touch(ps);set.HasProperties.push(writer.H(ref.propId));writer.write(set);return{};});
- const before=view(m),r=await dispatcher(m).call('element_set',{...state(m),guid:w.guid,set:'OrdinaryAlias',property:'Height',value:9999});assert.equal(r.isError,true);assert.deepEqual(view(m),before);
+ m.ed.reindex();assert.ok(propRef(m.ed,w.id,'OrdinaryAlias','Height'));
+ const before=view(m),r=await dispatcher(m).call('element_set',{...state(m),guid:w.guid,set:'OrdinaryAlias',property:'Height',value:9999});assert.equal(r.isError,true);assert.match(r.content.map(c=>c.text||'').join(' '),/protected model record/);assert.deepEqual(view(m),before);
 });
 test('every malformed material/assembly/wall fixture also refuses all generic mutation routes without migration',async()=>{
  const out=fs.mkdtempSync(path.join(os.tmpdir(),'mcp01-up07-corrupt-'));
