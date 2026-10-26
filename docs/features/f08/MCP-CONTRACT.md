@@ -1,9 +1,10 @@
 # F08-A semantic MCP contract — F08-owned follow-on
 
 Status: **GAP / BLOCKING full feature acceptance**. At the approved 0.7 foundation
-`82da107dfd760199bc943249590812978c1a6082`, MCP-01 PR #16 is still draft at
-`9224167fe3e2e856c57679065b545d834f52ade1`; its shared binding/history adapter is not
-accepted. This candidate therefore does not touch shared registration/history seams,
+`82da107dfd760199bc943249590812978c1a6082`, the original MCP-01 PR #16 intake cutoff was
+`9224167fe3e2e856c57679065b545d834f52ade1`; its shared binding/history adapter was not
+accepted. A fresh check found draft/unmerged head `e84023e53c98352a07603ccfb36a3e09fac8e8c8`;
+main remains the approved foundation and no newer MCP branch was imported. This candidate therefore does not touch shared registration/history seams,
 import that branch or create another dispatcher. Reconcile these proposed schemas
 against the then-approved adapter and obtain a concrete PM cutoff before implementation.
  This update does not implement,

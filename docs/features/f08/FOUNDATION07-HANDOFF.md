@@ -64,8 +64,36 @@ The browser retains all existing assertions and records the exact headless WebGP
 adapter-fallback warning already accepted by foundation/F04; application exceptions
 and every other unexpected warning/error still fail. No required module is hidden.
 
-Final source, browser/export observations and exact-head CI will be recorded in
-`evidence/f08-07/` after execution. The complete offline vendor audit is locally
+Fresh integrated-source browser/export evidence is in `evidence/f08-07/`.
+Source `f3126721650fd17c15c975b45bec7b17e529bd4c` passes 39 real browser checks,
+including all retained locale/unit assertions, upper-level cleanup, three actual
+UI end Undo/Redo cycles and actual multi-level download/reopen. Six saved IFC files
+have zero independent schema/EXPRESS findings; plan PDF has 1292 path vertices,
+zero outside MediaBox, zero raster images, 65 detail fills and maximum geometry
+error 0.000002312 mm; CSV has 11 layer rows. The 28-case matrix has zero joined
+overlap and ideal-union difference 6.314e-9 mm². These are fresh observations,
+not the old evidence's baseline. Screenshots were visually reviewed, including
+the actual exported plan/detail renders.
+
+CI Tests at that source passes 729 reader-enabled checks (four optional sibling
+availability notices) and seven legacy files. The updated focused local batch is
+59/59, zero skipped (20 F08 + 39 foundation/F28). The source foundation comparison
+failed solely on the volatile stair STEP-label identity; correction
+`64bfef04086102ea5d6deb2f83df12b3ca476272` retains every physical predicate and
+adds a strict regression. This failure is recorded rather than counted as a pass.
+The final evidence commit reruns every applicable workflow; its exact SHA and
+final-head run links/results are published in draft PR #13. Source observations
+are explicitly labeled and are not substituted for final-head CI.
+
+Application compatibility source merge: `e470ab54f530b6f517af257bbc193010f02f42bf`.
+Browser test refinements: `b66c124b76ad54a12c371fe237170f0ea0bb0be7`,
+`3f0b0c63e2d867cc3821c883fa88385643d9b960`,
+`f3126721650fd17c15c975b45bec7b17e529bd4c`. All are normal descendants of the
+published cutoff; no history rewrite. Final delivery adds metadata/screenshots.
+
+Local timing at e470ab5, 5 warmups/30 unfiltered samples: outline p50/p95
+0.0395/0.0856 → 0.1455/0.2806 ms; forced regeneration 1.2163/1.8588 →
+1.2811/1.8087 ms. This small synthetic case is not a large-model performance claim. The complete offline vendor audit is locally
 blocked by a missing cached CPython-WASI LICENSE; this is not hidden as a pass.
 Local server binding is sandbox-denied (EPERM), so real browser and transport
 runs use isolated CI. No existing preview/browser project is changed.
@@ -78,7 +106,9 @@ remain unchanged from their previously reviewed versions.
 
 ## MCP gate and remaining acceptance gaps
 
-At this foundation, MCP-01 #16 is draft/unaccepted at `9224167fe3e2e856c57679065b545d834f52ade1`.
+MCP-01 intake cutoff was `9224167fe3e2e856c57679065b545d834f52ade1`.
+A fresh check found #16 draft/unmerged at `e84023e53c98352a07603ccfb36a3e09fac8e8c8`;
+main is still `82da107`. No MCP candidate was imported.
 Do not import that branch or change shared registration/history before its
 then-approved integration handoff. F08 owns the follow-on implementation of
 `wall_joins_get`, `wall_join_end_set`, `wall_join_diagnostics` through the accepted

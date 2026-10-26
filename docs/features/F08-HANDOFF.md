@@ -4,7 +4,8 @@ The new isolated candidate is `bimcraft-f08-07-candidate`, branch
 `candidate/f08-07-20261026`. It preserves published F08 cutoff
 `f929205133316b29a4551083792d5712d5ffcabd` and merges approved foundation
 `82da107dfd760199bc943249590812978c1a6082` with both parents retained.
-See [the current PM re-review handoff](f08/FOUNDATION07-HANDOFF.md).
+Merge source `e470ab54f530b6f517af257bbc193010f02f42bf`; final published delivery and
+exact-head CI are recorded in draft PR #13. See [the current PM re-review handoff](f08/FOUNDATION07-HANDOFF.md).
 Earlier evidence below remains historical and is not an observation of the 0.7 candidate.
 **Full F08 acceptance remains BLOCKED by unimplemented semantic join tools.**
 

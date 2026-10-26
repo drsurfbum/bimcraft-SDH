@@ -1,0 +1,26 @@
+{
+  "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+  "run": 40355450386,
+  "readerBaseline": 729,
+  "stages": [
+    "PASS precision: 7 passed, 0 failed; 0 skip/availability notices",
+    "PASS materials: 8 passed, 0 failed; 0 skip/availability notices",
+    "PASS model: 133 passed, 0 failed; 0 skip/availability notices",
+    "PASS comforts: 106 passed, 0 failed; 0 skip/availability notices",
+    "PASS views2: 105 passed, 0 failed; 0 skip/availability notices",
+    "PASS res: 211 passed, 0 failed; 4 skip/availability notices",
+    "PASS f02-contract: 21 passed, 0 failed; 0 skip/availability notices",
+    "PASS f04-graphics: 13 passed, 0 failed; 0 skip/availability notices",
+    "PASS f05-sections: 18 passed, 0 failed; 0 skip/availability notices",
+    "PASS f06-schedules: 23 passed, 0 failed; 0 skip/availability notices",
+    "PASS f08-joins: 17 passed, 0 failed; 0 skip/availability notices",
+    "PASS f08-foundation07: 3 passed, 0 failed; 0 skip/availability notices",
+    "PASS fixture: 1 passed, 0 failed; 0 skip/availability notices",
+    "PASS source-sync-contract: 44 passed, 0 failed; 0 skip/availability notices",
+    "PASS runner-contract: 19 passed, 0 failed; 0 skip/availability notices"
+  ],
+  "noticePolicy": "Optional absent sibling sources are availability notices, never passes.",
+  "legacyTestFiles": 7,
+  "originalLocalPasses": 714,
+  "originalLocalAvailabilityNotices": 17
+}

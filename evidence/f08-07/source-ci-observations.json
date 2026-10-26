@@ -1,0 +1,86 @@
+{
+  "source": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+  "status": "INTERIM — not final-head CI",
+  "runs": [
+    {
+      "id": 40355450338,
+      "name": "Upstream rebase compatibility",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450338"
+    },
+    {
+      "id": 40355450405,
+      "name": "F28-B wall workspace acceptance",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450405"
+    },
+    {
+      "id": 40355450777,
+      "name": "F06 browser acceptance",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450777"
+    },
+    {
+      "id": 40355450721,
+      "name": "F03 performance evidence",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450721"
+    },
+    {
+      "id": 40355450297,
+      "name": "F28 live workspace acceptance",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450297"
+    },
+    {
+      "id": 40355450459,
+      "name": "0.7 foundation controls",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450459"
+    },
+    {
+      "id": 40355450386,
+      "name": "Tests",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450386"
+    },
+    {
+      "id": 40355450212,
+      "name": "F08 straight-wall acceptance",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "in_progress",
+      "conclusion": null,
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450212"
+    },
+    {
+      "id": 40355450151,
+      "name": "F04 browser acceptance",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450151"
+    },
+    {
+      "id": 40355450213,
+      "name": "F05 browser acceptance",
+      "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40355450213"
+    }
+  ]
+}
