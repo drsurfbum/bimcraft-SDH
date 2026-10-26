@@ -4,7 +4,7 @@
     "upstream": "c778c7ca3f83eeecc3e815078417f152b2ca7a94",
     "release": "bimcraft-v0.7.0"
   },
-  "implementation": "1ad110a01ec1a88f9c1b9e553a03ddff5786ba6e",
+  "implementation": "d9d93f8f9653245f8600aed931b7deb70724b2cf",
   "reviewedDelivery": "6ff9f38f0b80ad0128b12e04bf7b41e5c7f834ab",
   "delivery": "The commit containing this record; immutable delivery SHA and final-head CI links are recorded in PR #17.",
   "findings": {
@@ -13,7 +13,7 @@
   },
   "freshLocal": {
     "focusedTests": {
-      "passed": 36,
+      "passed": 37,
       "failed": 0,
       "skipped": 0
     },
@@ -722,5 +722,14 @@
       "residentialPassed": 211
     },
     "exactDeliveryCI": "Required again on the documentation delivery; see PR #17 for immutable SHA/status/links."
+  },
+  "coreFixSource": "1ad110a01ec1a88f9c1b9e553a03ddff5786ba6e",
+  "comparisonCorrection": {
+    "source": "d9d93f8f9653245f8600aed931b7deb70724b2cf",
+    "failedDelivery": "8b602559946b4ba15a5d9ab3269b1a896ac3fc7b",
+    "failedRun": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40260485031",
+    "reason": "An ops-energy assertion embeds elapsed time in its label. Normalize only that anchored timing suffix; retain physical values/thresholds/predicate/original telemetry and missing-assertion enforcement.",
+    "regression": "Changed physical values, changed threshold, wrong suite or missing assertion are not masked.",
+    "historicalFailureRetained": true
   }
 }
