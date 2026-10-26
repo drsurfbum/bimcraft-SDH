@@ -35,6 +35,11 @@ history-read issue was not repaired. New work is confined to
 | model-ops.js | Retain reserveGuid replay and integrated protected-record guards; add F08 join guard. |
 | model-slabs.js | Retain PLAN_CUT/multi-level wallsThrough; pass complete wall rows to joins. |
 
+Retained foundation matrix comparison also normalizes only transient STEP IDs in
+the stair assertion label. Measured labels and every physical value remain; new
+regressions prove changed values, missing assertions and multiplicities still fail.
+The original physical stair predicate is unchanged.
+
 Additional seams: upper-floor `throughScene` preserves complete rows; Copy Level
 copies explicit end controls after new wall identities exist and remaps node/T
 relations. Cross-level retained references refuse the entire operation. All use

@@ -31,7 +31,12 @@ export const residentialNameRules = [
   { pattern: /^the cut list: \d+ pieces, \d+ board feet, 2x6 studs ordered as 8' stock$/, name: "the cut list: {pieces} pieces, {boardFeet} board feet, 2x6 studs ordered as 8' stock", reason: 'Framing quantities differ with accepted wall assemblies; retain the assertion and original measured label, not a fixed measurement target.' },
   { pattern: /^web-ifc \(oracle\): \d+ members in four assemblies$/, name: 'web-ifc (oracle): {members} members in four assemblies', reason: 'Read-back count is checked against actual members, whose count/order varies with retained wall/framing behavior.' },
 ];
-export const residentialAssertionName = name => residentialNameRules.find(rule => rule.pattern.test(name))?.name || name;
+// The retained stair predicate appends the last 40 STEP characters; only the
+// leading entity references are telemetry. Keep every physical value in the key.
+export const stairStepLabel = /^(the flight says 16 risers, 15 treads, 187\.5 riser \(3000 \/ 16\), 254 tread \(IFC4 attributes\): )\d+,#\d+,\$,(.*)$/;
+export const residentialAssertionName = name => name.replace(stairStepLabel, '$1{STEP refs},$2') === name
+ ? residentialNameRules.find(rule => rule.pattern.test(name))?.name || name
+ : name.replace(stairStepLabel, '$1{STEP refs},$2');
 
 // ops-energy.mjs appends elapsed time to this predicate's label. Preserve every
 // heat-loss measurement and threshold; only timing is excluded from identity.
