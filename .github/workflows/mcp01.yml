@@ -55,12 +55,14 @@ jobs:
         run: |
           node tests/features/mcp01/browser.mjs
           .cc-test/mcp01-reader/bin/python -I tests/features/mcp01/independent.py .cc-test/mcp01-browser
+          node tests/features/mcp01/history-controls.mjs
       - name: Retain reports and browser evidence only (no model payloads)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mcp01-evidence
           path: |
+            .cc-test/mcp01-history-controls/report.json
             .cc-test/mcp01-compat/*.json
             .cc-test/mcp01-headless/report.json
             .cc-test/mcp01-headless/catalog.json

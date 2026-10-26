@@ -38,11 +38,15 @@ export async function historyBrowser(context, out, check) {
   s=await call('model_describe');report.requestedDocument=s.documentId;
   await page.evaluate(mi=>{
    window.__mcpUndoSwitch={armed:true,switched:false,observedSteps:null,uiIdle:false};
-   const observer=new MutationObserver(()=>{const state=window.__mcpUndoSwitch;if(!state.armed)return;
+   const attempt=()=>{const state=window.__mcpUndoSwitch;if(!state.armed)return;
     if(window.__mcpHistoryA.changes.length===1&&Number.isInteger(window.__mcpHistoryA.mid)&&Number.isInteger(window.__mcpHistoryB.ed.mid)&&!bimcraftPlan.state.reloading&&!bimcraftPlan.state.busy&&!bimcraftWorkspace.snapshot().busy){
      state.observedSteps=1;state.uiIdle=true;state.armed=false;observer.disconnect();document.querySelector(`[data-model-active="${mi}"]`).click();state.switched=true;
     }
-   });observer.observe(document.body,{subtree:true,childList:true,attributes:true});window.__mcpUndoObserver=observer;
+   };
+   // 0.7 emits its final status DOM mutation before guard()'s awaited finally clears busy.
+   // Observe that same UI boundary once more after the queued promise continuation, without pausing production.
+   const observer=new MutationObserver(()=>{attempt();queueMicrotask(attempt);});
+   observer.observe(document.body,{subtree:true,childList:true,attributes:true});window.__mcpUndoObserver=observer;
   },b);
   const refused=await call('undo',{documentId:s.documentId,expectedRevision:s.revision,steps:2},true);
   const result=refused.structuredContent;assert.equal(result.documentId,s.documentId);assert.equal(result.stopped.code,'document_changed');assert.equal(result.completedSteps,1);assert.equal(result.requestedSteps,2);assert.equal(result.complete,false);assert.equal(result.undone.length,1);
