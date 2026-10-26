@@ -34,7 +34,7 @@
     "actual": "Both steps completed on A because direct observer missed idle; no B mutation",
     "correction": "observe the actual final DOM boundary again in its next queued microtask after guard promise continuation; all original isolation/no-error assertions retained"
   },
-  "finalCi": "All ten workflows run on the commit containing this DF.25 supplement, not superseded f43f40a. Exact delivery SHA and final-head links are recorded in PR #16 after publication.",
+  "finalCi": "All ten workflows run on the commit containing the alias-transport evidence supplement, not superseded df55e5d. Exact delivery and run links are recorded in PR #16.",
   "open": [
     "PERF-F04-01",
     "PERF-F05-01",
@@ -51,11 +51,12 @@
     "f06": "PASS actual saved IFC, CSV and vector-PDF script",
     "reader": "IfcOpenShell 0.9.0; pypdf; Poppler; local runtime"
   },
-  "finalSourceCutoff": "a370cf3c7b5c265af83c744b67bab33673e5068b",
+  "finalSourceCutoff": "31f7e9167f16f084bc1311a17271921a3c674bc4",
   "retainedDf25": {
     "passed": 31,
     "failed": 0,
     "previousCatalogFailures": 2,
     "remainingOptionalReaderNotice": 1
-  }
+  },
+  "latestEvidence": "alias-transport/validation.json"
 }
