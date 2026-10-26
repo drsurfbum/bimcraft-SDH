@@ -76,7 +76,7 @@ export async function verifySourceActions({newContext,openProject,settle,out,che
     await page.screenshot({path:path.join(out,'properties-source-csv-inactive.png')});
     await blocked('csv','keyboard');assert.equal((await state()).view.id,'schedule:assemblies');
     check('Properties CSV refuses an unopened displayed legend with a keyboard explanation and no download');
-    await page.locator('[data-ws-file]').click();const fileMenu=page.getByRole('menu',{name:'File',exact:true});
+    await page.locator('button.ws-file-tab[data-ws-file]').click();const fileMenu=page.getByRole('menu',{name:'File',exact:true});
     assert.equal(await fileMenu.locator('[data-ws-file-action="csv"]').getAttribute('aria-disabled'),'false');
     await csv('[role="menu"] [data-ws-file-action="csv"]','assemblies','source-actions-active-assemblies.csv');
     check('File CSV still exports the actual active assembly schedule while Properties displays the legend');

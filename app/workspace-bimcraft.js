@@ -27,7 +27,7 @@ import { node, icon, button } from './workspace/dom.js';
 import { fmtLen } from './model-units.js';
 import { scalesFor } from './res-sheets.js';
 import { mountWallWorkflow, INSTANCE_WALL_FIELDS } from './workspace/walls.js';
-import { mountDocumentation, browserSource, isPlanView, isDocumentView } from './workspace/documentation.js';
+import { mountDocumentation, browserSource, isPlanView, isDocumentView, extraTools } from './workspace/documentation.js';
 import { fieldsIn } from 'cc-workspace';
 
 const GROUPS = [
@@ -186,7 +186,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     },
     tool(id, block) {
       if (block === 'toolbox') { const s = src(id); return { label: labelOf(s) || id, icon: s?.querySelector('i.bi')?.className.replace(/^bi\s+/, '') || 'bi-square', built: !!s }; }
-      const t = catalog.tools[id] || { icon: id === 'fit' ? 'eye' : 'pointer' };
+      const t = catalog.tools[id] || { icon: extraTools[id]?.[1] || (id === 'fit' ? 'eye' : 'pointer') };
       return { label: T('ws.tool.' + id), icon: icon(t.icon), built: works(id) || ['fit', 'clear'].includes(id) };
     },
     can(id, block) {
