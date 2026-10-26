@@ -4800,17 +4800,30 @@ function init(root) {
         fit: () => workspace.fit(),
         wall: () => workspace.startWall(), assembly: () => workspace.editType(), structure: () => workspace.editStructure(),
         cancel: () => workspace.cancelWall(false), finish: () => workspace.cancelWall(true),
+        rcp: () => workspace.openSource('rcp'), elevation: () => workspace.openSource('elevation'),
+        section: () => workspace.startAnnotation('section'), dimension: () => workspace.startAnnotation('wallDimension'),
+        detailline: () => workspace.startAnnotation('dline'), filledregion: () => workspace.startAnnotation('dhatch'), callout: () => workspace.startAnnotation('callout'),
+        assemblyschedule: () => workspace.openSource('schedule', 'assemblies'), legend: () => workspace.openSource('schedule', 'materialLegend'), schedule: () => workspace.openSource('schedule'),
+        sheet: () => workspace.newSheet(), editsheet: () => workspace.editSheet(), placeview: () => workspace.editSheet(),
+        viewsettings: () => workspace.viewSettings(), visibility: () => workspace.openRange(), templates: () => workspace.templates(),
+        drawingset: () => workspace.drawingSet(), materials: () => workspace.materials(),
+        pdf: () => workspace.exportPdf(), csv: () => workspace.exportCsv(), tools: () => workspace.existingTools(),
       },
     });
     const wsCurrent = () => ({ editor: mode === 'ifc' ? editor : null, name: mode === 'dwg' ? dwgOpen?.fileName || '' : ifcName, busy: busy || !!placing, placing: !!placing,
       dirty: unsavedIn(editor), canUndo: !!editor?.changes.length, canRedo: !!editor?.canRedo,
       selection: viewer ? [...viewer.selection] : [], viewer, mode });
     // the layouts (Settings › Global › Layout): the shell's engine builds a layout file's blocks, workspace-bimcraft.js fills them
-    const bw = createBimcraftWorkspace({ root, modelUi, views: planViews, commands: coreCommands, props: ui.props, current: wsCurrent, status, statusEl: ui.status });
+    const bw = createBimcraftWorkspace({ root, modelUi, views: planViews, commands: coreCommands, props: ui.props, current: wsCurrent, status, statusEl: ui.status,
+      existing: route => {
+        if (['props','color','issues','analysis','points','assets','daylight','library'].includes(route)) showTab(route);
+        const target = route === 'links' ? root.querySelector('[data-links-sec]') : route === 'files' ? root.querySelector('.bc-left') : route === 'model' ? root.querySelector('[data-model-toggle]') : document.querySelector('.app-bar');
+        target?.scrollIntoView({ block: 'nearest' });
+      } });
     workspace = bw.api;
     const engine = mountWorkspaces(bw.adapter);
     bw.api.attach(engine); engine.refresh();
-    window.bimcraftWorkspace = Object.freeze({ snapshot: workspace.inspect, commands: () => coreCommands.ids.map(coreCommands.describe), engine });
+    window.bimcraftWorkspace = Object.freeze({ snapshot: workspace.inspect, commands: () => coreCommands.ids.map(id => coreCommands.describe(id)), engine });
     toolbox = { refresh: () => engine.refresh() };
     window.bimcraftToolbox = Object.freeze({ get active() { return engine.has('toolbox'); }, refresh: () => engine.refresh(),
       use: (on) => window.ccShellWorkspace?.set(on ? 'toolbox' : 'standard'), inspect: () => engine.inspect() });   // for tests and the console

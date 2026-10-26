@@ -57,7 +57,7 @@ export function mountWallWorkflow({ root, A, commands, defaults, unitsHost, opti
     if (on === mounted) return;
     mounted = on;
     if (on) {
-      move(ui.row, slot); move(typeField, defaults, edit); move(ui.typedRow, slot); move(ui.units, unitsLabel);
+      move(ui.row, slot); move(typeField, defaults, edit); move(ui.typedRow, slot); move(ui.units, unitsLabel); move(ui.hint, slot);
       ui.reference.replaceChildren(...locationChoices.map((value) => node('option', { value }, T('ws.loc.' + value.replace(/[A-Z]/g, (c) => '_' + c.toLowerCase())))));
       ui.reference.value = A.S.wall.reference;
       ui.shape.querySelector('[value="arc"]').disabled = true;
@@ -70,7 +70,7 @@ export function mountWallWorkflow({ root, A, commands, defaults, unitsHost, opti
   }
   function refresh() {
     if (!mounted) return;
-    const placing = A.S.tool === 'wall'; slot.hidden = !placing; defaults.hidden = !placing;
+    const placing = A.S.tool === 'wall', annotating = A.S.tool && A.S.tool !== 'select'; slot.hidden = !placing && !annotating; defaults.hidden = !placing;
     ui.shape.disabled = true; ui.shape.querySelector('[value="arc"]').disabled = true;
     for (const label of ui.row.querySelectorAll('label')) label.classList.add('ws-native-field');
     typeField.classList.add('ws-native-field');

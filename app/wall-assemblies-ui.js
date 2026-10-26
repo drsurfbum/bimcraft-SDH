@@ -110,7 +110,7 @@ export function mountWallAssemblies(modelUi) {
     }
     describeEffects();draw();A.root.append(dlg);dlg.showModal();
   }
-  A=modelUi.extend({openAssembly});
+  A=modelUi.extend({openAssembly, openProjectMaterials: () => openMaterialLibrary(A)});
   const row=A.root.querySelector('[data-mopts="wall"]');
   row?.append(button(t('open'),()=>openAssembly(),{'data-wall-assemblies':''}));
   // The Draw bar's Library group (ui.inc [data-mb-library]): flat tools like the rest of the bar (closing 0.7 part 2 § A).

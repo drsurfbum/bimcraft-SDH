@@ -62,6 +62,8 @@ jobs:
           node .cc-test/tools/mcp/pack.mjs --bimcraft-only --out .cc-test/packed
           node tests/features/upstream07/package-closure.mjs
           MCP_SERVER=.cc-test/packed/mcp/server.mjs .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
+      - name: F28-C capability audit against actual source transport
+        run: .cc-test/reader/bin/python -I tests/features/f28/mcp-coverage.py
       - name: Three browser controls, real catalogs and same-environment timings
         run: |
           npm install --prefix .cc-test/shell-deps --no-package-lock playwright@1.56.1
@@ -79,6 +81,7 @@ jobs:
             .cc-test/upstream07/package-closure.json
             .cc-test/upstream07/independent-replay.json
             .cc-test/upstream-mcp/summary.json
+            .cc-test/f28-c-mcp/report.json
             .cc-test/upstream07-shell/report.json
             .cc-test/upstream07-shell/lifecycle.json
           retention-days: 30

@@ -1071,7 +1071,8 @@ export function mountRes(modelUi) {
     classes: /^Ifc(Roof|Slab|ElementAssembly|Footing|Wall|Furniture|FurnishingElement|Stair|StairFlight|Railing|Member|Beam|GeographicElement|Annotation|Outlet|SwitchingDevice|LightFixture|Sensor|JunctionBox|ElectricDistributionBoard|FlowTerminal|FlowController|FlowFitting)$/,
     /** 0.6 DF.19 (views-ui.js): what a sheet can show, and the set's paper / title-block options. */
     sheetInput: () => setInput(), sheetOpts: () => setOpts(paperNow()),
-    schedules() { const sc = A.S.on ? lumberSchedule() : null; return { ...(sc ? { lumber: sc } : {}), ...elSchedules() }; },
+    openDrawingSet: () => openSheets(),
+    schedules() { const sc = A.S.on || A.root.classList.contains('ws-active') ? lumberSchedule() : null; return { ...(sc ? { lumber: sc } : {}), ...elSchedules() }; },
     scheduleKeys(kind, i) {
       if (kind === 'devices' || kind === 'circuits') return elScheduleKeys(kind, i);
       if (kind !== 'lumber') return [];

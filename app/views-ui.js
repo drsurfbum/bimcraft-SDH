@@ -90,7 +90,7 @@ export function mountViewsBim(modelUi, o = {}) {
   const R = { views: new Map(), rcps: new Map(), templates: [], sheets: [], callouts: [], open: new Set(['plans', 'rcp', 'callouts', 'missing', 'sheets', 'tpl', 'families']), sec: null, crop: null, under: null, co: null, chip: null };
   let A = null;
   const t = (...a) => A.t(...a);
-  const W = () => (A.ed() ? new ModelWriter(A.ed().W, A.ed().api, A.ed().mid) : null);
+  const W = () => (A.ed()?.mid != null ? new ModelWriter(A.ed().W, A.ed().api, A.ed().mid) : null);
   const L = (mm) => fmtLen(mm, A.units());
   const field = (label, input, attrs = {}) => el('label', { className: 'bc-dlg-field', ...attrs }, el('span', {}, label), input);
   const icon = (c) => el('i', { className: 'bi ' + c, 'aria-hidden': 'true' });
@@ -279,6 +279,7 @@ export function mountViewsBim(modelUi, o = {}) {
     const sec = section();
     if (!sec) return;
     const tree = sec.querySelector('[data-pb-tree]');
+    const focused = tree.contains(document.activeElement) ? [...document.activeElement.attributes].filter(a => a.name.startsWith('data-pb-')).map(a => [a.name, a.value]) : null;
     const levels = (A.S.data?.levels || []).slice().reverse();
     const plans = levels.map((l) => {
       const v = R.views.get(l.id);
@@ -323,6 +324,7 @@ export function mountViewsBim(modelUi, o = {}) {
       ...(A.ask('browserGroups', { group, row, small, icon }) || []),   // 0.6 DC.114: Families (family-ui.js)
       group('links', t('model.pb.links'), links, [row({ 'data-pb-links': '' }, t('model.pb.linksgo'), () => A.root.querySelector('[data-links-sec]')?.scrollIntoView({ block: 'nearest' }))]),
     );
+    if (focused?.length) [...tree.querySelectorAll('button')].find(b => focused.every(([name,value]) => b.getAttribute(name) === value))?.focus({ preventScroll: true });
   }
   function goPlan(id) {
     if (!A.S.on) modelUi.show(true);
@@ -368,11 +370,16 @@ export function mountViewsBim(modelUi, o = {}) {
     return { box, value, disable };
   }
   function dialog(attrs, title, body, buttons, onSubmit) {
+    const owner = A.ed();
     const err = el('p', { className: 'bc-input-err', role: 'alert' });
     const id = 'bc-' + Object.keys(attrs)[0] + '-h';
     const dlg = el('dialog', { className: 'bc-dialog', 'aria-labelledby': id, ...attrs },
       el('form', { method: 'dialog' }, el('h2', { className: 'bc-h', id }, title), ...body, err, el('p', { className: 'bc-lib-actions' }, ...buttons)));
-    dlg.querySelector('form').addEventListener('submit', (e) => { const why = onSubmit(e.submitter?.value, e); if (why) { e.preventDefault(); err.textContent = why; } });
+    dlg.querySelector('form').addEventListener('submit', (e) => {
+      const cancel = ['cancel', 'close'].includes(e.submitter?.value);
+      const why = !cancel && A.ed() !== owner ? t('workspace.projectChanged') : onSubmit(e.submitter?.value, e);
+      if (why) { e.preventDefault(); err.textContent = why; }
+    });
     dlg.addEventListener('close', () => dlg.remove());
     A.root.append(dlg);
     dlg.showModal();
@@ -685,24 +692,39 @@ export function mountViewsBim(modelUi, o = {}) {
   });
   mountDrafting(modelUi, { viewKey, viewName });   // 0.6 DC.117 (d)
   /** F28-A: the bottom bar and Properties share the authoritative effective settings and transaction. */
-  function workspaceSettings(levelId = A.S.level) {
+  function workspaceSettings(levelId = A.S.level, kind = A.S.kind, callout = A.S.callout) {
     const lv = levelOf(levelId);
     if (!lv) return null;
-    const v = R.views.get(lv.id);
-    return { ...effectiveView(v || null, R.templates, lv.height || 3000, 'plan'), detail: v?.detail || 'coarse', ...rangeOf(lv.id) };
+    const v = (kind === 'rcp' ? R.rcps : R.views).get(lv.id);
+    return { ...effectiveView(v || null, R.templates, lv.height || 3000, kind), ...rangeOf(lv.id, kind, callout) };
   }
   function setWorkspaceSettings(patch) {
     const lv = levelOf(A.S.level), current = workspaceSettings();
-    if (!lv || !A.S.on || A.S.kind !== 'plan' || A.S.callout) return t('model.needs.ifc');
+    if (!lv || !A.S.on || A.S.callout) return t('model.needs.ifc');
     if (current?.template) return t('model.pv.tpl.note', { name: current.template });
     if (patch.detail !== undefined && !PLAN_DETAILS.includes(patch.detail)) return t('model.err.vr.order');
     if (patch.scale !== undefined && (!Number.isFinite(patch.scale) || patch.scale < 0 || patch.scale > 10000)) return t('model.err.vr.order');
     const ch = {};
     if (patch.detail !== undefined) ch.detail = patch.detail;
     if (patch.scale !== undefined) ch.scale = patch.scale;
-    return run(setPlanView(lv.guid, ch), { label: t('model.pv.what', { level: lv.name }), verb: t('model.verb.changed') });
+    return run(setPlanView(lv.guid, ch, A.S.kind), { label: t('model.pv.what', { level: lv.name }), verb: t('model.verb.changed') });
   }
-  const api = { openRange, openTemplate, openSheet, render, rangeOf, startCrop, startCallout, openCallout, editCallout, viewKey, backToParent, workspaceSettings, setWorkspaceSettings };
+  // Read-only descriptors. IDs are source keys owned by the current editor, never display labels.
+  function workspaceSources() {
+    if (!A.ed() || A.ed().mid == null) return [];
+    const levels = A.S.data?.levels || [];
+    const out = levels.flatMap(l => ['plan', 'rcp'].map(kind => ({ id: kind + ':' + l.guid, kind, ref: l.guid, guid: l.guid, levelId: l.id, name: l.name })));
+    for (const c of R.callouts) { const r = rootOf(c.id), lv = r && levelByGuid(r.level); out.push({ id: 'callout:' + c.id, kind: 'callout', ref: c.id, name: c.name, levelId: lv?.id, guid: lv?.guid, rootKind: r?.kind, missing: !lv }); }
+    for (const s of readSectionLines(W())) out.push({ id: 'section:' + s.guid, kind: 'section', ref: s.guid, name: t('res.sec.name', { name: s.name }) });
+    for (const side of ['north', 'east', 'south', 'west']) out.push({ id: 'elevation:' + side, kind: 'elevation', ref: side, name: t('res.sh.elev.' + side) });
+    for (const [ref, s] of Object.entries(A.schedules())) if (s?.rows) out.push({ id: 'schedule:' + ref, kind: 'schedule', ref, name: s.title || t('model.sch.' + ref) });
+    for (const s of R.sheets) out.push({ id: 'sheet:' + s.id, kind: 'sheet', ref: s.id, name: [s.number, s.title].filter(Boolean).join(' '), paper: s.paper });
+    return out;
+  }
+  function workspaceInput() { const input = A.ask('sheetInput'); if (input) input.callouts = calloutInput(); return input; }
+  function workspaceProjected(key, patch) { return run(setProjectedView(key, patch), { label: t('f05.settings'), verb: t('model.verb.changed') }); }
+  const api = { openRange, openTemplate, openSheet, openProjected, render, rangeOf, startCrop, startCallout, openCallout, editCallout, viewKey, backToParent, workspaceSettings, setWorkspaceSettings,
+    workspaceSources, workspaceInput, workspaceProjected, sheet: id => R.sheets.find(s => s.id === id), projected: key => readProjectedView(W(), key) };
   if (typeof window !== 'undefined') window.bimcraftViews = { state: R, api };   // for tests
   return api;
 }

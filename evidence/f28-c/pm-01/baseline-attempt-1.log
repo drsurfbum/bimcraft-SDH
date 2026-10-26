@@ -1,0 +1,13 @@
+npm notice run test:baseline
+npm notice run node devshell/baseline.mjs --offline
+Error: EEXIST: file already exists, symlink '../../../devshell/site/assets/css' -> '/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f28-c/.cc-test/public_html/assets/css'
+    at Object.symlinkSync (node:fs:2325:11)
+    at link (file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f28-c/devshell/test.mjs:48:12)
+    at buildMirror (file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f28-c/devshell/test.mjs:68:5)
+    at file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f28-c/devshell/baseline.mjs:65:7 {
+  errno: -17,
+  code: 'EEXIST',
+  syscall: 'symlink',
+  path: '../../../devshell/site/assets/css',
+  dest: '/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f28-c/.cc-test/public_html/assets/css'
+}

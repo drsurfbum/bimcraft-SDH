@@ -6,3 +6,6 @@ dist/
 /evidence/f04/native-canvas-detail.png
 
 /evidence/f04/styled-reopened.ifc
+
+# Kept local: automatic approval rejected publication of the generated F28-C IFC fixture.
+/fixtures/f28/documentation.ifc

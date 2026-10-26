@@ -1,0 +1,21 @@
+{
+  "approvedBase": "3e42c21e33e642d1e07bea2fc3356344f91db00e",
+  "approvedParents": [
+    "0ccb30d735554b012cf21e02252ded4612fd2f54",
+    "138df9f6bf593bfc677d3d468426a03beb727e59"
+  ],
+  "baseTree": "574f29f22dd575d72388277fa68d72ed54c6ac8e",
+  "validatedSource": "eb389b64c21dc2ab245fc9c94866a997f8757996",
+  "sourceTree": "3965c29deb2012569f1b205ba8692589de2e1d85",
+  "sourceAppTree": "441679001a6f9d18ba8669a624e9d399eb38d268",
+  "author": {
+    "name": "DrSurfBum",
+    "email": "80549907+drsurfbum@users.noreply.github.com"
+  },
+  "branch": "feature/f28-c-documentation",
+  "repository": "drsurfbum/bimcraft-SDH",
+  "bundleCompleteHistoryVerified": true,
+  "missingObjects": 0,
+  "deliveryHead": "The commit containing the final evidence; exact SHA and CI runs are recorded in PR #12. App/test trees are compared with validatedSource before publication.",
+  "localPreview": "Port 8039 free; listener start refused with listen EPERM. Launcher supplied, no active preview claimed."
+}

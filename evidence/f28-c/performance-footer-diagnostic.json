@@ -1,0 +1,8 @@
+{
+  "reason": "The inherited Node comparison imports a fresh baseline i18n module without messages; the current fixture initializes English. Only the generated-by footer differs; geometry, source labels and all vector primitives match after normalizing that footer.",
+  "baseFooter": "res.sh.madewith",
+  "sourceFooter": "Drawn with BimCraft",
+  "normalizedSVGsIdentical": true,
+  "normalizedSHA256": "16325f2472d14dfa7a189bd35da6e396baea62e0c8278a4cc97c506e7be1066e",
+  "scope": "Comparison diagnostic only. Actual browser acceptance loads English in both base/source. No benchmark improvement claim."
+}

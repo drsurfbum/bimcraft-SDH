@@ -1,0 +1,9 @@
+{
+  "reviewedHead": "e46113bbbdd66b19f07d92d49af6eac907d1f84c",
+  "workingSource": "F28C-PM-01 changes later committed as 50733822c91a159f7e9f68cdf553922102b894df",
+  "port": 8051,
+  "error": "listen EPERM: operation not permitted 127.0.0.1:8051",
+  "existing8039": "Preserved; read-only lsof found the listener. This process could not access it through local HTTP.",
+  "browserRun": "Not executed locally. Required new browser regressions run in CI; PM local B/C 42/39 results on e46113b are historical passing evidence, not this fix.",
+  "TEST-F28-01": "OPEN pending integrated-build confirmation and explicit tracking update, per PM."
+}

@@ -143,5 +143,29 @@ body.has-live-workspace>.app-bar{display:none}
 .ws-active [data-assembly-editor] .bc-lib-actions{position:sticky;bottom:-15px;background:var(--ws-panel-bg);padding:8px 0;border-top:1px solid var(--ws-line);display:flex;gap:8px;justify-content:flex-end;z-index:2}
 .ws-active [data-assembly-editor] button{border-color:var(--ws-line);padding:4px 7px}
 .ws-active [data-assembly-effects]{padding:7px;background:var(--ws-soft);border:1px solid var(--ws-line)}
+
+/* Documentation uses the established vector composer and the original schedule controls. */
+.ws-documentation{display:none}
+.ws-active .ws-documentation:not([hidden]){position:absolute;inset:29px 0 30px;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--ws-panel-bg);z-index:2}
+.ws-active .ws-document-mode>[data-plan-wrap],.ws-active .ws-document-mode>[data-canvas-wrap]{visibility:hidden!important}
+.ws-document-note{font:11px/16px "Segoe UI",Arial,sans-serif;margin:0;padding:7px 10px;border-bottom:1px solid var(--ws-line);flex-shrink:0;overflow-wrap:anywhere}
+.ws-document-viewport{flex:1;min-height:0;min-width:0;overflow:auto;padding:12px;background:var(--ws-chrome);overscroll-behavior:contain}
+.ws-document-paper{min-width:250px;width:100%;margin:auto;background:white;box-shadow:0 1px 5px #0002}
+.ws-document-paper>svg{display:block;width:100%;height:auto}
+.ws-documentation>[data-msched-sec]{padding:12px;overflow:auto;min-height:0;flex:1}
+.ws-documentation .bc-msched{max-height:none;overflow:visible;width:100%;margin-block:10px}
+.ws-documentation table{border-collapse:collapse;min-width:850px;width:100%;font:12px/17px "Segoe UI",Arial,sans-serif}
+.ws-documentation th,.ws-documentation td{padding:7px;border:1px solid var(--ws-line);text-align:left;vertical-align:top;white-space:pre-wrap}
+.ws-documentation th{background:var(--ws-chrome)}
+.ws-active .ws-wall-options>[data-mopts]{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.ws-active .ws-wall-options [data-model-hint]{display:block!important;position:static;max-width:440px;min-width:160px;white-space:normal;font:11px/14px "Segoe UI",Arial,sans-serif;margin:0}
+.ws-active .ws-wall-options>[data-mtyped-row]{flex-shrink:0}
+.ws-active [data-sh-dialog],.ws-active [data-pj-dialog],.ws-active [data-pv-dialog],.ws-active [data-co-dialog],.ws-active [data-vt-dialog]{box-sizing:border-box;max-width:96vw;max-height:92dvh;overflow:auto;font:12px/1.5 "Segoe UI",Arial,sans-serif;padding:15px}
+.ws-active [data-sh-dialog] .bc-lib-actions{position:sticky;bottom:-15px;background:var(--ws-panel-bg);border-top:1px solid var(--ws-line);display:flex;flex-wrap:wrap;justify-content:flex-end;padding:8px 0;z-index:2}
+.ws-active [data-sh-dialog] .bc-sh-head input{max-width:260px}
+.ws-active [data-sh-dialog] .bc-sh-src{max-height:56vh}
+.ws-active .ws-titlebar>.ws-tool.ws-compact{min-width:auto;max-width:110px;font-size:10px}
+.ws-existing-tools article{border-top:1px solid var(--line);padding-block:4px}.ws-existing-tools article p{margin:3px 6px 9px}
+@media(max-width:1000px){.ws-active [data-sh-dialog] .bc-sh-body{grid-template-columns:180px minmax(0,1fr)}.ws-active [data-sh-dialog] .bc-sh-head{gap:5px}.ws-documentation table{font-size:11px}.ws-active .ws-options{gap:6px}.ws-active [data-sh-dialog] .bc-sh-stage{max-width:100%!important}}
 .ws-type-dialog{width:min(560px,94vw)}
 .ws-props-units{flex-shrink:0;border-top:1px solid var(--ws-line);padding:4px 7px;background:var(--ws-chrome)}

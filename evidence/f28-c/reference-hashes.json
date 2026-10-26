@@ -1,0 +1,32 @@
+[
+  {
+    "path": "../reviews/F28-draft-2026-10-23/index.html",
+    "bytes": 130487,
+    "sha256": "dab8f45f81c20c2f3ac10d099f4328dec10b8a4aa05baefe7d77888d0e05eaf5"
+  },
+  {
+    "path": "../reviews/F28-draft-2026-10-23/PM-REVIEW.md",
+    "bytes": 10186,
+    "sha256": "effbd0d9eb5fce2a087371659c7db79d75f8a424eaf8d198cc30bb6550e5122b"
+  },
+  {
+    "path": "../reviews/F28-B-PM-2026-10-23/PM-REVIEW.md",
+    "bytes": 5433,
+    "sha256": "40faaa52457ee24843d33b99843d5632b975aa2f0dfddf7851c0d68f278d0e98"
+  },
+  {
+    "path": "../reviews/F28-B-integration-2026-10-23/README.md",
+    "bytes": 4643,
+    "sha256": "90709b00d927ec4bfa531e769e00277222474dfd2f9adc6ba9483b8b74223fa6"
+  },
+  {
+    "path": "../reviews/F28-B-integration-2026-10-23/FOLLOWUPS.md",
+    "bytes": 2848,
+    "sha256": "a7273cace322bb1aab0831e25a8de5719405d1a58170ec2e84eb68a3a40938ce"
+  },
+  {
+    "path": "../f28-c-approved-baseline.bundle",
+    "bytes": 22988808,
+    "sha256": "42e1c016647be82afd124b2a414bd382e95ab2e75719913994f0036915fd6627"
+  }
+]

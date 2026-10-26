@@ -1,0 +1,82 @@
+(node:84301) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f28-c/app/ifc/api.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f28-c/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[
+  {
+    "label": "approved-baseline",
+    "f04FineScene": {
+      "n": 30,
+      "p50Ms": 6.382708999999977,
+      "p95Ms": 8.027666000000067
+    },
+    "f04PlanPdf": {
+      "n": 30,
+      "p50Ms": 20.890540999999985,
+      "p95Ms": 24.739959
+    },
+    "f05FineSection": {
+      "n": 30,
+      "p50Ms": 4.593333999999913,
+      "p95Ms": 6.915625000000091
+    },
+    "f05Composition": {
+      "n": 30,
+      "p50Ms": 0.06108300000005329,
+      "p95Ms": 0.1481660000000602
+    },
+    "f05Svg": {
+      "n": 30,
+      "p50Ms": 0.1552919999999176,
+      "p95Ms": 0.32133299999998144
+    },
+    "f05Pdf": {
+      "n": 30,
+      "p50Ms": 0.9236250000001291,
+      "p95Ms": 1.2012920000000804
+    },
+    "outputs": {
+      "planBytes": 446173,
+      "sectionSvgSHA256": "c932f161e66572f9662a193515a36e49d8c8b6fca85e232a7cc24ca201f332be",
+      "sheetPdfBytes": 21956
+    }
+  },
+  {
+    "label": "workspace-head",
+    "f04FineScene": {
+      "n": 30,
+      "p50Ms": 4.789458000000195,
+      "p95Ms": 7.631833000000142
+    },
+    "f04PlanPdf": {
+      "n": 30,
+      "p50Ms": 17.52737500000012,
+      "p95Ms": 21.33033300000011
+    },
+    "f05FineSection": {
+      "n": 30,
+      "p50Ms": 3.720874999999978,
+      "p95Ms": 4.883290999999872
+    },
+    "f05Composition": {
+      "n": 30,
+      "p50Ms": 0.05712499999981446,
+      "p95Ms": 0.0812909999999647
+    },
+    "f05Svg": {
+      "n": 30,
+      "p50Ms": 0.14712500000041473,
+      "p95Ms": 0.16879199999993943
+    },
+    "f05Pdf": {
+      "n": 30,
+      "p50Ms": 0.8272079999999278,
+      "p95Ms": 1.056874999999991
+    },
+    "outputs": {
+      "planBytes": 446173,
+      "sectionSvgSHA256": "16325f2472d14dfa7a189bd35da6e396baea62e0c8278a4cc97c506e7be1066e",
+      "sheetPdfBytes": 21960
+    }
+  }
+]

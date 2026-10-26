@@ -101,6 +101,7 @@ export function mountWorkspaces(A) {
   });
   const state = () => ({ document: null, name: '', dirty: false, busy: false, selection: [], tool: null, ...(A.state ? A.state() : {}) });
   const ctx = {
+    tabs: () => opened.map(id => views().find(v => v.id === id)).filter(Boolean).map(v => ({ ...v })),
     get layout() { return cur ? cur.key : null; }, has: (b) => !!cur?.blocks.has(b), block: (b) => cur?.blocks.get(b) || null,
     view: () => openView(), open: (id) => goView(id), palette: (n) => showLower(n), refresh: soon, say, T, el, tool: (id, block, compact) => tool(id, block, compact),
   };
@@ -304,7 +305,7 @@ export function mountWorkspaces(A) {
         ic, el('span', { className: 'ws-file-label' }, label), keys ? el('kbd', {}, keys) : null);
     };
     const seen = new Set(), rows = [];
-    for (const id of P.ribbon.o.file || []) {
+    for (const id of [...new Set([...(P.ribbon.o.file || []), ...(A.fileTools || [])])]) {
       const t = A.tool ? A.tool(id, 'file') : { label: id }, a = can(id, 'file');
       seen.add(t.label.toLowerCase());
       rows.push(row({ 'data-ws-file-action': id }, t.icon, t.label, keyOf('file.' + id) || keyOf(id), !a.enabled, a.reason));
@@ -593,6 +594,7 @@ export function mountWorkspaces(A) {
 
   // ---- view tabs ----
   let opened = [], active = null, token;
+  const tabSessions = new WeakMap();
   function mountViewtabs(o) {
     const r = region(o.place);
     if (o.mode === 'all') { const t = el('div', { className: 'tbx-tabs ws-block', 'data-ws-blk': 'viewtabs', role: 'tablist', 'aria-label': T('shell.ws.views') }); r.append(t); P.viewtabs = { el: t, o }; }
@@ -628,7 +630,14 @@ export function mountWorkspaces(A) {
     const list = views();
     if (V.o.mode === 'open') {
       const tk = A.views.token ? A.views.token() : s.document;
-      if (tk !== token) { token = tk; opened = []; active = null; const first = tk ? A.views.initial?.() : null; if (first) { opened = [first]; active = first; } }
+      if (tk !== token) {
+        token = tk;
+        const kept = tk && typeof tk === 'object' ? tabSessions.get(tk) : null;
+        opened = kept ? kept.opened.slice() : []; active = kept?.active || null;
+        const first = !kept && tk ? A.views.initial?.() : null;
+        if (first) { opened = [first]; active = first; }
+        if (kept && active) A.views.go(active, 'open', ctx);
+      }
       opened = opened.filter((id) => list.some((v) => v.id === id)); if (active && !opened.includes(active)) active = opened[0] || null;
       const sig = JSON.stringify([opened.map((id) => [id, list.find((v) => v.id === id)?.name]), active]);
       if (sig !== V.sig) {
@@ -637,6 +646,7 @@ export function mountWorkspaces(A) {
           btn([el('i', { className: 'bi ' + (v.icon || 'bi-square'), 'aria-hidden': 'true' }), ' ' + v.name], { role: 'tab', 'data-ws-drawing': id, 'aria-selected': String(active === id) }),
           btn('×', { 'aria-label': T('shell.ws.close.view', { name: v.name }), 'data-ws-close': id })); }));   // i18n-ignore: a close glyph
       }
+      V.el.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       stage.classList.toggle('ws-no-view', !!s.document && !active);
       V.empty.hidden = !s.document || !!active;
     } else {
@@ -700,6 +710,7 @@ export function mountWorkspaces(A) {
     return p.el || null;
   }
   function leave() {
+    if (token && typeof token === 'object' && P.viewtabs?.o.mode === 'open') tabSessions.set(token, { opened: opened.slice(), active });
     A.leaving?.(ctx);
     dockRibbon(); closeRibbonMenu(); closeFileMenu(); tbPop?.back(); tbPop = null; toolOptions(true);
     mine.closeMenu(); fields.clear(); pet.hide(); pet.el.remove();
@@ -887,6 +898,7 @@ export function mountWorkspaces(A) {
     tearable,
     /** Settings › Global › Layout › Arrange your own layout… */
     arrange: () => arranger.open(),
+    tabs: () => opened.map(id => views().find(v => v.id === id)).filter(Boolean).map(v => ({ ...v })),
     get layout() { return cur ? cur.key : null; }, has: (b) => !!cur?.blocks.has(b), refresh: soon, decide, view: openView,
     notes: () => (cur ? cur.notes.slice() : []),
     /** Each region and the blocks in it, in DOM order (the conformance test checks the layout's order). */

@@ -1,0 +1,19 @@
+{
+  "approvedBase": "3e42c21e33e642d1e07bea2fc3356344f91db00e",
+  "reviewedDelivery": "e46113bbbdd66b19f07d92d49af6eac907d1f84c",
+  "source": "b8388bd36fe69e54d483a688d1cb3fee4e94f1c9",
+  "sourceTree": "b1ea8840996e268d6e0f834ba2a8d39999bc6b1e",
+  "sourceAppTree": "7a0b97496284c6c0c442b20e263b3c756bbf6a27",
+  "deliveryHead": "Commit containing this evidence; exact SHA and CI are in PR #12.",
+  "author": {
+    "name": "DrSurfBum",
+    "email": "80549907+drsurfbum@users.noreply.github.com"
+  },
+  "originalPreview": 8039,
+  "localBrowser": "blocked; EPERM on 8051; existing preview and unsaved work preserved",
+  "followupsOpen": [
+    "TEST-F28-01 pending integrated confirmation/tracking",
+    "PERF-F04-01",
+    "PERF-F05-01"
+  ]
+}
