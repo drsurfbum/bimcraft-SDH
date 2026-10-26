@@ -3,7 +3,7 @@
 import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';import {pathToFileURL} from 'node:url';
 import {start} from '../../../devshell/serve.mjs';import {fixture} from './documentation-fixture.mjs';
-import {model} from '../f05/fixture.mjs';import {saveSheet,readSheets} from '../../../app/views-model.js';
+import {model} from '../f05/fixture.mjs';import {saveSheet,readSheets,readCallouts,calloutRoot} from '../../../app/views-model.js';
 import {readLevels} from '../../../app/model-levels.js';import {readSectionLines} from '../../../app/res-sheets.js';
 import {op} from '../../../app/model-ops.js';
 import {ids} from '../../../app/ifc-util.js';
@@ -17,7 +17,8 @@ async function source(p,group,kind,id,open=true){const d=p.locator(`[data-pb-gro
 try{
  const {chromium}=await import(pathToFileURL(path.resolve(process.env.F28_ALIGN_PLAYWRIGHT||'.cc-test/f28-c-browser-deps/node_modules/playwright/index.mjs')));
  const m=await model(fs.readFileSync(fixture)),level=readLevels(m.w())[0],section=readSectionLines(m.w())[0];
- m.change(op(w=>{w.upsertPset(ids(w.api,w.mid,'IFCPROJECT')[0],'CadCraft_CalloutViews',[['orphan','IFCTEXT',JSON.stringify({name:'Orphaned view',parent:'plan:missing',crop:[0,0,1000,1000],scale:0})]]);return{};}));
+ m.change(op(w=>{w.upsertPset(ids(w.api,w.mid,'IFCPROJECT')[0],'CadCraft_CalloutViews',[['callout-900001','IFCTEXT',JSON.stringify({name:'Orphaned view',parent:'plan:missing',crop:[0,0,1000,1000],scale:0})]]);return{};}));
+ const orphan=readCallouts(m.w()).find(c=>c.id==='callout-900001');assert.ok(orphan,'missing-view fixture must be a valid persisted callout');assert.equal(calloutRoot(readCallouts(m.w()),orphan.id,new Set(readLevels(m.w()).map(l=>l.guid))),null);
  m.change(saveSheet({number:'AL-01',title:'Display-unit check',paper:'a3',views:[{kind:'plan',ref:level.guid,x:210,y:165,ratio:50}]}));
  const sheets=readSheets(m.w()),planSheet=sheets.find(s=>s.number==='AL-01'),other=sheets.find(s=>s.id!==planSheet.id),file=path.join(out,'units-and-locales.ifc');fs.writeFileSync(file,m.ed.save());
  server=await start({port,host:'127.0.0.1',offline:true});browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});report.browser=browser.version();
@@ -45,7 +46,7 @@ try{
  await page.screenshot({path:path.join(out,'documentation-units.png')});await ctx.close();
  const allContext=await context();page=await allContext.newPage();await page.goto(`http://127.0.0.1:${port}/?workspace=toolbox&space=paper`,{waitUntil:'networkidle'});await page.locator('[data-file]').setInputFiles(file);await settle(page);
  await page.locator('[data-ws-view="plan:'+level.guid+'"]').click();await settle(page);await page.locator('[data-model-viewkind]').selectOption('rcp');await settle(page);assert.equal(await page.evaluate(()=>bimcraftWorkspace.snapshot().view.id),'rcp:'+level.guid);check('shared all-view tabs follow the actual native RCP source');
- assert.equal(await page.locator('[data-ws-view="callout:orphan"]').count(),0);assert.equal(await page.locator('[data-pb-comissing="orphan"]').count(),1);assert.equal(await page.locator('[data-pb-comissing="orphan"]').evaluate(el=>el.parentElement.querySelector('.bc-pb-tag').textContent),JSON.parse(await page.locator('#cc-lang').textContent()).strings['model.co.missingtag']);check('unresolvable callouts retain native Missing views diagnostics without advertising a drawable tab');
+ assert.equal(await page.locator('[data-ws-view="callout:callout-900001"]').count(),0);assert.equal(await page.locator('[data-pb-comissing="callout-900001"]').count(),1);assert.equal(await page.locator('[data-pb-comissing="callout-900001"]').evaluate(el=>el.parentElement.querySelector('.bc-pb-tag').textContent),JSON.parse(await page.locator('#cc-lang').textContent()).strings['model.co.missingtag']);check('unresolvable callouts retain native Missing views diagnostics without advertising a drawable tab');
  await page.locator('[data-ws-view="schedule:assemblies"]').click();await settle(page);assert.equal(await page.evaluate(()=>bimcraftWorkspace.snapshot().view.id),'schedule:assemblies');assert.equal(await page.locator('[data-msched]').isVisible(),true);check('shared all-view tabs reach the actual documentation schedule');
  await page.locator('[data-ws-view="plan:'+level.guid+'"]').click();await settle(page);assert.equal(await page.evaluate(()=>bimcraftWorkspace.snapshot().view.id),'plan:'+level.guid);assert.equal(await page.locator('[data-ws-documentation]').isVisible(),false);assert.deepEqual(await records(page),before);check('shared all-view tabs return to the native plan without changing raw authored records');await allContext.close();
  if(process.env.F28_ALIGN_REQUIRE_PHP==='1'){
