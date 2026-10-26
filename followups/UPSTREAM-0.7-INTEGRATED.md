@@ -1,3 +1,5 @@
+> Subsequent adoption: MCP-01 PR #16 is merged and validated at main `21ff284`, with all ten exact-main workflow types passing. MCP01-PM-01 is CLOSED. F28-C and F08 remain separate. [Current MCP adoption](MCP-01-INTEGRATED.md) · [Current C review](F28-C-0.7-PM-REVIEW.md). This foundation adoption record below retains its original pins and status snapshot.
+
 # 0.7 foundation — adopted and validated, October 26, 2026
 
 **PR #17 is merged into main and integrated-build validation passes.** New approved baseline: `82da107dfd760199bc943249590812978c1a6082`. This is the working main foundation for subsequent feature compatibility candidates, not a separate unused rebase branch.

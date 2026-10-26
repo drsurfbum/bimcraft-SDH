@@ -1,4 +1,4 @@
-> MCP-01 was subsequently merged as PR #16 into main `21ff284`. Integrated validation is running. [Adoption status](MCP-01-INTEGRATED.md). This completed candidate review below is historical.
+> MCP-01 was subsequently merged as PR #16 into main `21ff284`. All ten exact-main workflow types pass, with 709 local reader-enabled baseline and 42 MCP tests passing; the first F03 timeout and successful retry are retained. [Adoption status](MCP-01-INTEGRATED.md). This completed candidate review below is historical.
 
 # MCP-01 PR #16 — PM re-review, October 26, 2026
 
