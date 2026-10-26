@@ -21,7 +21,7 @@
  *   readUnderlays(w) · removeUnderlays(guids) → op    the underlay: IfcAnnotation ("Underlay", Name = the file) in its level,
  *       its linework an 'Annotation' 'GeometricCurveSet' of 2D polylines, CadCraft_Underlay (Source, Units, Lines)
  */
-import { op, settleFor } from './model-ops.js';
+import { reserveGuid, op, settleFor } from './model-ops.js';
 import { readWalls, addWall, wallType, typeAt, typeThickness } from './model-walls.js';
 import { addLevel } from './model-levels.js';
 import { addOpening, openingType } from './model-openings.js';
@@ -245,7 +245,7 @@ function traceInto(w, { storey, walls, openings = [], typeKey = 'ext-2x6', topLe
   const base = wallType(typeKey) || wallType('ext-2x6'), t0 = typeThickness(base);
   const made = new Map(), out = [];
   W.forEach((x, i) => {
-    if (!guids[i]) guids[i] = val(w.guid());
+    reserveGuid(w, guids, i);
     const key = Math.abs(x.t - t0) > 1 ? (typeAt(base.key, Math.round(x.t)) || base.key) : base.key;
     const r = addWall(w, { storey: st, a: x.a, b: x.b, typeKey: key, topLevel, height: topLevel ? 0 : height, extSide: 'left', guid: guids[i] });
     made.set(r.guid, r.id); out.push(r.id);
@@ -254,13 +254,14 @@ function traceInto(w, { storey, walls, openings = [], typeKey = 'ext-2x6', topLe
   let skipped = 0;
   O.forEach((o, i) => {
     if (!guids[o.wall]) { skipped++; return; }
-    if (!oguids[i]) oguids[i] = [val(w.guid()), val(w.guid())];
+    oguids[i] ||= [];
+    reserveGuid(w, oguids[i], 0); reserveGuid(w, oguids[i], 1);
     try { addOpening(w, { wall: guids[o.wall], typeKey: o.typeKey, offset: o.offset, width: o.width, face: o.face, guid: oguids[i][0], openingGuid: oguids[i][1] }); }
     catch (e) { if (/^model\.err\./.test(e.key || '')) skipped++; else throw e; }
   });
   if (O.length) settleFor(w, [st], null);
   if (U?.lines?.length) {
-    if (!state.ug) state.ug = val(w.guid());
+    reserveGuid(w, state, 'ug');
     const sl = w.api.GetLine(w.mid, st, false);
     const name = w.L(String(U.name || 'drawing').slice(0, 120));
     const id = w.make('IFCANNOTATION', state.ug, w.ownerHistory(), name, null, w.L('Underlay'), w.H(w.placeAt(sl.ObjectPlacement.value, 0, 0, 0, 0)), null, ...(/^IFC4X3/i.test(w.schema || '') ? ['USERDEFINED'] : []));   // i18n-ignore: IFC ObjectType (IFC4X3 adds PredefinedType)
@@ -287,7 +288,7 @@ export function tracePages(pages) {
       if (!p.walls.length && !p.underlay) { levels.push(null); return; }
       let storey = p.level;
       if (storey && typeof storey === 'object') {
-        if (!states[i].level) states[i].level = val(w.guid());
+        reserveGuid(w, states[i], 'level');
         const r = addLevel(w, { name: storey.name, elevation: storey.elevation, height: storey.height, guid: states[i].level });
         storey = r.guid;
       }

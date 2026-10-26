@@ -21,6 +21,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Exact controls
         run: |
           git worktree add --detach .cc-test/release c778c7ca3f83eeecc3e815078417f152b2ca7a94
@@ -37,8 +40,16 @@ jobs:
           (cd .cc-test/accepted && node devshell/baseline.mjs --offline)
           npm ci --prefix .cc-test/tools/markupcraft-test --no-audit --no-fund
           cp -a .cc-test/tools/markupcraft-test/node_modules .cc-test/release/.cc-test/tools/markupcraft-test/node_modules
+      - name: Required independent reader for replay and electrical saved files
+        run: |
+          python -m venv .cc-test/reader
+          .cc-test/reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
       - name: Shared record guard and all retained F28 assertions
         run: node --test tests/features/upstream07/*.test.mjs tests/features/f28/*.test.mjs
+      - name: All 33 electrical kinds and independent schema EXPRESS validation of actual saves
+        run: |
+          node .cc-test/bin/test-bimcraft.mjs --res --only rc6 --keep
+          .cc-test/reader/bin/python -I tests/features/upstream07/independent-replay.py
       - name: Compare executed release and candidate domain cases
         run: node tests/features/upstream07/matrix.mjs --release .cc-test/release
       - name: Same-environment model timing and memory controls
@@ -47,8 +58,6 @@ jobs:
           node tests/features/upstream07/model-controls.mjs --accepted .cc-test/accepted --release .cc-test/release
       - name: Actual MCP lifecycle and independent saved output
         run: |
-          python -m venv .cc-test/reader
-          .cc-test/reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
           .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
           node .cc-test/tools/mcp/pack.mjs --bimcraft-only --out .cc-test/packed
           node tests/features/upstream07/package-closure.mjs
@@ -68,6 +77,7 @@ jobs:
             .cc-test/upstream07/matrix.json
             .cc-test/upstream07/model-performance.json
             .cc-test/upstream07/package-closure.json
+            .cc-test/upstream07/independent-replay.json
             .cc-test/upstream-mcp/summary.json
             .cc-test/upstream07-shell/report.json
             .cc-test/upstream07-shell/lifecycle.json

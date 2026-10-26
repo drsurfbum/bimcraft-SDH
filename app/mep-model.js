@@ -50,7 +50,7 @@
  * `line` (its line number); mepLayout takes `weldCuts` (mm along the drawn line) and cuts straight pipe there, and regenMep writes
  * each part's CadCraft_Spool.
  */
-import { op } from './model-ops.js';
+import { reserveGuid, op } from './model-ops.js';
 import { ids, val } from './ifc-util.js';
 import { round } from './model-write.js';
 import { t as tr } from './i18n.js';
@@ -766,7 +766,7 @@ export function placeRun(spec) {
     const storey = w.byGuid(s.storey);
     if (!storey) refuse('model.err.nolevel');
     const st = w.api.GetLine(w.mid, storey, false);
-    const g = w.gid(s.guid); s.guid = g;
+    const g = reserveGuid(w, s);
     const label = tr(s.kind === 'duct' ? 'mep.run.duct' : 'mep.run.pipe');
     const id = w.make('IFCELEMENTASSEMBLY', g, w.ownerHistory(), w.L(label + ' ' + (sectionOf(s)?.label || '') + ' ' + systemLabel(s.kind, s.system)), null, w.L(s.kind === 'duct' ? 'Duct run' : 'Pipe run'),   // i18n-ignore: IFC ObjectType
       w.H(w.placeAt(st.ObjectPlacement.value, 0, 0, 0, 0)), null, null, 'NOTDEFINED', 'USERDEFINED');

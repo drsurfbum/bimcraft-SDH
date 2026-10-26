@@ -26,7 +26,7 @@
  *   elementPorts(w, id) → port ids the family wrote on an element
  *   familyFile(w, key) → the recipe with its sizes (a .ccfamily.json)
  */
-import { op, changeOpenings } from './model-ops.js';
+import { reserveGuid, op, changeOpenings } from './model-ops.js';
 import { readOpenings, regenOpenings, typeOf, DOOR_PSET, WINDOW_PSET } from './model-openings.js';
 import { readWalls } from './model-walls.js';
 import { DOOR_TYPES, WINDOW_TYPES, openingType } from './opening-types.js';
@@ -498,7 +498,7 @@ export function placeFamily({ storey, family, values = {}, instance = {}, typeGu
     const lp = w.placeAt(stl.ObjectPlacement.value, x, y, 0, rot);
     const cls = classesFor({ ifc: { class: fam.ifc.class } }, w.schema);
     const shape = w.shapeFor(tid);
-    const g = w.gid(s0.guid); s0.guid = g;
+    const g = reserveGuid(w, s0);
     const size = familyIndex(w).sizes.get(tid);
     const id = w.make(cls.occ, g, w.ownerHistory(), w.L(fam.name), null, w.L(size?.name || fam.name), w.H(lp), shape ? w.H(shape) : null, null, ...w.occExtra(cls.occ));
     w.noteGuid(g, id);

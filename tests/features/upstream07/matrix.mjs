@@ -2,26 +2,37 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { compareAssertions, residentialDifferences, residentialAssertionName, residentialNameRules } from './assertion-comparison.mjs';
 const arg = k => process.argv[process.argv.indexOf(k) + 1];
-const controls = [['release', path.resolve(arg('--release'))], ['candidate', process.cwd()]];
+const controls = [['release', path.resolve(arg('--release'))], ['candidate', process.argv.includes('--candidate') ? path.resolve(arg('--candidate')) : process.cwd()]];
 const out = path.resolve('.cc-test/upstream07'); fs.mkdirSync(out, { recursive: true });
 const supported = ['mlwall','copylevel','famsolid','fammore','su878','variants','bundle-open','mep07','mass07','agent','new','rotated','fixes2'];
 const external = ['plans','draw06','families','mep','ops'];
+// Run each residential section as well as --res: an unavailable sibling must not
+// prevent comparison of later RC.6 names. Every candidate residential section is required.
+const residential = ['rc1','rc2','rc3','rc4','rc5','rc6','rc8','rc9','rc10'];
+const modes = [...supported, ...external].map(flag => ({ flag, args: ['--' + flag], required: supported.includes(flag) }));
+modes.push({ flag: 'res', args: ['--res'], required: true, residential: true });
+for (const part of residential) modes.push({ flag: 'res-' + part, args: ['--res','--only',part], required: true, residential: true });
 const results = [];
-for (const [control, cwd] of controls) for (const flag of [...supported, ...external]) {
-  const r = spawnSync(process.execPath, ['.cc-test/bin/test-bimcraft.mjs', '--' + flag], { cwd, encoding: 'utf8', maxBuffer: 32 << 20 });
+for (const [control, cwd] of controls) for (const mode of modes) {
+  const { flag } = mode;
+  const r = spawnSync(process.execPath, ['.cc-test/bin/test-bimcraft.mjs', ...mode.args], { cwd, encoding: 'utf8', maxBuffer: 32 << 20 });
   const log = (r.stdout || '') + (r.stderr || '');
   fs.writeFileSync(path.join(out, control + '-' + flag + '.log'), log);
-  const cases = log.split(/\r?\n/).filter(l => /^\s*(?:ok|FAIL)\s/.test(l));
+  const measuredCases = log.split(/\r?\n/).filter(l => /^\s*(?:ok|FAIL)\s/.test(l)).map(l => l.replace(/^\s*(?:ok|FAIL)\s+/, '').replace(/ \([\[{].*$/, ''));
+  const cases = measuredCases.map(name => mode.residential ? residentialAssertionName(name) : name);
+  const notices = log.split(/\r?\n/).filter(l => /^\s*(?:SKIP |-- |\(skipped:)/i.test(l));
   const summary = log.match(/(\d+) passed, (\d+) failed/);
-  results.push({ control, flag, required: supported.includes(flag), exitCode: r.status, cases, passed: summary ? +summary[1] : null, failed: summary ? +summary[2] : null });
+  results.push({ control, flag, required: mode.required && (control === 'candidate' || !mode.residential), exitCode: r.status, cases, measuredCases, notices, passed: summary ? +summary[1] : null, failed: summary ? +summary[2] : null });
   console.log(`${control} --${flag}: exit ${r.status}; ${cases.length} named assertions`);
 }
 for (const row of results.filter(r => r.control === 'candidate')) {
   const source = results.find(r => r.control === 'release' && r.flag === row.flag);
   row.classification = row.exitCode === 0 ? 'PASS' : source.exitCode === 0 ? 'CANDIDATE_REGRESSION' : 'CONTROL_FAILURE';
-  row.caseComparison = { sameNamedAssertions: JSON.stringify(source.cases) === JSON.stringify(row.cases), releaseCount: source.cases.length, candidateCount: row.cases.length };
+  row.caseComparison = compareAssertions(source.cases, row.cases, row.flag.startsWith('res') ? residentialDifferences : []);
+  if (row.caseComparison.status === 'FAIL') console.error('MISSING ASSERTIONS ' + row.flag + ': ' + row.caseComparison.missing.join(' | '));
 }
-fs.writeFileSync(path.join(out, 'matrix.json'), JSON.stringify({ node: process.version, results }, null, 2));
+fs.writeFileSync(path.join(out, 'matrix.json'), JSON.stringify({ node: process.version, residentialNameRules: residentialNameRules.map(({pattern,name,reason})=>({pattern:pattern.source,name,reason})), results }, null, 2));
 // External/control failures stay recorded, never counted as passes. Required standalone failures block this job.
-process.exitCode = results.some(r => r.required && r.exitCode !== 0) || results.some(r => r.classification === 'CANDIDATE_REGRESSION') ? 1 : 0;
+process.exitCode = results.some(r => r.required && (r.exitCode !== 0 || r.passed === null || !r.cases.length)) || results.some(r => r.classification === 'CANDIDATE_REGRESSION' || r.caseComparison?.status === 'FAIL') ? 1 : 0;

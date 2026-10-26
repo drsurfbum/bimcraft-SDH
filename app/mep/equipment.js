@@ -32,7 +32,7 @@
  * Item coordinates: origin at the centre of the bottom of the body (a diffuser or grille: the centre of its face), X along its
  * length, Z up; a placement turns it about Z by `rot` degrees and puts that origin at x, y, z above the level.
  */
-import { op } from '../model-ops.js';
+import { reserveGuid, op } from '../model-ops.js';
 import { ids, val, deleteLine } from '../ifc-util.js';
 import { round } from '../model-write.js';
 import { STEEL } from './tables.js';
@@ -401,7 +401,7 @@ export function placeEquipment(spec) {
     const eq = { kind: s.kind, values: v, x: Number(s.x) || 0, y: Number(s.y) || 0, z: Number(s.z) || 0, rot: Number(s.rot) || 0, tag: String(s.tag || '') };
     const item = equipmentItem(s.kind, v, { name: s.name });
     const def = EQUIPMENT[s.kind];
-    const g = w.gid(s.guid); s.guid = g;
+    const g = reserveGuid(w, s);
     const lp = w.placeAt(w.api.GetLine(w.mid, storey, false).ObjectPlacement.value, eq.x, eq.y, eq.z, eq.rot);
     const objType = def.objectType ? w.L(def.objectType) : null;
     const id = w.v4 ? w.make(def.cls[0], g, w.ownerHistory(), w.L(item.name), null, objType, w.H(lp), null, eq.tag ? w.L(eq.tag) : null, def.cls[2])

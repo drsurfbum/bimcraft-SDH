@@ -43,8 +43,8 @@ const storeyId = (w, guid) => {
 };
 /** Fresh GlobalIds fixed into the op the first time it runs, so a redo makes the same elements again. */
 // Cached product identities still consume their replay slot, so later relationship IDs cannot reuse it.
-const reserve = (w, target, key = 'guid') => { const next = val(w.guid()); target[key] ||= next; };
-const fix = (w, list) => { for (const s of list) reserve(w, s); };
+export const reserveGuid = (w, target, key = 'guid') => { const next = val(w.guid()); return target[key] ||= next; };
+const fix = (w, list) => { for (const s of list) reserveGuid(w, s); };
 /** After doors / windows changed in these walls: the walls, then what follows them (RC: their framing). */
 function afterOpenings(w, guids) {
   const walls = readWalls(w), storeys = new Set();
@@ -80,10 +80,10 @@ export const settleFor = (w, storeys, force = null) => settle(w, storeys, force)
 
 /** Edit a project type and all its instances as one undoable transaction. */
 export function saveWallAssembly(input, assign = []) {
-  const recipe = validateAssembly(input); let typeGuid = null;
+  const recipe = validateAssembly(input); const identity = {};
   return op(w => {
     const before = readWalls(w), openings = readOpenings(w, null, before);
-    typeGuid ||= val(w.guid());
+    const typeGuid = reserveGuid(w, identity);
     const result = writeAssembly(w, recipe, typeGuid);
     const affected = before.filter(x => x.typeKey === recipe.key || assign.includes(x.guid));
     for (const wall of affected) updateWall(w, wall.guid, { typeKey: recipe.key, refreshType: true }, { carryJoined: false, previousType: wall.assembly });
@@ -205,7 +205,7 @@ export function drawWallPath({ storey, points, guids, typeKey, thickness, refere
       const seg = segs[i];
       if (existing[i]) updateWall(w, existing[i], { a: seg.a, b: seg.b, extSide }, { carryJoined: false });
       else {
-        reserve(w, seg);
+        reserveGuid(w, seg);
         const r = addWall(w, { storey: st, ...seg, typeKey, extSide, ...top });
         made.set(r.guid, r.id);
       }
@@ -268,7 +268,7 @@ export function changeWalls(guids, changes) {
 export function placeOpening(spec) {
   const s = { ...spec };
   return op((w) => {
-    reserve(w, s); reserve(w, s, 'openingGuid');
+    reserveGuid(w, s); reserveGuid(w, s, 'openingGuid');
     const r = addOpening(w, s);
     afterOpenings(w, [s.wall]);
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id], [r.opening, w.byGuid(r.opening)]]) };
@@ -320,7 +320,7 @@ export function removeElements({ walls = [], openings = [], derived = [] }) {
 export function placeFloor(spec) {
   const s = { ...spec };
   return op((w) => {
-    reserve(w, s);
+    reserveGuid(w, s);
     const r = addFloor(w, { ...s, storey: storeyId(w, s.storey) });
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };
   });
@@ -328,7 +328,7 @@ export function placeFloor(spec) {
 export function placeCeiling(spec) {
   const s = { ...spec };
   return op((w) => {
-    reserve(w, s);
+    reserveGuid(w, s);
     const r = addCeiling(w, { ...s, storey: storeyId(w, s.storey) });
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };
   });
@@ -337,7 +337,7 @@ export function placeCeiling(spec) {
 export function placeRoof(spec) {
   const s = { ...spec };
   return op((w) => {
-    reserve(w, s);
+    reserveGuid(w, s);
     const r = addRoof(w, { ...s, storey: storeyId(w, s.storey) });
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };
   });
@@ -366,7 +366,7 @@ export function removeWalls(guids) {
 export function newLevel({ name, elevation, height }) {
   const fixed = { guid: null };
   return op((w) => {
-    reserve(w, fixed);
+    reserveGuid(w, fixed);
     const r = addLevel(w, { name, elevation, height, guid: fixed.guid });
     regenAll(w);
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };
