@@ -1,3 +1,5 @@
+> Adoption update: PR #17 is now merged and validated on main 82da107. [Integrated-build handoff and separate feature gates](UPSTREAM-0.7-INTEGRATED.md). The fix review below records the pre-merge assessment.
+
 # PR #17 — PM fix re-review, October 26, 2026
 
 **Verdict: ready for the bounded 0.7 foundation adoption. Both PM findings CLOSED.** This is a review recommendation, not authorization to mark ready or merge. PR #17 remains draft and unmerged; main remains `1afe80e78a42aa27ee9af5d1ac937cd38cd1b711`.

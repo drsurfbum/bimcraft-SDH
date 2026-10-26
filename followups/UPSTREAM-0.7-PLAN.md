@@ -1,4 +1,4 @@
-> Execution update: Gate A/B candidate is now delivered in draft PR #17 at 6ff9f38 with nine workflow types passing. PM review remains pending; main is unchanged. See [current delivery status](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/UPSTREAM-0.7-REVIEW.md). The original planning state below is historical.
+> Execution update, October 26: Gate B foundation is adopted and validated on main 82da107 through merged PR #17; all nine exact-merge workflows pass. Next: separate MCP-01, F28-C and F08 candidates, in that adoption order. See [current adoption and integration gates](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/UPSTREAM-0.7-INTEGRATED.md). Original planning state below is historical.
 
 # BimCraft 0.7 integration plan
 
