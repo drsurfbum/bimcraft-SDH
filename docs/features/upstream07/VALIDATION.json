@@ -4,7 +4,7 @@
     "upstream": "c778c7ca3f83eeecc3e815078417f152b2ca7a94",
     "release": "bimcraft-v0.7.0"
   },
-  "implementation": "d9d93f8f9653245f8600aed931b7deb70724b2cf",
+  "implementation": "ff395f4b21c92e623aa73b41636b0cb6cb94178d",
   "reviewedDelivery": "6ff9f38f0b80ad0128b12e04bf7b41e5c7f834ab",
   "delivery": "The commit containing this record; immutable delivery SHA and final-head CI links are recorded in PR #17.",
   "findings": {
@@ -13,7 +13,7 @@
   },
   "freshLocal": {
     "focusedTests": {
-      "passed": 37,
+      "passed": 38,
       "failed": 0,
       "skipped": 0
     },
@@ -730,6 +730,15 @@
     "failedRun": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40260485031",
     "reason": "An ops-energy assertion embeds elapsed time in its label. Normalize only that anchored timing suffix; retain physical values/thresholds/predicate/original telemetry and missing-assertion enforcement.",
     "regression": "Changed physical values, changed threshold, wrong suite or missing assertion are not masked.",
+    "historicalFailureRetained": true
+  },
+  "summaryParserCorrection": {
+    "source": "ff395f4b21c92e623aa73b41636b0cb6cb94178d",
+    "failedDelivery": "1d3de87761c2b17c2e2762b5213f14f277076030",
+    "failedRun": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40261222549",
+    "reason": "Upstream has numeric, all-ok and named checks-passed trailers. Count executed assertion outcomes directly instead of treating a missing numeric trailer as a missing execution.",
+    "verifiedFullMatrixExitCode": 0,
+    "regression": "All trailer formats, failure outcomes, empty success text and notices; required execution and missing-name gates remain enforced.",
     "historicalFailureRetained": true
   }
 }
