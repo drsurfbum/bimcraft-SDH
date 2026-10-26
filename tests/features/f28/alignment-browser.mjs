@@ -27,7 +27,7 @@ try{
  const keepPath=process.env.PATH;const emptyPath=path.join(out,'without-php');fs.mkdirSync(emptyPath,{recursive:true});
  try{process.env.PATH=emptyPath;await page.goto(`http://127.0.0.1:${port}/?workspace=live&space=paper`,{waitUntil:'networkidle'});}finally{process.env.PATH=keepPath;}
  await page.locator('[data-file]').setInputFiles(file);await settle(page);await source(page,'plans','plan',level.guid);assert.ok(await page.evaluate(()=>!!globalThis.bimcraftPlan));const before=await records(page);const commandIds=await page.evaluate(()=>bimcraftWorkspace.commands().map(x=>x.id));
- assert.deepEqual(await page.locator('[data-model-units] option').evaluateAll(xs=>xs.map(x=>x.value)),UNITS);assert.equal(await page.locator('[data-model-units]').count(),1);check('PHP-free startup has one retained native control with all six display units');
+ const offered=await page.locator('[data-model-units] option').evaluateAll(xs=>xs.map(x=>x.value));assert.deepEqual(offered,['mm','cm','m','in','ftdec','ftin']);assert.deepEqual(new Set(offered),new Set(UNITS));assert.equal(await page.locator('[data-model-units]').count(),1);check('PHP-free startup has one retained native control with all six display units');
  await page.evaluate(()=>{globalThis.alignmentUnits=document.querySelector('[data-model-units]');});
  await source(page,'sheets','sheet',planSheet.id);
  for(const unit of UNITS){
