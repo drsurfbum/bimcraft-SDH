@@ -2,7 +2,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { init } from '../../../app/i18n.js';
+import { init, t } from '../../../app/i18n.js';
+import { availability } from '../../../app/workspace/availability.js';
 init({strings:JSON.parse(fs.readFileSync(new URL('../../../app/lang/en.json',import.meta.url)))});
 import {model} from '../f05/fixture.mjs';
 import {fixture} from './documentation-fixture.mjs';
@@ -35,8 +36,8 @@ test('Properties commands require the displayed source ID and editor; active-dra
  const document={},other={},s={document,busy:false,view:{id:'sheet:a',kind:'sheet',name:'Same'},levels:[],selection:[]};
  const calls=[],c=createCommands({state:()=>s,actions:Object.fromEntries(['editsheet','csv','scale'].map(id=>[id,value=>{calls.push([id,value,s.document,s.view.id]);return true;}]))});
  const a={document,id:'sheet:a'},b={document,id:'sheet:b'};
- assert.equal(c.describe('editsheet',a).enabled,true);assert.equal(c.describe('editsheet',b).enabled,false);
- assert.equal(c.execute('editsheet',undefined,b),false);assert.equal(calls.length,0);
+ assert.equal(c.execute('editsheet',undefined,{document:null,id:null}),false);assert.equal(c.describe('editsheet',a).enabled,true);assert.equal(c.describe('editsheet',b).enabled,false);
+ assert.equal(availability('editsheet',c,s,{root:null,t},a).enabled,true);assert.equal(availability('editsheet',c,s,{root:null,t},b).enabled,false);assert.equal(c.execute('editsheet',undefined,b),false);assert.equal(calls.length,0);
  assert.equal(c.execute('editsheet'),true); // Ribbon/File continue to act on the active drawing.
  s.view={id:'sheet:b',kind:'sheet',name:'Same'};
  assert.equal(c.execute('editsheet',undefined,b),true);assert.equal(c.execute('editsheet',undefined,a),false);

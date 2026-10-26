@@ -7834,5 +7834,17 @@
   "ws.tool.editsheet": "Edit sheet / Place source",
   "ws.tool.csv": "Download CSV",
   "ws.tool.drawingset": "Drawing set",
-  "ws.tool.tools": "Existing tools"
+  "ws.tool.tools": "Existing tools",
+  "workspace.whyannotation": "Open a floor plan, RCP or callout for existing annotations. Section/elevation notes retain their bounded automatic implementation.",
+  "workspace.whysettings": "This drawing has no detail or scale setting.",
+  "workspace.whycalloutsettings": "Callout detail follows its parent. Use View settings for its existing scale/crop editor.",
+  "workspace.whysheet": "Open a saved sheet from Project Browser first.",
+  "workspace.whyplaceview": "Open or create a sheet first. Edit sheet places its real view and continuation sources.",
+  "workspace.whydocsettings": "Open a plan, RCP, callout, section, elevation or sheet first.",
+  "workspace.whyparentvisibility": "Edit category visibility on the parent plan.",
+  "workspace.whycsv": "Open a real schedule or material legend first.",
+  "workspace.whypdf": "Open a supported plan or documentation drawing for vector PDF. Other exports remain in Established layout.",
+  "workspace.whypick": "Model picking is available in plan/RCP/callout and 3D. Use Edit sheet for documentation placements.",
+  "workspace.whyrange": "Activate a floor plan or RCP first. 3D and documentation drawings have no independent View Range.",
+  "workspace.whyschedulefit": "Schedules use table scroll bars. Vector PDF includes every continuation page."
 }

@@ -169,7 +169,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     app: 'bimcraft', root, stage, panels: { left: root.querySelector('.bc-left'), right: root.querySelector('.bc-right') }, status: statusEl,
     t: T, say: status, actions: ['open', 'save', 'undo', 'redo', 'select', 'clear', 'fit'],
     fileTools: ['pdf', 'csv', 'drawingset', 'tools'],
-    hide: ['[data-modelbar]', '[data-model-hint]', '[data-model-splitter]'],
+    hide: ['[data-modelbar]', '[data-model-splitter]'],
     fill: ':is(.bc-canvas, .bc-plan, .bc-dwg, .ws-documentation)', flow: ':is(.bc-card, .bc-empty)',   // i18n-ignore: selectors
     state() {
       const c = current(), s = snapshot();

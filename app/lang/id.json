@@ -7040,5 +7040,17 @@
   "ws.tool.editsheet": "Edit lembar / Tempatkan sumber",
   "ws.tool.csv": "Unduh CSV",
   "ws.tool.drawingset": "Kumpulan gambar",
-  "ws.tool.tools": "Alat yang tersedia"
+  "ws.tool.tools": "Alat yang tersedia",
+  "workspace.whyannotation": "Buka denah, denah plafon, atau detail untuk anotasi. Catatan potongan dan tampak tetap mengikuti batas otomatisnya.",
+  "workspace.whysettings": "Gambar ini tidak memiliki pengaturan detail atau skala.",
+  "workspace.whycalloutsettings": "Detail mengikuti induknya. Gunakan Pengaturan tampilan untuk mengedit skala dan potongan.",
+  "workspace.whysheet": "Buka lembar tersimpan dari Browser Proyek terlebih dahulu.",
+  "workspace.whyplaceview": "Buka atau buat lembar terlebih dahulu. Edit lembar menempatkan sumber gambar dan lanjutannya.",
+  "workspace.whydocsettings": "Buka denah, plafon, detail, potongan, tampak, atau lembar terlebih dahulu.",
+  "workspace.whyparentvisibility": "Edit visibilitas kategori pada denah induk.",
+  "workspace.whycsv": "Buka tabel atau legenda material yang sebenarnya terlebih dahulu.",
+  "workspace.whypdf": "Buka gambar yang didukung untuk PDF vektor. Ekspor lain tetap tersedia di tata letak lama.",
+  "workspace.whypick": "Pemilihan model tersedia di denah, plafon, detail, dan 3D. Gunakan Edit lembar untuk penempatan dokumentasi.",
+  "workspace.whyrange": "Aktifkan denah atau plafon terlebih dahulu. Gambar 3D dan dokumentasi tidak memiliki Rentang Tampilan sendiri.",
+  "workspace.whyschedulefit": "Tabel menggunakan bilah gulir. PDF vektor mencakup semua halaman lanjutan."
 }

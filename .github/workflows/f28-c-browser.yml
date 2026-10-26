@@ -34,7 +34,10 @@ jobs:
           python -m venv .cc-test/f28-c-reader
           .cc-test/f28-c-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt -r tests/features/f04/requirements-independent.txt
       - name: Exact delivery commit metadata (no model content)
-        run: git cat-file commit HEAD | base64 -w0; echo
+        run: |
+          for commit in $(git rev-list HEAD ^82da107dfd760199bc943249590812978c1a6082 ^f956fac00adf1d4d51ddc2e4253fe215a2c50acd); do
+            echo "COMMIT_OBJECT $commit $(git cat-file commit "$commit" | base64 -w0)"
+          done
       - name: Focused state and documentation checks
         run: npm run test:f28
       - name: Real documentation and recovery browser acceptance

@@ -7419,5 +7419,17 @@
   "ws.tool.editsheet": "Editar lámina / Colocar fuente",
   "ws.tool.csv": "Descargar CSV",
   "ws.tool.drawingset": "Juego de planos",
-  "ws.tool.tools": "Herramientas existentes"
+  "ws.tool.tools": "Herramientas existentes",
+  "workspace.whyannotation": "Abra un plano, un plano de plafón o un detalle para anotar. Las notas de sección y alzado conservan su alcance automático.",
+  "workspace.whysettings": "Este plano no tiene ajustes de detalle ni escala.",
+  "workspace.whycalloutsettings": "El detalle sigue a su vista principal. Use Configuración de vista para editar escala y recorte.",
+  "workspace.whysheet": "Primero abra una lámina guardada desde el Navegador de proyectos.",
+  "workspace.whyplaceview": "Primero abra o cree una lámina. Editar lámina coloca las vistas y continuaciones reales.",
+  "workspace.whydocsettings": "Primero abra un plano, plano de plafón, detalle, sección, alzado o lámina.",
+  "workspace.whyparentvisibility": "Edite la visibilidad de categorías en el plano principal.",
+  "workspace.whycsv": "Primero abra una tabla o leyenda de materiales real.",
+  "workspace.whypdf": "Abra un plano compatible para PDF vectorial. Las demás exportaciones siguen en el diseño establecido.",
+  "workspace.whypick": "La selección de modelo está disponible en plano, plafón, detalle y 3D. Use Editar lámina para colocar documentación.",
+  "workspace.whyrange": "Active primero un plano o plano de plafón. 3D y documentación no tienen un rango de vista independiente.",
+  "workspace.whyschedulefit": "Las tablas usan barras de desplazamiento. El PDF vectorial incluye todas las páginas de continuación."
 }
