@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { compareAssertions, residentialDifferences, residentialAssertionName } from './assertion-comparison.mjs';
+import { compareAssertions, residentialDifferences, residentialAssertionName, assertionName } from './assertion-comparison.mjs';
 
 const kinds = 'all 33 kinds placed and read back, each as its own IFC4 class and type';
 const boards = 'the sub-board is a panel too: no circuit row of its own';
@@ -28,4 +28,13 @@ test('only recorded measurement-bearing residential labels normalize; device ass
   assert.equal(residentialAssertionName('web-ifc (oracle): 135 members in four assemblies'), residentialAssertionName('web-ifc (oracle): 139 members in four assemblies'));
   assert.equal(residentialAssertionName(kinds), kinds);
   assert.equal(compareAssertions([kinds, boards].map(residentialAssertionName), [boards].map(residentialAssertionName)).status, 'FAIL');
+});
+test('ops heat-loss labels ignore elapsed time while preserving physical values, thresholds and assertion presence', () => {
+  const a = 'heat loss per room between 0 and 200 W/m² of floor (35, 31, 41, 25, 34 W/m²); 431 ms in all';
+  const b = a.replace('431 ms', '278 ms');
+  assert.equal(assertionName('ops', a), assertionName('ops', b));
+  assert.notEqual(assertionName('ops', a), assertionName('ops', b.replace('35,', '36,')));
+  assert.notEqual(assertionName('ops', a), assertionName('ops', b.replace('200 W', '300 W')));
+  assert.equal(compareAssertions([assertionName('ops', a)], []).status, 'FAIL');
+  assert.equal(assertionName('agent', a), a);
 });

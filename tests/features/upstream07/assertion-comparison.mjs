@@ -25,6 +25,18 @@ export const residentialNameRules = [
 ];
 export const residentialAssertionName = name => residentialNameRules.find(rule => rule.pattern.test(name))?.name || name;
 
+// ops-energy.mjs appends elapsed time to this predicate's label. Preserve every
+// heat-loss measurement and threshold; only timing is excluded from identity.
+export const opsTimingRule = {
+  pattern: /^(heat loss per room between 0 and 200 W\/m² of floor \([\d, ]+ W\/m²\)); \d+ ms in all$/,
+  reason: 'Elapsed milliseconds are telemetry, not the heat-loss predicate. Retain original measuredCases and compare all physical measurements unchanged.',
+};
+export function assertionName(flag, name) {
+  if (flag.startsWith('res')) return residentialAssertionName(name);
+  if (flag === 'ops') return name.replace(opsTimingRule.pattern, '$1; {elapsedMs} ms in all');
+  return name;
+}
+
 export const residentialDifferences = [
   {
     release: "res-elec-symbols.js is what the Electrical add-on's installation symbols give (elec-sync.mjs --check)",
