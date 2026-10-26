@@ -2120,9 +2120,11 @@ function init(root) {
   }
   const fmtVal = (v) => v === null || v === undefined || v === '' ? t('prop.empty') : v === true ? t('prop.yes') : v === false ? t('prop.no') : typeof v === 'string' ? '"' + v + '"' : String(v);   // i18n-ignore: quotes round a text value
 
-  function undo() {
+  function undo(history) {
     if (!editor) return;
+    history?.before?.(editor);
     const c = editor.undo();
+    history?.after?.(editor, c);
     if (!c) return;
     if (c.journal) { guard(async () => { await rebuild(null); status(t('edit.undid.step', { what: c.label || c.kind })); }); return; }
     status(t('edit.undid', { what: c.kind === 'attr' ? c.attr : c.propName })); afterEdit();
@@ -4375,9 +4377,11 @@ function init(root) {
       + (refused ? ' ' + t('edit.refused.some', { n: refused }) : ''));
   }
 
-  function redo() {
+  function redo(history) {
     let c;
+    history?.before?.(editor);
     try { c = editor.redo(); } catch (e) { console.error(e); status(t('edit.redo.failed', { why: e.message || e }), true); syncEdit(); return; }
+    history?.after?.(editor, c);
     if (!c) return;
     if (c.journal) { guard(async () => { await rebuild(c.kind === 'place' ? c.id : editor.now(c.id)); status(t('edit.redid.step', { what: c.label || c.kind })); }); return; }
     status(t('edit.redid', { what: c.kind === 'attr' ? c.attr : c.propName }));
@@ -4702,7 +4706,8 @@ function init(root) {
         fileBase: () => (ifcName || 'model').replace(/\.ifc$/i, ''), download: (blob, name) => fileHost.download(blob, name, blob.type || 'image/png'), appName: 'BimCraft' };
     },
     download: (blob, name, type) => fileHost.download(blob, name, type),
-    undo: async () => { if (coreCommands) coreCommands.execute('undo'); else ui.undo.click(); },
+    undo: history => coreCommands ? coreCommands.execute('undo', history) : undo(history),
+    redo: history => coreCommands ? coreCommands.execute('redo', history) : redo(history),
     busy: () => (busy ? 'opening or saving a file' : placing ? 'placing a library item' : null),   // i18n-ignore: read by the assistant
   });
   // 0.6 DF.22 (cloud-slice-ui.js): a point cloud's slice on the plan; the cloud is cloud-ui.js's (pc, made on its first open)

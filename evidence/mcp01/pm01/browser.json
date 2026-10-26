@@ -1,0 +1,82 @@
+{
+  "checks": [
+    "actual Streamable HTTP initialize/list/call to real browser host.control registration",
+    "discovery includes authored assemblies and exact instance values",
+    "duplicate has distinct stable identity through Undo/Redo",
+    "material and recipe create/edit preserve explicit layers, cavity ventilation and zero membranes",
+    "assignment is instance-specific; shared edits keep core anchors, wall lengths and openings",
+    "material defaults never resize existing layers; exact defaults survive Undo/Redo",
+    "all six location lines \u00d7 both exterior sides and level/fixed instance heights",
+    "21 invalid/stale/foreign/schema/core/material failures leave no partial semantic edits",
+    "six display-unit modes leave exact machine-readable mm values unchanged",
+    "live undo refuses a person-owned history step",
+    "live busy drawing and denied edit/save permissions refuse without partial changes",
+    "dimension references/values and separately open original remain unchanged",
+    "actual browser download reopens exactly and old document tokens are refused",
+    "live HTTP same-project two-step Undo and subsequent Redo preserve normal history",
+    "live HTTP project switch after one Undo leaves replacement IFC bytes and history unchanged; partial progress is explicit",
+    "live normal Redo still works on the original project after the interrupted request"
+  ],
+  "errors": [],
+  "head": "e1cda96ec15bcf5e1fd0e5a2342d9bf2c31e26bc",
+  "platform": "darwin",
+  "node": "v26.9.0",
+  "skips": [],
+  "browser": "151.0.7922.34",
+  "historyRegression": {
+    "transport": "existing token-protected Streamable HTTP \u2192 browser host.control",
+    "switch": "native active-model radio during the real Undo rebuild",
+    "mockedDispatcher": false,
+    "mockedHistoryMutation": false,
+    "requestedDocument": "bim-5de5ce6b-bfbc-462e-b561-df06fee0b22b",
+    "status": "PASS",
+    "normalSameProject": {
+      "documentId": "bim-5de5ce6b-bfbc-462e-b561-df06fee0b22b",
+      "revision": 4,
+      "projectId": "0F04000000000000000000",
+      "units": "mm",
+      "mcp01Version": "1.0.0",
+      "undone": [
+        "Assistant: material_edit",
+        "Assistant: material_edit"
+      ],
+      "requestedSteps": 2,
+      "completedSteps": 2,
+      "complete": true
+    },
+    "switchResult": {
+      "documentId": "bim-5de5ce6b-bfbc-462e-b561-df06fee0b22b",
+      "revision": 7,
+      "projectId": "0F04000000000000000000",
+      "units": "mm",
+      "mcp01Version": "1.0.0",
+      "undone": [
+        "Assistant: material_edit"
+      ],
+      "requestedSteps": 2,
+      "completedSteps": 1,
+      "complete": false,
+      "stopped": {
+        "code": "document_changed",
+        "message": "The active document changed. Further history steps were refused."
+      },
+      "error": "The active document changed. Further history steps were refused.",
+      "isError": true
+    },
+    "proof": {
+      "switch": {
+        "armed": false,
+        "switched": true,
+        "observedSteps": 1
+      },
+      "AChanges": 1,
+      "BChanges": 1,
+      "BBytesUnchanged": true,
+      "BHistoryUnchanged": true,
+      "replacementIsActive": true
+    },
+    "errors": []
+  },
+  "status": "PASS",
+  "catalogCount": 24
+}

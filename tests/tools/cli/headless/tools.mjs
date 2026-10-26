@@ -29,7 +29,8 @@ try { CIVIL = await import('./civil.mjs'); M_CIVIL = await CIVIL.civilModules();
 // PartCraft (0.7 AS.4): its part, mesh kernel and assistant functions (part.mjs); a package without them lists none
 let PART = null;
 try { PART = await import('./part.mjs'); await PART.partModules(); } catch { PART = null; }
-BIM = await load('bimcraft', 'agents.js');   // required in this BimCraft distribution: broken registration must fail clearly
+BIM = await load('bimcraft', 'agents.js');
+if (!BIM.modelTools) throw new Error('BimCraft modelTools is required by MCP-01.');   // required in this BimCraft distribution: broken registration must fail clearly
 // TakeoffCraft (0.7 AS.6): the window's CAD counting and measuring functions (agents.js); a package without them lists none
 let TAKEOFF_AGENTS = null;
 try { TAKEOFF_AGENTS = await load('takeoffcraft', 'agents.js'); } catch { TAKEOFF_AGENTS = null; }
@@ -227,9 +228,10 @@ export function headlessTools(env) {
 
   T({ name: 'undo', group: 'edit', title: 'Undo',
     description: 'Undo the assistant\'s last steps on a drawing, an IFC model, a civil site, a part or a takeoff (only steps labelled "Assistant:" unless any is true).',
-    inputSchema: obj({ doc: S.doc, steps: { type: 'integer', minimum: 1, maximum: 100, default: 1 }, any: { type: 'boolean', default: false } }, ['doc']),
+    inputSchema: obj({ doc: S.doc, steps: { type: 'integer', minimum: 1, maximum: 100, default: 1 }, any: { type: 'boolean', default: false }, ...BIM.BINDING }, ['doc']),
     run: async (a) => {
       const d = get(env, a.doc);
+      if (d.kind === 'ifc') BIM.bindDocument(await d.s.editor(), a);
       if (d.kind === 'ifc') return { undone: await d.s.undo(a.steps, { any: a.any }) };
       if (d.kind === 'part') return { undone: d.s.undo(a.steps, { any: a.any, prefix: env.undoPrefix }) };   // 0.7 AS.4
       if (d.kind === 'takeoff') {   // 0.7 AS.6: the takeoff's own undo (only the assistant's steps unless any)
@@ -349,14 +351,17 @@ export function headlessTools(env) {
           await d.s.editor();
           d.s.undoPrefix = env.undoPrefix;
           const { doc, ...rest } = a;
-          return BIM.modelTools(bimEnv(d.s)).find((t) => t.name === def.name).run(rest);
+          return { doc, ...await BIM.modelTools(bimEnv(d.s)).find((t) => t.name === def.name).run(rest) };
         } });
     }
+    T({ name: 'redo', group: 'edit', title: 'Redo an IFC edit', description: 'Redo an Assistant-owned IFC model step; a person step requires any: true.',
+      inputSchema: obj({ doc: S.doc, any: { type: 'boolean', default: false }, ...BIM.BINDING }, ['doc']),
+      run: async a => { const s = get(env, a.doc, 'ifc').s; BIM.bindDocument(await s.editor(), a); return { doc: a.doc, redone: await s.redo({ any: a.any }) }; } });
     T({ name: 'ifc_save', group: 'save', title: 'Save an IFC model',
       description: 'Write an IFC model with every change: to its own file (default) or a new .ifc path.',
-      inputSchema: obj({ doc: S.doc, path: S.path, overwrite: S.overwrite }, ['doc']),
+      inputSchema: obj({ doc: S.doc, path: S.path, overwrite: S.overwrite, ...BIM.BINDING }, ['doc']),
       run: async (a) => {
-        const d = get(env, a.doc, 'ifc');
+        const d = get(env, a.doc, 'ifc'); BIM.bindDocument(await d.s.editor(), a);
         const target = a.path || d.path;
         if (!target) throw new Error('This model has no file yet: give a path.');
         if (extOf(target) !== 'ifc') throw new Error('IFC models are written to a .ifc file.');
