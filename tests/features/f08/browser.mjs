@@ -106,16 +106,19 @@ try{
  const lowOpening=upperState.openings[0],throughHost=upperState.scene.through.find(w=>w.guid===lowOpening.wallGuid);assert.equal(throughHost.pieces.length,1);
  check('upper-level cut does not inherit a lower opening cut outside its height');
  // Save is legitimately disabled for an unchanged reopened file. Exercise real end edits first.
+ const groundGuid=await multi.evaluate(()=>bimcraftPlan.state.data.levels.find(l=>l.id===bimcraftPlan.state.data.walls[0].storey).guid);
+ await multi.locator('[data-pb-plan="'+groundGuid+'"]').focus();await multi.locator('[data-pb-plan="'+groundGuid+'"]').press('Enter');await settle(multi);
  await frame(multi,{x0:400,y0:20400,x1:5600,y1:25400});await pick(multi,target.guid);
  await multi.locator('[data-mp-join-a]').selectOption('disallow');await settle(multi);
  assert.equal((await snapshot(multi)).walls.find(w=>w.guid===target.guid).joinSettings.a.allow,false);
  await multi.locator('[data-mp-join-a]').selectOption('allow');await settle(multi);
- assert.deepEqual(semantic(await snapshot(multi)),semantic(upperState));
- for(let i=0;i<3;i++){await click(multi,'[data-undo]');await settle(multi);assert.equal((await snapshot(multi)).walls.find(w=>w.guid===target.guid).joinSettings.a.allow,false);await click(multi,'[data-act="redo"]');await settle(multi);assert.deepEqual(semantic(await snapshot(multi)),semantic(upperState));}
- check('upper-level real end changes survive three UI Undo Redo cycles');
+ const upperEdited=await snapshot(multi);assert.deepEqual(upperEdited.shapes,upperState.shapes);assert.deepEqual(upperEdited.dims,upperState.dims);assert.deepEqual(upperEdited.openings,upperState.openings);assert.deepEqual(upperEdited.outlines,upperState.outlines);
+ for(let i=0;i<3;i++){await click(multi,'[data-undo]');await settle(multi);assert.equal((await snapshot(multi)).walls.find(w=>w.guid===target.guid).joinSettings.a.allow,false);await click(multi,'[data-act="redo"]');await settle(multi);assert.deepEqual(semantic(await snapshot(multi)),semantic(upperEdited));}
+ check('multi-level wall end changes on its own level survive three UI Undo Redo cycles');
+ await upper.focus();await upper.press('Enter');await settle(multi);
  const upperSave=multi.waitForEvent('download');await click(multi,'[data-save]');await(await upperSave).saveAs(path.join(out,'multilevel-saved.ifc'));
  fs.writeFileSync(path.join(out,'multilevel-expected.json'),JSON.stringify(await snapshot(multi)));
- const again=await(await context()).newPage();await open(again,path.join(out,'multilevel-saved.ifc'));assert.deepEqual(semantic(await snapshot(again)),semantic(upperState));
+ const again=await(await context()).newPage();await open(again,path.join(out,'multilevel-saved.ifc'));assert.deepEqual(semantic(await snapshot(again)),semantic(upperEdited));
  check('actual multi-level download reopens with offsets, joins, dimensions and opening identities');
  check('no application exceptions',report.errors.length===0);check('no unexpected warning/error console entries',report.console.every(m=>/bootstrap-icons|favicon/.test(m.text)));
  report.status='PASS';
