@@ -127,7 +127,7 @@ test('closing the original IFC during postcommit notification retains confirmed 
  assert.ok(s.affectedWalls.includes(a.wall));assert.deepEqual(fingerprint(other),untouched);
 });
 
-test('IFC handle reuse behind an unchanged editor cannot retarget precommit or postcommit join work', async () => {
+test('IFC handle rebinding behind an unchanged editor cannot retarget precommit or postcommit join work', async () => {
  for(const phase of ['before','after']){
   const m=await model(),a=patch(m),file=bytes(m),targetId=target(m).id,originalFile=m.ed.api.file(m.ed.mid);
   const replace=()=>{m.ed.api.CloseModel(m.ed.mid);m.ed.model.modelID=m.ed.api.OpenModel(file);assert.notEqual(m.ed.api.file(m.ed.mid),originalFile);};

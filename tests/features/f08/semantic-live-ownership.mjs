@@ -36,7 +36,7 @@ export async function liveFileClose(page,call,bytes,wall,settle,check){
   const e=bimcraftLive.editor;window.__f08Close={ed:e,count:e.changes.length,armed:true,opened:false};
   const attempt=()=>{const s=window.__f08Close;if(!s.armed)return;
    if(e.changes.length===s.count+1&&!bimcraftPlan.state.reloading&&!bimcraftPlan.state.busy&&!bimcraftWorkspace.snapshot().busy){
-    s.armed=false;observer.disconnect();void bimcraftLive.open(new Uint8Array(bytes),'original.ifc');s.opened=true;
+    s.armed=false;observer.disconnect();s.midAtOpen=e.mid;s.apiAtOpen=e.api;void bimcraftLive.open(new Uint8Array(bytes),'original.ifc');s.opened=true;
    }
   };
   const observer=new MutationObserver(()=>{attempt();queueMicrotask(attempt);});observer.observe(document.body,{subtree:true,childList:true,attributes:true});window.__f08CloseObserver=observer;
@@ -46,7 +46,7 @@ export async function liveFileClose(page,call,bytes,wall,settle,check){
   assert.equal(r.documentId,state.documentId);assert.equal(r.changed,true);assert.equal(r.completedSteps,1);assert.equal(r.readback.phase,'synchronous-commit');assert.equal(r.readback.originalDocumentReadable,false);assert.equal(r.undo.available,false);
   await settle();const replacement=await call('model_describe');assert.notEqual(replacement.documentId,state.documentId);
   const untouched=await call('wall_joins_get',{documentId:replacement.documentId,wall});assert.equal(untouched.ends.a.allow,true);
-  const proof=await page.evaluate(()=>{const s=window.__f08Close;let closed=false;try{s.ed.api.file(s.ed.mid).save();}catch{closed=true;}return{existingLiveOpenInvoked:s.opened,originalIfcClosed:closed,replacementHistorySteps:bimcraftLive.editor.changes.length};});
+  const proof=await page.evaluate(()=>{const s=window.__f08Close;let closed=false;try{s.apiAtOpen.file(s.midAtOpen).save();}catch{closed=true;}return{existingLiveOpenInvoked:s.opened,originalIfcClosed:closed,replacementHistorySteps:bimcraftLive.editor.changes.length};});
   assert.deepEqual(proof,{existingLiveOpenInvoked:true,originalIfcClosed:true,replacementHistorySteps:0});
   check('existing full-project live open closes original IFC yet preserves confirmed mutation progress; captured readback is labeled and replacement remains untouched');
   return{status:'PASS',receipt:receipt(r),proof,mockedDispatcher:false,mockedMutation:false};
