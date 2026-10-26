@@ -77,7 +77,7 @@ function mappedPath(points, map, closed = false) {
  * carry a diagnostic. No defaults stand in for an unsupported authored record.
  */
 export function wallPlanGraphics(walls, outlines, openings, materials, { detail = 'coarse', cutZ = 1200, scale = 50, keyBase = 0 } = {}) {
-  if (!PLAN_DETAILS.includes(detail)) throw new Error('Invalid plan detail');
+  if (!PLAN_DETAILS.includes(detail)) throw new Error('Invalid plan detail')   // i18n-ignore: a programming error (callers pass PLAN_DETAILS);
   const byMaterial = new Map((materials || []).map(m => [m.id, m]));
   return walls.map(wall => {
     const poly = outlines.get(wall.guid) || [], ops = openings.filter(o => o.wall === wall.id);

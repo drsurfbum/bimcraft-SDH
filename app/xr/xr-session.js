@@ -63,21 +63,27 @@ const disposeTree = (o) => o.traverse((x) => { x.geometry?.dispose?.(); const m 
 
 export async function startXR(o) {
   if (!navigator.xr) throw new Error(t('xr.none'));
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+  // 0.7 RT.6 (session realtime): the real-time look (../rt/rt-xr.js: the live view's materials, sky, sun shadow, lamps, scatter
+  // and bounce light, at the tier this headset's browser allows, on three's WebGL renderer); the plain look of 0.6 if it fails
+  let look = null;
+  if (o.look !== false) { try { const { xrLook } = await import('../rt/rt-xr.js'); look = await xrLook({ settings: o.settings || {} }); } catch { look = null; } }
+  const renderer = look ? look.renderer : new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
   renderer.xr.enabled = true;
   renderer.xr.setReferenceSpaceType('local-floor');
   renderer.localClippingEnabled = true;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  if (!look) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace; }
   // ---- the scene: rig (model space, Y up) › app (the app's own axes) › the model ----
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#b9cfe2');
-  scene.add(new THREE.HemisphereLight('#dfeaf5', '#6f6a60', 1.3));
+  const hemi = new THREE.HemisphereLight('#dfeaf5', '#6f6a60', 1.3);
+  hemi.visible = !look;   // the real-time look lights with its sky (image light) and the bounce light instead
+  scene.add(hemi);
   const sun = new THREE.DirectionalLight('#fff4e0', 1.8);
-  scene.add(sun, sun.target);
   const rigG = new THREE.Group(), appG = new THREE.Group(), modelG = new THREE.Group(), marks = new THREE.Group(), peersG = new THREE.Group();
   for (const g of [rigG, appG]) g.matrixAutoUpdate = false;
   rigG.add(appG, marks);
+  // the real-time look's sun casts shadows, so it turns with the model (in the rig); the plain sun stays in the room
+  if (look) { rigG.add(sun, sun.target); sun.castShadow = true; sun.shadow.mapSize.set(look.preset.shadow.size, look.preset.shadow.size); } else scene.add(sun, sun.target);
   appG.add(modelG, peersG);
   scene.add(rigG);
   // ---- the controllers: a ray each; the menu on the left hand. Made before the session starts: three.js hands the
@@ -121,6 +127,7 @@ export async function startXR(o) {
     try {
       const next = o.scene(), ver = o.version();
       const nUp = upMatrix(next.up || [0, 0, 1]);
+      const real = look ? await look.build(next) : null;   // RT.6: the model in the real-time look
       const looks = new Map(), newMats = [];
       const matFor = async (key) => {
         if (looks.has(key)) return looks.get(key);
@@ -141,8 +148,15 @@ export async function startXR(o) {
       };
       const edgeMat = new THREE.LineBasicMaterial({ color: '#2a2f36', transparent: true, opacity: 0.5 });
       newMats.push(edgeMat);
-      const objs = [], hits = [];
-      for (const it of next.items) {
+      const objs = real ? [...real.objs] : [], hits = real ? [...real.hits] : [];
+      if (real) {
+        newMats.push(...real.mats);
+        for (const obj of hits) {
+          const g0 = obj.geometry, whole = g0.drawRange.start === 0 && g0.drawRange.count === Infinity && !g0.groups.length;
+          if (bvh && whole) { try { if (!g0.boundsTree) g0.boundsTree = new bvh.MeshBVH(g0, { indirect: true }); obj.raycast = bvh.acceleratedRaycast; } catch { /* plain raycast */ } }
+        }
+      }
+      for (const it of real ? [] : next.items) {
         const mat = it.lines ? edgeMat : await matFor(it.look || 'default');
         const obj = it.lines ? new THREE.LineSegments(it.geometry, mat) : new THREE.Mesh(it.geometry, mat);
         obj.matrixAutoUpdate = false;
@@ -166,7 +180,8 @@ export async function startXR(o) {
       } else nb = { min: [-5, 0, -5], max: [5, 3, 5] };
       const gAt = next.groundAt ?? nb.min[1];
       const R = Math.max(50, Math.hypot(nb.max[0] - nb.min[0], nb.max[2] - nb.min[2]) * 3);
-      const g = new THREE.Mesh(new THREE.CircleGeometry(R, 64), new THREE.MeshStandardMaterial({ color: '#a7a397', roughness: 1 }));
+      const g = new THREE.Mesh(new THREE.CircleGeometry(R, 64), real ? real.ground : new THREE.MeshStandardMaterial({ color: '#a7a397', roughness: 1 }));
+      g.receiveShadow = !!real;
       g.rotation.x = -Math.PI / 2;
       g.position.set((nb.min[0] + nb.max[0]) / 2, gAt - 0.002, (nb.min[2] + nb.max[2]) / 2);
       // ---- the swap, all at once ----
@@ -182,13 +197,27 @@ export async function startXR(o) {
       // the sun from the scene (app space → model space); else a high afternoon sun
       const sd = src.sun ? applyDir(upM, src.sun) : [0.4, 0.8, 0.3];
       sun.position.set(sd[0] * 100, sd[1] * 100, sd[2] * 100);
+      if (real) {
+        // the stills' sun (colour and strength, the tracer's units) and a shadow map fitted round the model
+        sun.color.copy(real.sun.color); sun.intensity = real.sun.intensity;
+        const cx = (nb.min[0] + nb.max[0]) / 2, cy = (nb.min[1] + nb.max[1]) / 2, cz = (nb.min[2] + nb.max[2]) / 2;
+        const rr = Math.max(1, Math.hypot(nb.max[0] - nb.min[0], nb.max[1] - nb.min[1], nb.max[2] - nb.min[2]) / 2);
+        sun.target.position.set(cx, cy, cz);
+        sun.position.set(cx + sd[0] * rr * 4, cy + sd[1] * rr * 4, cz + sd[2] * rr * 4);
+        const sc = sun.shadow.camera;
+        sc.left = -rr * 1.3; sc.right = rr * 1.3; sc.top = rr * 1.3; sc.bottom = -rr * 1.3; sc.near = rr * 0.5; sc.far = rr * 8;
+        sc.updateProjectionMatrix();
+        sun.shadow.bias = -0.0002; sun.shadow.normalBias = rr * 0.002;
+        real.scene(scene);
+      }
       // the app's own section cut (keep n·p ≤ d, app space) comes along the first time
       if (first && src.clip && src.clip.length) { const c = src.clip[0]; section = { n: applyDir(upM, c.n), d: c.d }; }
       first = false;
       applySection();
-      for (const c of oldObjs) disposeTree(c);
+      for (const c of oldObjs) if (!(real && objs.includes(c))) disposeTree(c);   // the real-time look keeps its probe light
       if (oldGround) disposeTree(oldGround);
       oldSrc?.dispose?.();
+      real?.dispose();
     } finally { building = false; }
   }
   await buildModel();
@@ -503,7 +532,9 @@ export async function startXR(o) {
     if (!ax || !ax.length) return [0, 0];
     return ax.length >= 4 ? [ax[2], ax[3]] : [ax[0], ax[1]];
   };
+  let frames = 0;
   renderer.setAnimationLoop((now) => {
+    frames++;
     // the model changed (an edit here, or someone else's in a live session): rebuilt, at most twice a second
     const ver = o.version();
     if (ver >= 0 && ver !== built && !rebuildAt) rebuildAt = now + 500;
@@ -542,6 +573,7 @@ export async function startXR(o) {
     target.visible = anyAim;
     peersShown = drawPeers();
     sendPresence(now);
+    look?.frame(renderer.xr.getCamera());   // RT.6: the scatter's near set follows the head
     renderer.render(scene, viewCam);   // three draws each eye with the headset's own cameras
   });
 
@@ -564,6 +596,7 @@ export async function startXR(o) {
       try { o.presence?.send({ xr: null }); } catch { /* gone */ }
       disposeTree(scene);
       src?.dispose?.();
+      look?.dispose();
       renderer.dispose();
       try { o.onExit?.(pose); } catch (e) { console.error(e); }
       resolve(pose);
@@ -575,6 +608,7 @@ export async function startXR(o) {
     state: () => ({ rig: { ...rig }, mode, table: !!rig.table, measures: measures.map((m) => ({ a: m.a, b: m.b, d: m.d, text: m.text })), pending: pending ? pending.p : null,
       issues: issues.map((i) => ({ title: i.title, point: i.point, camera: i.camera, snapshot: i.snapshot ? i.snapshot.length : 0 })),
       section: section ? { n: section.n.slice(), d: section.d } : null, peers: peersShown, status, built,
+      look: look ? 'realtime' : 'plain', tier: look ? look.tier : null, frames, bounce: look ? look.bounce : false, scatter: look ? look.scatterCounts : [],
       hands: hands.map((h) => ({ handed: h.handed, hit: h.hit ? (h.hit.menu ? 'menu' : h.hit.model) : null })) }),
     /** Press a menu button by name (tests; the same as pointing at it and pulling the trigger). */
     button: (b) => doButton(b),

@@ -1,0 +1,84 @@
+name: 0.7 foundation controls
+on:
+  push:
+    branches: [candidate/f08-07-20261026, integration/upstream-0.7-20261025]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: upstream07-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exact controls
+        run: |
+          git worktree add --detach .cc-test/release c778c7ca3f83eeecc3e815078417f152b2ca7a94
+          git worktree add --detach .cc-test/accepted 1afe80e78a42aa27ee9af5d1ac937cd38cd1b711
+          git -C .cc-test/release diff --exit-code c778c7ca3f83eeecc3e815078417f152b2ca7a94 --
+          git -C .cc-test/accepted diff --exit-code 1afe80e78a42aa27ee9af5d1ac937cd38cd1b711 --
+      - name: Pinned libraries and clean control mirrors
+        run: |
+          npm run fetch-vendor
+          cp -a devshell/vendor .cc-test/release/devshell/vendor
+          cp -a devshell/vendor .cc-test/accepted/devshell/vendor
+          node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror()"
+          (cd .cc-test/release && node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror()")
+          (cd .cc-test/accepted && node devshell/baseline.mjs --offline)
+          npm ci --prefix .cc-test/tools/markupcraft-test --no-audit --no-fund
+          cp -a .cc-test/tools/markupcraft-test/node_modules .cc-test/release/.cc-test/tools/markupcraft-test/node_modules
+      - name: Required independent reader for replay and electrical saved files
+        run: |
+          python -m venv .cc-test/reader
+          .cc-test/reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
+      - name: Shared record guard and all retained F28 assertions
+        run: node --test tests/features/upstream07/*.test.mjs tests/features/f28/*.test.mjs
+      - name: All 33 electrical kinds and independent schema EXPRESS validation of actual saves
+        run: |
+          node .cc-test/bin/test-bimcraft.mjs --res --only rc6 --keep
+          .cc-test/reader/bin/python -I tests/features/upstream07/independent-replay.py
+      - name: Compare executed release and candidate domain cases
+        run: node tests/features/upstream07/matrix.mjs --release .cc-test/release
+      - name: Same-environment model timing and memory controls
+        run: |
+          node tests/features/f03/fixtures.mjs
+          node tests/features/upstream07/model-controls.mjs --accepted .cc-test/accepted --release .cc-test/release
+      - name: Actual MCP lifecycle and independent saved output
+        run: |
+          .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
+          node .cc-test/tools/mcp/pack.mjs --bimcraft-only --out .cc-test/packed
+          node tests/features/upstream07/package-closure.mjs
+          MCP_SERVER=.cc-test/packed/mcp/server.mjs .cc-test/reader/bin/python -I tests/features/upstream-alignment/mcp-smoke.py
+      - name: Three browser controls, real catalogs and same-environment timings
+        run: |
+          npm install --prefix .cc-test/shell-deps --no-package-lock playwright@1.56.1
+          .cc-test/shell-deps/node_modules/.bin/playwright install --with-deps chromium
+          node tests/features/upstream07/shell-controls.mjs --accepted .cc-test/accepted --release .cc-test/release
+          node tests/features/upstream07/lifecycle-browser.mjs
+      - name: Retain sanitized control evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream07-controls
+          path: |
+            .cc-test/upstream07/matrix.json
+            .cc-test/upstream07/model-performance.json
+            .cc-test/upstream07/package-closure.json
+            .cc-test/upstream07/independent-replay.json
+            .cc-test/upstream-mcp/summary.json
+            .cc-test/upstream07-shell/report.json
+            .cc-test/upstream07-shell/lifecycle.json
+          retention-days: 30

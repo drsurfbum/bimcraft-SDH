@@ -1,4 +1,4 @@
-import { assertWallJoinsEditable, writeJoinSettings } from './wall-join-records.js';
+import { assertWallJoinsEditable, writeJoinSettings, readJoinRecord } from './wall-join-records.js';
 import { endJoins } from './wall-joins.js';
 /* SPDX-License-Identifier: Apache-2.0 */
 /**
@@ -20,7 +20,7 @@ import { readMaterials } from './project-materials.js';
 import { syncWallDimensions } from './wall-dimensions.js';
 import { ModelWriter } from './model-write.js';
 import { readLevels, addLevel, setLevel } from './model-levels.js';
-import { addWall, updateWall, deleteWalls, regenWalls, readWalls } from './model-walls.js';
+import { addWall, updateWall, deleteWalls, regenWalls, readWalls, wallLevelsPassed } from './model-walls.js';
 import { addOpening, updateOpening, deleteOpenings, readOpenings, regenOpenings } from './model-openings.js';
 import { syncDerived, readDerived, storeyLoops, addFloor, addCeiling, addRoof, updateDerived, deleteDerived } from './model-slabs.js';
 import { wallPath } from './model-tools.js';
@@ -29,8 +29,12 @@ import { syncResidential } from './res-follow.js';   // 0.5 part 4 track RC: wal
 
 /** Wrap a writing function as an op: a fresh writer on the editor's model, one journal. */
 export function op(fn) {
+  const seq = [];   // 0.7 BIM-FAM-SOLID: the GlobalIds a run makes are handed out again, in order, when Redo runs the op again (a size made by one step is found by the next)
   return (ed) => {
     const w = new ModelWriter(ed.W, ed.api, ed.mid);
+    let n = 0;
+    const fresh = w.guid.bind(w);
+    w.guid = () => { if (n < seq.length) return seq[n++]; const g = fresh(); seq.push(g); n++; return g; };
     return w.run(writer => { assertAssembliesEditable(writer); assertWallJoinsEditable(writer); readMaterials(writer); const result = fn(writer); syncWallDimensions(writer); return result; });
   };
 }
@@ -40,7 +44,9 @@ const storeyId = (w, guid) => {
   return id;
 };
 /** Fresh GlobalIds fixed into the op the first time it runs, so a redo makes the same elements again. */
-const fix = (w, list) => { for (const s of list) if (!s.guid) s.guid = val(w.guid()); };
+// Cached product identities still consume their replay slot, so later relationship IDs cannot reuse it.
+export const reserveGuid = (w, target, key = 'guid') => { const next = val(w.guid()); return target[key] ||= next; };
+const fix = (w, list) => { for (const s of list) reserveGuid(w, s); };
 /** After doors / windows changed in these walls: the walls, then what follows them (RC: their framing). */
 function afterOpenings(w, guids) {
   const walls = readWalls(w), storeys = new Set();
@@ -55,7 +61,20 @@ export function regenAll(w) {
 }
 /** After walls changed on these storeys: joins, then rooms / floors / ceilings / roofs that follow them. */
 function settle(w, storeys, force = null) {
-  for (const s of new Set(storeys)) { if (s === null || s === undefined) continue; regenWalls(w, s, force); syncDerived(w, s); }
+  const set = new Set([...storeys].filter((s) => s !== null && s !== undefined));
+  for (const s of set) { regenWalls(w, s, force); syncDerived(w, s); }
+  // 0.7 BIM-MLWALL: a wall that runs up through a level closes that level's rooms, so the levels above a changed one are brought
+  // up to date too when they hold rooms, floors or ceilings of their own or a wall now passes them (nothing else there can change)
+  const levels = readLevels(w);
+  if (levels.length > 1 && set.size) {
+    const lowest = Math.min(...[...set].map((s) => levels.findIndex((l) => l.id === s)).filter((i) => i >= 0));
+    if (Number.isFinite(lowest) && lowest < levels.length - 1) {
+      const D = readDerived(w), walls = readWalls(w), have = new Set([...D.spaces, ...D.floors, ...D.ceilings].map((x) => x.storey));
+      const passed = new Set();
+      for (const x of walls) if (set.has(x.storey)) for (const l of wallLevelsPassed(x, levels)) passed.add(l.id);
+      for (const l of levels.slice(lowest + 1)) if (!set.has(l.id) && (passed.has(l.id) || have.has(l.id))) syncDerived(w, l.id);
+    }
+  }
 }
 /** For ops written elsewhere (model-trim.js, 0.6): the same follow-ups as this file's own wall changes. */
 export const afterWallMoveFor = (w, before, ops0, guids) => afterWallMove(w, before, ops0, guids, false);
@@ -63,10 +82,10 @@ export const settleFor = (w, storeys, force = null) => settle(w, storeys, force)
 
 /** Edit a project type and all its instances as one undoable transaction. */
 export function saveWallAssembly(input, assign = []) {
-  const recipe = validateAssembly(input); let typeGuid = null;
+  const recipe = validateAssembly(input); const identity = {};
   return op(w => {
     const before = readWalls(w), openings = readOpenings(w, null, before);
-    typeGuid ||= val(w.guid());
+    const typeGuid = reserveGuid(w, identity);
     const result = writeAssembly(w, recipe, typeGuid);
     const affected = before.filter(x => x.typeKey === recipe.key || assign.includes(x.guid));
     for (const wall of affected) updateWall(w, wall.guid, { typeKey: recipe.key, refreshType: true }, { carryJoined: false, previousType: wall.assembly });
@@ -172,6 +191,70 @@ export function drawWalls({ storey, segs, typeKey, baseOffset = 0, topLevel = ''
   });
 }
 
+/**
+ * 0.7 SU.461 (a floor plan copied up to the next floor): everything the Draw tools made on level `from` — walls with their doors and
+ * windows, and the floors and ceilings (not roofs: they belong to the top) — drawn again on level `to` (GlobalIds), in one undo step.
+ * A wall that follows the level above follows the level the same number of levels above `to` (a fixed height stays); rooms there
+ * appear by themselves. → { id, ids, made, counts: { walls, openings, floors, ceilings } }. Copying onto a level that already has
+ * walls adds to them (the page asks first).
+ */
+export function copyLevel({ from, to, newLevel: spec = null }) {
+  const keep = new Map();   // (to = null and newLevel { name, elevation, height }: the level is made in the same step)   // source GlobalId → the GlobalIds its copy gets, fixed the first time so a redo makes the same elements again
+  const fresh = (w, key, n = 1) => { const next = Array.from({ length: n }, () => val(w.guid())); if (!keep.has(key)) keep.set(key, next); return keep.get(key); };
+  return op((w) => {
+    const src = storeyId(w, from);
+    let dst;
+    if (to) dst = storeyId(w, to);
+    else { const [lg] = fresh(w, 'new-level'); dst = addLevel(w, { ...spec, guid: lg }).id; }
+    if (src === dst) throw Object.assign(new Error('model.err.copysame'), { key: 'model.err.copysame' });
+    const levels = readLevels(w), si = levels.findIndex((l) => l.id === src), di = levels.findIndex((l) => l.id === dst);
+    const walls = readWalls(w, src);
+    if (!walls.length) throw Object.assign(new Error('model.err.copynone'), { key: 'model.err.copynone' });
+    const made = new Map(), map = new Map();
+    for (const x of walls) {
+      const top = x.topLevel ? levels.findIndex((l) => l.guid === x.topLevel) : -1;
+      const nt = top >= 0 ? levels[top + (di - si)] : null;
+      const [g] = fresh(w, x.guid);
+      const r = addWall(w, { storey: dst, a: x.a, b: x.b, typeKey: x.typeKey, baseOffset: x.baseOffset, topLevel: nt ? nt.guid : '', topOffset: nt ? x.topOffset : 0, height: nt ? 0 : x.height, extSide: x.extSide, guid: g, bulge: x.bulge || 0, justification: x.justification });
+      made.set(r.guid, r.id); map.set(x.guid, r.guid);
+    }
+    // Copy explicit end controls only after every new wall identity is known.
+    // Retained topology belongs to the copied level, never to the source walls.
+    for (const x of walls) {
+      const record = readJoinRecord(w, x.id);
+      if (record.raw === undefined) continue; // absent legacy defaults stay absent
+      const settings = structuredClone(record.settings);
+      for (const end of ['a', 'b']) {
+        const e = settings[end];
+        if (e.tee) {
+          if (!map.has(e.tee)) throw new Error(tr('join.copyExternal'));
+          e.tee = map.get(e.tee);
+        }
+        if (e.node) e.node = 'join:' + e.node.slice(5).split('|').map(member => {
+          const guid = member.slice(0, -2), suffix = member.slice(-2);
+          if (!map.has(guid)) throw new Error(tr('join.copyExternal'));
+          return map.get(guid) + suffix;
+        }).sort().join('|');
+      }
+      writeJoinSettings(w, w.byGuid(map.get(x.guid)), settings);
+    }
+    let openings = 0;
+    for (const o of readOpenings(w, src, walls)) {
+      const [g, og] = fresh(w, o.guid, 2);
+      const r = addOpening(w, { wall: map.get(o.wallGuid), typeKey: o.typeKey, family: o.family, values: o.values, sizeName: o.sizeName, offset: o.offset, width: o.width, height: o.height, sill: o.sill, hand: o.hand, face: o.face, guid: g, openingGuid: og });
+      made.set(r.guid, r.id); openings++;
+    }
+    settle(w, [dst]);
+    afterOpenings(w, [...map.values()]);
+    const D = readDerived(w);
+    let floors = 0, ceilings = 0;
+    for (const f of D.floors.filter((x) => x.storey === src)) { const [g] = fresh(w, f.guid); const r = addFloor(w, { storey: dst, seed: f.seed, mode: f.mode, kind: f.kind, thickness: f.thickness, offset: f.offset, guid: g }); made.set(r.guid, r.id); floors++; }
+    for (const c of D.ceilings.filter((x) => x.storey === src)) { const [g] = fresh(w, c.guid); const r = addCeiling(w, { storey: dst, seed: c.seed, mode: c.mode, height: c.height, thickness: c.thickness, guid: g }); made.set(r.guid, r.id); ceilings++; }
+    const ids = [...made.values()];
+    return { id: ids[ids.length - 1], ids, made, counts: { walls: walls.length, openings, floors, ceilings } };
+  });
+}
+
 /** Extend a face-referenced chain and settle its corners in the same undo step. */
 export function drawWallPath({ storey, points, guids, typeKey, thickness, reference, extSide, axisOffset, ...top }) {
   const segs = wallPath(points, thickness, reference, extSide, axisOffset);
@@ -183,7 +266,7 @@ export function drawWallPath({ storey, points, guids, typeKey, thickness, refere
       const seg = segs[i];
       if (existing[i]) updateWall(w, existing[i], { a: seg.a, b: seg.b, extSide }, { carryJoined: false });
       else {
-        if (!seg.guid) seg.guid = val(w.guid());
+        reserveGuid(w, seg);
         const r = addWall(w, { storey: st, ...seg, typeKey, extSide, ...top });
         made.set(r.guid, r.id);
       }
@@ -248,7 +331,7 @@ export function changeWalls(guids, changes) {
 export function placeOpening(spec) {
   const s = { ...spec };
   return op((w) => {
-    if (!s.guid) { s.guid = val(w.guid()); s.openingGuid = val(w.guid()); }
+    reserveGuid(w, s); reserveGuid(w, s, 'openingGuid');
     const r = addOpening(w, s);
     afterOpenings(w, [s.wall]);
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id], [r.opening, w.byGuid(r.opening)]]) };
@@ -300,7 +383,7 @@ export function removeElements({ walls = [], openings = [], derived = [] }) {
 export function placeFloor(spec) {
   const s = { ...spec };
   return op((w) => {
-    if (!s.guid) s.guid = val(w.guid());
+    reserveGuid(w, s);
     const r = addFloor(w, { ...s, storey: storeyId(w, s.storey) });
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };
   });
@@ -308,7 +391,7 @@ export function placeFloor(spec) {
 export function placeCeiling(spec) {
   const s = { ...spec };
   return op((w) => {
-    if (!s.guid) s.guid = val(w.guid());
+    reserveGuid(w, s);
     const r = addCeiling(w, { ...s, storey: storeyId(w, s.storey) });
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };
   });
@@ -317,7 +400,7 @@ export function placeCeiling(spec) {
 export function placeRoof(spec) {
   const s = { ...spec };
   return op((w) => {
-    if (!s.guid) s.guid = val(w.guid());
+    reserveGuid(w, s);
     const r = addRoof(w, { ...s, storey: storeyId(w, s.storey) });
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };
   });
@@ -346,7 +429,7 @@ export function removeWalls(guids) {
 export function newLevel({ name, elevation, height }) {
   const fixed = { guid: null };
   return op((w) => {
-    if (!fixed.guid) fixed.guid = val(w.guid());
+    reserveGuid(w, fixed);
     const r = addLevel(w, { name, elevation, height, guid: fixed.guid });
     regenAll(w);
     return { id: r.id, ids: [r.id], made: new Map([[r.guid, r.id]]) };

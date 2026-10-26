@@ -10,7 +10,7 @@ import {start} from '../../../devshell/serve.mjs';
 const out=path.resolve('.cc-test/f08/browser');fs.mkdirSync(out,{recursive:true});
 const {chromium}=await import(pathToFileURL(path.resolve('.cc-test/f08-deps/node_modules/playwright/index.mjs')));
 const strings=JSON.parse(fs.readFileSync('app/lang/en.json'));
-const report={head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),base:'3e42c21e33e642d1e07bea2fc3356344f91db00e',environment:{cpu:os.cpus()[0].model,platform:os.platform(),node:process.version},checks:[],errors:[],console:[],openFollowups:['PERF-F04-01','PERF-F05-01','TEST-F28-01']};
+const report={head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),base:'82da107dfd760199bc943249590812978c1a6082',featureCutoff:'f929205133316b29a4551083792d5712d5ffcabd',originalEvidenceBase:'3e42c21e33e642d1e07bea2fc3356344f91db00e',environment:{cpu:os.cpus()[0].model,platform:os.platform(),node:process.version},checks:[],errors:[],console:[],openFollowups:['PERF-F04-01','PERF-F05-01','TEST-F28-01']};
 let server,browser,page;const contexts=[];
 const check=(s,v=true)=>{assert.ok(v,s);report.checks.push(s);console.log('PASS',s);};
 async function context(){
@@ -96,6 +96,19 @@ try{
    report.localeChecks.push({locale,allowLabel:label.trim(),units:6,rawRecordsPreserved:true});
   }
  }else throw new Error('F08_REQUIRE_PHP=1 is required for upstream language-pack acceptance');
+ // Genuine upper-level plan: through-wall outlines must use the same F08 metadata.
+ const multi=await(await context()).newPage(),multiInfo=JSON.parse(fs.readFileSync('.cc-test/f08-07/multilevel-info.json'));
+ await open(multi,path.resolve('.cc-test/f08-07/multilevel.ifc'));
+ const upper=multi.locator('[data-pb-plan="'+multiInfo.level+'"]');await upper.focus();await upper.press('Enter');await settle(multi);
+ const upperState=await snapshot(multi);assert.equal(upperState.scene.through.length,16);assert.equal(upperState.scene.walls.length,0);
+ for(const row of upperState.scene.through){const expected=upperState.outlines.find(([g])=>g===row.guid)[1];assert.equal(row.poly.length,expected.length);for(let j=0;j<row.poly.length;j++)for(let k=0;k<2;k++)near(row.poly[j][k],expected[j][k]);}
+ check('upper-level through drawing retains authoritative F08 core/end outlines');
+ const lowOpening=upperState.openings[0],throughHost=upperState.scene.through.find(w=>w.guid===lowOpening.wallGuid);assert.equal(throughHost.pieces.length,1);
+ check('upper-level cut does not inherit a lower opening cut outside its height');
+ const upperSave=multi.waitForEvent('download');await click(multi,'[data-save]');await(await upperSave).saveAs(path.join(out,'multilevel-saved.ifc'));
+ fs.writeFileSync(path.join(out,'multilevel-expected.json'),JSON.stringify(await snapshot(multi)));
+ const again=await(await context()).newPage();await open(again,path.join(out,'multilevel-saved.ifc'));assert.deepEqual(semantic(await snapshot(again)),semantic(upperState));
+ check('actual multi-level download reopens with offsets, joins, dimensions and opening identities');
  check('no application exceptions',report.errors.length===0);check('no unexpected warning/error console entries',report.console.every(m=>/bootstrap-icons|favicon/.test(m.text)));
  report.status='PASS';
 }catch(e){report.status='FAIL';report.error=e.stack||String(e);console.error(e);process.exitCode=1;if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});}

@@ -2,7 +2,7 @@ name: F08 straight-wall acceptance
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [candidate/f08-07-20261026, main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -45,7 +45,7 @@ jobs:
       - name: Generate F08 fixture and model tests
         run: |
           node tests/features/f08/fixture.mjs
-          node --test tests/features/f08/joins.test.mjs
+          node --test tests/features/f08/*.test.mjs
       - name: Review legacy golden fixture changes
         if: always()
         run: node tests/features/f08/snapshot-audit.mjs

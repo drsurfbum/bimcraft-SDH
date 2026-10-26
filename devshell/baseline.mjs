@@ -18,6 +18,7 @@ export const stages = [
   { name: 'f05-sections', args: ['--test', '--test-reporter=tap', 'tests/features/f05/sections.test.mjs'], minimum: 18, tap: true },
   { name: 'f06-schedules', args: ['--test', '--test-reporter=tap', 'tests/features/f06/schedules.test.mjs'], minimum: 23, tap: true },
   { name: 'f08-joins', args: ['--test', '--test-reporter=tap', 'tests/features/f08/joins.test.mjs'], minimum: 17, tap: true },
+  { name: 'f08-foundation07', args: ['--test', '--test-reporter=tap', 'tests/features/f08/foundation07.test.mjs'], minimum: 3, tap: true },
   { name: 'fixture', args: ['tests/features/f01/fixture.mjs', '--verify'], minimum: 1 },
   { name: 'source-sync-contract', args: ['--test', '--test-reporter=tap', 'tests/features/f01/source-sync.test.mjs'], minimum: 44, tap: true },
   { name: 'runner-contract', args: ['--test', '--test-reporter=tap', 'tests/features/f01/runner.test.mjs'], minimum: 19, tap: true },
@@ -39,6 +40,7 @@ export function runStages(plan, { cwd = ROOT, reportDir = path.join(ROOT, '.cc-t
     const result = spawnSync(process.execPath, stage.args, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CC_DEVSHELL: '1', NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON'].filter(Boolean).join(' ') } });
     fs.writeFileSync(path.join(reportDir, stage.name + '.log'), (result.stdout || '') + (result.stderr || ''));
     const row = assess(stage, result); results.push(row);
+    if (row.status !== 'PASS') for (const line of ((result.stdout || '') + (result.stderr || '')).split(/\r?\n/)) if (/^\s*FAIL\s/.test(line)) console.error(line);
     console.log(`${row.status} ${row.name}: ${row.passed} passed, ${row.failed} failed; ${row.skipped.length} skip/availability notices${row.error ? '; ' + row.error : ''}`);
     for (const skip of row.skipped) console.log(skip);
     if(row.status==='FAIL') console.log(((result.stdout||'')+(result.stderr||'')).split(/\r?\n/).filter(l=>/FAIL|not ok|error:|Error:| at |location:/.test(l)).slice(0,40).join('\n'));

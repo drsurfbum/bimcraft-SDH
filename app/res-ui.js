@@ -59,7 +59,7 @@ import { readProjectedView, projectedBox } from './projected-views.js';
 import { readMaterials } from './project-materials.js';
 import { buildSet, setPdf, sheetSvg, PAPERS, readSectionLines, placeSectionLine, changeSectionLine, removeSectionLines, sectionDir } from './res-sheets.js';
 import { viewerToPlan } from './model-plan.js';
-import { DEVICES, symbolPlan, symbolScale, wallSpot, readDevices, placeDevice, changeDevice, linkLight, removeDevices, deviceSchedule, circuitSchedule, isLight, isSwitch } from './res-elec.js';
+import { DEVICES, symbolPlan, symbolScale, wallSpot, readDevices, placeDevice, changeDevice, linkLight, removeDevices, deviceSchedule, circuitSchedule, isLight, isSwitch, isBoard } from './res-elec.js';
 import { GROUPS as EL_GROUPS, SYMBOLS as EL_SYMBOLS } from './res-elec-symbols.js';
 import { counterCabinets, counterRuns, readCountertops, countertopState, placeCountertop, changeCountertop, fitCountertop, removeCountertops, COUNTER_DEFAULTS } from './res-counter.js';
 
@@ -826,7 +826,7 @@ export function mountRes(modelUi) {
     const ci = el('input', { type: 'text', className: 'bc-input', value: d.circuit, maxLength: 20, 'data-mp-elcircuit': '' });
     ci.addEventListener('change', () => run({ circuit: ci.value }));
     kit.field(t('res.el.sch.circuit'), ci);
-    if (d.kind !== 'board') {
+    if (!isBoard(d.kind)) {
       const ld = el('input', { type: 'text', className: 'bc-input bc-num', value: String(Math.round(d.load)), 'data-mp-elload': '' });
       ld.addEventListener('change', () => { const v = Number(ld.value); if (v >= 0) run({ load: v }); else ld.value = ld.defaultValue; });
       kit.field(t('res.el.load'), ld, el('span', { className: 'bc-sub' }, ' W'));   // i18n-ignore: watts
@@ -853,7 +853,7 @@ export function mountRes(modelUi) {
     const sc = circuitSchedule(R.devs, { units: A.units(), t }), row = sc.rows[i];
     if (!row) return [];
     const c = row[0] === t('res.el.nocircuit') ? '' : row[0];
-    return R.devs.filter((d) => d.kind !== 'board' && d.circuit === c).map((d) => k + d.id);
+    return R.devs.filter((d) => !isBoard(d.kind) && d.circuit === c).map((d) => k + d.id);
   }
 
   // ---- the takeoff (RC.8) ----
@@ -989,7 +989,7 @@ export function mountRes(modelUi) {
     }
     for (const sl of R.secs) {
       if(!levels.some(l=>l.id===sl.storey)||![...sl.a,...sl.b,sl.depth].every(Number.isFinite)||Math.hypot(sl.b[0]-sl.a[0],sl.b[1]-sl.a[1])<100||sl.depth<0) {
-        input.sections.push({ref:sl.guid,title:t('res.sec.name',{name:sl.name}),view:{bounds:null,warnings:[{reason:t('f05.sectionInvalid')}]}});
+        input.sections.push({ref:sl.guid,title:t('res.sec.name',{name:sl.name}),view:{bounds:null,warnings:[{reason:t('proj.section_invalid')}]}});
         continue;
       }
       const M = viewerToPlan(C, w.storeyWorld(sl.storey));

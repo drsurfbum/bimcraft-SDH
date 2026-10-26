@@ -290,7 +290,7 @@ export function mountViewsBim(modelUi, o = {}) {
     const rcps = levels.map((l) => row({ 'data-pb-rcp': l.guid, 'aria-current': l.id === A.S.level && A.S.on && A.S.kind === 'rcp' ? 'true' : null }, l.name, () => A.showKind(l.id, 'rcp'),
       el('button', { type: 'button', className: 'bc-pb-ic', 'data-pb-rcprange': l.guid, title: t('model.pv.rcpopen', { level: l.name }), 'aria-label': t('model.pv.rcpopen', { level: l.name }), onClick: () => openRange(l.guid, 'rcp') }, icon('bi-sliders'), ' ' + t('model.pv.button'))));
     const openSet = () => A.root.querySelector('[data-res-sheetsopen]')?.click();
-    const graphicButton=(key)=>el('button',{type:'button',className:'bc-pb-ic','data-pb-projected':key,title:t('f05.settings'),'aria-label':t('f05.settings'),onClick:()=>openProjected(key)},icon('bi-sliders'));
+    const graphicButton=(key)=>el('button',{type:'button',className:'bc-pb-ic','data-pb-projected':key,title:t('proj.settings'),'aria-label':t('proj.settings'),onClick:()=>openProjected(key)},icon('bi-sliders'));
     const elevs = ['north', 'east', 'south', 'west'].map((s) => row({ 'data-pb-elev': s }, t('res.sh.elev.' + s), openSet,graphicButton('elevation:'+s)));
     let secs = [];
     try { const w = W(); secs = w ? readSectionLines(w) : []; } catch (e) { secs = []; }
@@ -389,14 +389,14 @@ export function mountViewsBim(modelUi, o = {}) {
     const detail=el('select',{className:'select-cc','data-pj-detail':''},...PLAN_DETAILS.map(d=>el('option',{value:d},t('model.pv.detail.'+d))));detail.value=settings.detail;
     const scale=el('input',{type:'number',min:0,max:10000,step:'any',className:'bc-input',value:settings.scale,'data-pj-scale':''});
     const crop=el('input',{type:'text',className:'bc-input',value:settings.crop?.join(', ')||'','data-pj-crop':''});
-    const body=[el('p',{},t('f05.scope')),field(t('model.pv.detail'),detail),field(t('model.pv.scale'),scale),field(t('f05.crop'),crop)];
+    const body=[el('p',{},t('proj.scope')),field(t('model.pv.detail'),detail),field(t('model.pv.scale'),scale),field(t('proj.crop'),crop)];
     if(settings.issue)body.unshift(el('p',{role:'alert'},settings.issue));
-    if(key.startsWith('elevation:'))body.push(el('p',{},t('f05.elevation')));
-    dialog({'data-pj-dialog':''},t('f05.settings'),body,[btn('cancel',t('model.gp.cancel')),btn('save',t('model.sh.save'),{'data-pj-save':'',disabled:!!settings.issue},true)],value=>{
+    if(key.startsWith('elevation:'))body.push(el('p',{},t('proj.elevation')));
+    dialog({'data-pj-dialog':''},t('proj.settings'),body,[btn('cancel',t('model.gp.cancel')),btn('save',t('model.sh.save'),{'data-pj-save':'',disabled:!!settings.issue},true)],value=>{
       if(value!=='save')return null;
       const values=crop.value.trim()?crop.value.split(',').map(x=>Number(x.trim())):null;
-      if(values&&(crop.value.split(',').some(x=>!x.trim())||values.length!==4||values.some(x=>!Number.isFinite(x))))return t('f05.cropError');
-      return run(setProjectedView(key,{detail:detail.value,scale:Number(scale.value),crop:values}),{label:t('f05.settings'),verb:t('model.verb.changed')});
+      if(values&&(crop.value.split(',').some(x=>!x.trim())||values.length!==4||values.some(x=>!Number.isFinite(x))))return t('proj.crop_error');
+      return run(setProjectedView(key,{detail:detail.value,scale:Number(scale.value),crop:values}),{label:t('proj.settings'),verb:t('model.verb.changed')});
     });
   }
 

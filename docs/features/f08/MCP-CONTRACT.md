@@ -1,16 +1,22 @@
-# F08-A semantic MCP contract — proposal for MCP-01
+# F08-A semantic MCP contract — F08-owned follow-on
 
-Status: **GAP / BLOCKING full feature acceptance**. This update does not implement,
+Status: **GAP / BLOCKING full feature acceptance**. At the approved 0.7 foundation
+`82da107dfd760199bc943249590812978c1a6082`, MCP-01 PR #16 is still draft at
+`9224167fe3e2e856c57679065b545d834f52ade1`; its shared binding/history adapter is not
+accepted. This candidate therefore does not touch shared registration/history seams,
+import that branch or create another dispatcher. Reconcile these proposed schemas
+against the then-approved adapter and obtain a concrete PM cutoff before implementation.
+ This update does not implement,
 register, transport-test or connect these tools. Existing MCP behavior is preserved.
 The actual upstream `walls_add` transport smoke proves only inherited creation; it
 cannot inspect or change the per-end controls. PM may review compatibility work,
-but must not accept semantic parity until MCP-01 supplies the evidence below.
+but must not accept semantic parity until the F08-owned follow-on supplies the evidence below on an accepted shared MCP adapter.
 
 ## Surface and ownership
 
 Extend `modelTools(env)` in `app/agents.js`, sharing definitions between the live
 installer and the existing headless wrapper in `tests/tools/cli/headless/tools.mjs`.
-MCP-01 owns registration/transport work. No dispatcher replacement, DOM automation,
+F08 owns join registration/transport work after the shared adapter is accepted. This does not expand MCP-01 materials/walls scope. No dispatcher replacement, DOM automation,
 new permissions or alternate geometry implementation is proposed here. Existing
 `app/bim-agent.js` finding/visibility tools remain unchanged.
 
@@ -25,7 +31,7 @@ new permissions or alternate geometry implementation is proposed here. Existing
 All tools require explicit document binding. Headless `doc` is the existing session
 handle returned by `ifc_open` / `ifc_new`, e.g. `d1`. Live calls must name the source
 and session document ID from the active transport's document catalog, not infer the
-selected object or active plan. MCP-01 must finalize the adapter's concrete live ID
+selected object or active plan. The accepted shared-adapter handoff must finalize the adapter's concrete live ID
 field without weakening this rule. A reopened file gets a new document instance ID;
 a wall GlobalId alone never authorizes a different document. Duplicate GlobalIds
 within a document are ambiguous and refused. Names, STEP IDs and screen selection
@@ -77,7 +83,7 @@ record reader supplies the classification; the transport does not migrate it.
 `wall_join_end_set({doc, wall, end, patch, expectedRevision})` requires edit permission.
 `patch` is a nonempty object containing `allow?:boolean` and/or
 `cap?:"envelope"|"square"`; no other keys. `expectedRevision` is a nonnegative integer
-from the same document/session read. MCP-01 must supply/document the revision source
+from the same document/session read. The accepted shared-adapter handoff must supply/document the revision source
 and compare it before mutation; the current feature does not add one. Refuse stale,
 closed, foreign, busy, read-only and unsupported targets before starting a journal.
 Do not silently retarget to another source. No length-unit string inputs occur here.
@@ -144,7 +150,7 @@ apparently successful tool text. No partial IFC/neighbor/dimension updates on fa
 Save/export use existing separate permission groups and allowed roots. End editing
 does not grant save, export, overwrite or broader filesystem access.
 
-## Actual-transport acceptance plan (MCP-01)
+## Actual-transport acceptance plan (F08 follow-on)
 
 Run the supported stdio MCP server on the exact packaged/fork modules under allowed
 temporary roots. Independently verify its loaded module hashes/build identifier;
@@ -162,7 +168,7 @@ registered / transport-tested / connected independently for both surfaces.
    Read back each result and affected neighborhood, compare actual body/plan
    boundaries, then Undo and Redo through the supported transport with operation
    ownership. Assert full semantic restoration, not just a settings flag. Existing
-   transport currently exposes Undo; missing Redo must remain a gap until MCP-01
+   transport currently exposes Undo; missing Redo must remain a gap until the accepted shared history adapter
    implements/registers/tests it. A direct editor call is not transport evidence.
 3. Save with explicit save permission inside the allowed root; reopen the actual
    saved file as a new document. Read both end settings and diagnostics again;

@@ -4,9 +4,9 @@
  * while a cloud is open (cloud-ui.js, session `pointcloud`) and Draw is on, the plan shows the cloud's slice at the level's cut
  * height (1200 above the level, `thick` deep) as dots, and every Draw tool snaps to its points (snap kind 'cloud'). The model
  * bar's Scan menu `[data-scan-tools]` (shown with a cloud): Show the slice `[data-scan-slice]`, its thickness `[data-scan-thick]`,
- * Align its floor to this level `[data-scan-floor]`, Turn it square to the building `[data-scan-square]`, Reset the alignment
- * `[data-scan-reset]`. Aligning changes where the cloud sits in the scene (cloud-ui.js `pc.adjust`), not the IFC; it lasts while
- * the cloud is open. The maths is cloud-slice.js.
+ * Align its floor to this level `[data-scan-floor]`, Turn it square to the building `[data-scan-square]` (about the middle of the
+ * walls that gave the angle, squareAngle's `about`), Reset the alignment `[data-scan-reset]`. Aligning changes where the cloud
+ * sits in the scene (cloud-ui.js `pc.adjust`, kept in the cloud's own frame), not the IFC; it lasts while the cloud is open. The maths is cloud-slice.js.
  *
  *   const s = mountCloudSlice(modelUi, { cloud: () => pc | null, viewer: () => viewer, entry: () => { C, P } | null })
  *   s.changed()      the cloud was opened, placed or removed: cut it again
@@ -17,6 +17,7 @@ import { mul4 } from './ifc-util.js';
 import { fmtLen, parseLen } from './model-units.js';
 
 const CUT = 1200;
+const MIN_WALL_POINTS = 40;   // fewer points on straight walls than this: no turn is guessed
 
 export function mountCloudSlice(modelUi, o) {
   let show = true, thick = 100;
@@ -91,9 +92,10 @@ export function mountCloudSlice(modelUi, o) {
     }
     cut(true);
     const sq = R.slice?.n ? squareAngle(R.slice.xy, R.slice.n) : null;
-    if (!sq || sq.strength < 0.2) { A.host.status(t('model.scan.nowalls'), true); return; }
-    let cx = 0, cy = 0; for (let i = 0; i < R.slice.n; i++) { cx += R.slice.xy[i * 2]; cy += R.slice.xy[i * 2 + 1]; }
-    A2 = rotZ(-sq.angle, [cx / R.slice.n, cy / R.slice.n]);
+    if (!sq || sq.strength < 0.2 || sq.walls < MIN_WALL_POINTS) { A.host.status(t('model.scan.nowalls'), true); return; }
+    // turned about the middle of the walls that gave the angle (0.6.1 FIX-061-SQUARE: the middle of every slice point could be
+    // far from the building — trees, a neighbour, stray points — and a few degrees about it swung the scan out of view)
+    A2 = rotZ(-sq.angle, sq.about);
     pc.adjust(mul4(planAdjust(A2, mx.Mvp), cur));
     api.changed();
     A.host.status(t('model.scan.squared', { a: (Math.round(-sq.angle * 100) / 100).toString() }), false, true);

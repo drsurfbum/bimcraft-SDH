@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "provenance": {
-    "repository": "https://github.com/achartt/bimcraft-SDH",
-    "revision": "72664187a1cc2694d1f8972fd2e1aa5b46106bc3",
+    "repository": "https://github.com/getcadcraft/bimcraft",
+    "revision": "c778c7ca3f83eeecc3e815078417f152b2ca7a94",
     "path": "app/",
-    "description": "Bundled BimCraft assets inherited from the approved prototype base; this pin does not certify current CivilCraft/CadCraft source parity."
+    "description": "Bundled assets verified against the exact 0.7 release. This pin does not certify current sibling CivilCraft/CadCraft source parity."
   },
   "terrain": {
     "files": {
@@ -59,7 +59,7 @@
   },
   "electrical": {
     "files": {
-      "res-elec-symbols.js": "279540569ac483a5d83a6d47a0b54f52f5d5ef6c8ea20b89880c61faf5ce39a4"
+      "res-elec-symbols.js": "012e7bfde9ae7d7001c3616766ee6ea2cb4bd99e7e69f95a8d80b24a973fe178"
     }
   }
 }

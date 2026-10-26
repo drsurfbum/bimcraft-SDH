@@ -1,3 +1,15 @@
+# Current update — 0.7 foundation compatibility, October 26, 2026
+
+The new isolated candidate is `bimcraft-f08-07-candidate`, branch
+`candidate/f08-07-20261026`. It preserves published F08 cutoff
+`f929205133316b29a4551083792d5712d5ffcabd` and merges approved foundation
+`82da107dfd760199bc943249590812978c1a6082` with both parents retained.
+See [the current PM re-review handoff](f08/FOUNDATION07-HANDOFF.md).
+Earlier evidence below remains historical and is not an observation of the 0.7 candidate.
+**Full F08 acceptance remains BLOCKED by unimplemented semantic join tools.**
+
+---
+
 # Current update — approved upstream integration, October 24, 2026
 
 Original reviewed delivery: `6aad54dafb65909f6f2585c36e8c419cbbaad4ae`.

@@ -687,7 +687,9 @@ export class Viewer3D {
     const c = this.box.getCenter(new THREE.Vector3());
     const size = this.box.getSize(new THREE.Vector3());
     const radius = Math.max(size.length() / 2, 0.5);
-    const dist = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2)) * 1.05;
+    // 0.7 SU.751: the field of view is vertical; in a pane taller than wide the width is what runs out first (the house was cut off at the side)
+    const halfV = THREE.MathUtils.degToRad(this.camera.fov / 2), halfH = Math.atan(Math.tan(halfV) * (this.camera.aspect > 0 ? this.camera.aspect : 1));
+    const dist = radius / Math.sin(Math.min(halfV, halfH)) * 1.05;
     const dirs = {
       iso: new THREE.Vector3(1, 0.8, 1),
       top: new THREE.Vector3(0, 1, 0.0001),

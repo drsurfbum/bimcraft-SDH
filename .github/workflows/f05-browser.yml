@@ -2,12 +2,12 @@ name: F05 browser acceptance
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [candidate/f08-07-20261026, main, integration/upstream-0.7-20261025]
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: f05-browser-${{ github.ref }}
+  group: f05-browser-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   browser:
@@ -52,10 +52,4 @@ jobs:
         with:
           name: f05-browser
           path: |
-            .cc-test/f05-browser/
-            !.cc-test/f05-browser/*.ifc
-            !**/*.ifc
-            !**/*.pdf
-            !**/*.csv
-            !**/expected.json
-            !**/*-expected.json
+            .cc-test/f05-browser/report.json

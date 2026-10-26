@@ -135,7 +135,7 @@ export function viewItems(view, P, k = 0) {
   if (b && !view.ground && groundY>=b.y0 && groundY<=b.y1) out.push({ t: 'line', pts: [P([b.x0 - 450, groundY]), P([b.x1 + 450, groundY])], w: 0.6, g: 0 });
   // 0.6 round 2 (bim-comforts_PART_2): the view's notes — level marks, dimensions, door / window / item tags (comforts-views.js)
   if (view.notes?.length && k > 0) out.push(...noteItems(view.notes, P, k));
-  if(b && view.warnings?.length)out.push({t:'text',s:tr('f05.diagnostic')+' '+[...new Set(view.warnings.map(w=>w.reason))].join(', '),x:P([b.x0,b.y1])[0],y:P([b.x0,b.y1])[1]+4,size:6,align:'left'});
+  if(b && view.warnings?.length)out.push({t:'text',s:tr('proj.diagnostic')+' '+[...new Set(view.warnings.map(w=>w.reason))].join(', '),x:P([b.x0,b.y1])[0],y:P([b.x0,b.y1])[1]+4,size:6,align:'left'});
   return out;
 }
 function framingItems(fr, P) {
@@ -305,7 +305,7 @@ export function composeSheet(spec, input, { paper = 'tabloid', units = 'ftin', p
     s.items.push(...draw(x0, y0));
     if(src.document){
       const prefix=v.ref.split(':')[0]+':',omitted=input.schedules.filter(p=>p.ref.startsWith(prefix)&&!spec.views.some(v=>v.kind==='schedule'&&v.ref===p.ref));
-      if(omitted.length)s.items.push({t:'text',s:`${omitted.length} continuation page(s) not on this sheet; place all pages or export drawing set.`,x:x0,y:y0-12,size:8,align:'left'});
+      if(omitted.length)s.items.push({t:'text',s:tr('asched.omitted',{n:omitted.length}),x:x0,y:y0-12,size:8,align:'left'});
     }
     // its title under it, underlined, the scale under that (as the set's cells)
     s.items.push({ t: 'text', s: src.title, x: x0, y: y0 - 6, size: 9, align: 'left', bold: true });

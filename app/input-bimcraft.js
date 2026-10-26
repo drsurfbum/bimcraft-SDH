@@ -77,8 +77,11 @@ export const COMMANDS = [
   C('view.secbox', 'view', 'bi-box', '[data-vis="secbox"]', { defKeys: ['Shift+X'] }),
   C('view.walk', 'view', 'bi-person-walking', '[data-toolbar] [data-toggle="walk"]'),
   C('view.render', 'view', 'bi-camera', '[data-render-open]'),   // 0.5 RC.11 (session render)
+  C('view.live', 'view', 'bi-play-btn', '[data-live-open]', { label: 'rt.menu' }),   // 0.7 RT.3 (session realtime): the live view
+  C('view.livewindow', 'view', 'bi-window-stack', '[data-live-window]', { label: 'rt.menu.window' }),   // 0.7 RT.3: the live view in its own window
   C('view.vr', 'view', 'bi-headset-vr', '[data-xr-enter]'),   // 0.6 LC.19 (session lc-model)
   C('file.glb', 'file', 'bi-box-arrow-up', '[data-glb-export]'),   // 0.6 DC.22 (session bim-extra_PART_2)
+  C('file.usd', 'file', 'bi-box-arrow-up-right', '[data-usd-export]'),   // 0.7 XF.8 (session usd)
   C('tools.paint', 'tools', 'bi-paint-bucket', '[data-paint-open]'),   // 0.5 RC.7 (session render)
   C('view.views', 'view', 'bi-camera-reels', '[data-saved-views]'),   // 0.5 RC.7 (session render)
   C('vis.hide', 'show', 'bi-eye-slash', '[data-vis="hide"]', { defKeys: ['H'] }),
@@ -86,6 +89,7 @@ export const COMMANDS = [
   C('vis.ghost', 'show', 'bi-transparency', '[data-vis="ghost"]', { defKeys: ['T'] }),
   C('vis.all', 'show', 'bi-eye', '[data-vis="all"]', { defKeys: ['Shift+H'] }),
   C('view.cloud', 'show', 'bi-cloud-haze2', '[data-cloud-open]'),
+  C('view.register', 'show', 'bi-bounding-box-circles', '[data-toolbar] [data-cloud-register]', { label: 'reg.menu' }),   // 0.7 LC.3 (session scans): Register scans…   // i18n-ignore: a CSS selector
   C('view.maps', 'show', 'bi-map', '[data-map-open]'),
   C('tools.measure', 'tools', 'bi-rulers', '[data-toolbar] [data-toggle="measure"]', { defKeys: ['M'] }),
   C('library.open', 'library', 'bi-collection', '[data-lib-tool="library"]'),
@@ -122,9 +126,9 @@ export const STYLES = {
       m('edit', EDIT_MENU),
       m('build', ['model.draw', '-', 'model.select', 'model.wall', 'model.door', 'model.window', '-', 'model.floor', 'model.ceiling', 'model.roof', '-', 'build.roofplane', 'build.dormer', 'build.foundation', 'build.stair', 'build.railing', 'build.countertop', 'build.framing', 'build.electrical', '-', 'build.terrain', 'build.pad', 'build.paving', '-', 'build.section']),
       m('library', ['library.open', 'library.equipment', 'library.updates', 'library.credits']),
-      m('3d', ['view.3d', 'view.split', '-', 'view.fit', 'view.top', 'view.front', 'view.side', '-', 'view.walk', 'view.views', 'view.section', 'view.secbox', '-', 'view.render', 'view.vr', 'file.glb']),
+      m('3d', ['view.3d', 'view.split', '-', 'view.fit', 'view.top', 'view.front', 'view.side', '-', 'view.walk', 'view.views', 'view.section', 'view.secbox', '-', 'view.render', 'view.live', 'view.livewindow', 'view.vr', 'file.glb', 'file.usd']),
       m('cad', ['view.dims', 'tools.measure']),
-      m('tools', ['tools.paint', '-', 'tools.takeoff', 'tools.handoff', 'view.cloud', 'view.maps']),
+      m('tools', ['tools.paint', '-', 'tools.takeoff', 'tools.handoff', 'view.cloud', 'view.register', 'view.maps']),
       m('view', ['view.plan', 'view.planfit', '-', 'view.edges', 'view.spaces', '-', 'vis.hide', 'vis.isolate', 'vis.ghost', 'vis.all']),
     ],
     bar: ['model.select', '-', 'model.wall', 'model.door', 'model.window', 'model.floor', 'model.roof', '-', 'view.plan', 'view.split', 'view.3d', '-', 'edit.undo', 'edit.redo', 'library.open'],
@@ -138,11 +142,11 @@ export const STYLES = {
     quick: ['file.open', 'file.save', 'edit.undo', 'edit.redo'],
     tabs: [
       tab('architecture', [['select', ['model.select']], ['build', ['model.wall', 'model.door', 'model.window', 'model.floor', 'model.ceiling', 'model.roof']], ['residential', ['build.roofplane', 'build.dormer', 'build.foundation', 'build.stair', 'build.railing', 'build.countertop', 'build.framing', 'build.electrical']], ['site', ['build.terrain', 'build.pad', 'build.paving']], ['model', ['model.draw']]]),
-      tab('insert', [['library', ['library.open', 'library.equipment', 'library.updates', 'library.credits']], ['open', ['file.open', 'file.folder', 'file.new']], ['link', ['tools.handoff', 'view.cloud', 'view.maps']]]),
+      tab('insert', [['library', ['library.open', 'library.equipment', 'library.updates', 'library.credits']], ['open', ['file.open', 'file.folder', 'file.new']], ['link', ['tools.handoff', 'view.cloud', 'view.register', 'view.maps']]]),
       tab('annotate', [['dimension', ['view.dims', 'tools.measure']], ['sections', ['build.section']]]),
       tab('modify', [['clipboard', ['edit.cut', 'edit.copy', 'edit.paste', 'edit.paste-in-place', 'edit.duplicate', 'edit.delete']], ['selection', ['edit.select-all', 'edit.select-none']]]),
       tab('view', [['views', ['view.plan', 'view.split', 'view.3d', 'view.planfit']], ['navigate', ['view.fit', 'view.top', 'view.front', 'view.side', 'view.walk', 'view.views']], ['graphics', ['view.edges', 'view.spaces', 'view.section', 'view.secbox']], ['visibility', ['vis.hide', 'vis.isolate', 'vis.ghost', 'vis.all']]]),
-      tab('output', [['print', ['file.print', 'file.sheets', 'file.save']], ['render', ['tools.paint', 'view.render', 'view.vr', 'file.glb']], ['quantities', ['tools.takeoff']]]),
+      tab('output', [['print', ['file.print', 'file.sheets', 'file.save']], ['render', ['tools.paint', 'view.render', 'view.live', 'view.livewindow', 'view.vr', 'file.glb', 'file.usd']], ['quantities', ['tools.takeoff']]]),
     ],
     labels: { 'model.select': 'input.lbl.ribbon.select', 'view.3d': 'input.lbl.ribbon.3d', 'view.plan': 'input.lbl.ribbon.plan' },
     keys: {
@@ -160,9 +164,9 @@ export const STYLES = {
     quick: ['file.new', 'file.open', 'file.save', 'file.print', 'edit.undo', 'edit.redo'],
     tabs: [
       tab('home', [['draw', ['model.wall', 'model.door', 'model.window', 'model.floor', 'model.ceiling', 'model.roof']], ['residential', ['build.roofplane', 'build.dormer', 'build.foundation', 'build.stair', 'build.railing', 'build.countertop', 'build.framing', 'build.electrical', 'build.terrain', 'build.pad', 'build.paving', 'build.section']], ['modify', ['model.select', 'edit.copy', 'edit.paste', 'edit.duplicate', 'edit.delete']], ['annotation', ['view.dims', 'tools.measure']], ['levels', ['model.draw']]]),
-      tab('insert', [['block', ['library.open', 'library.equipment', 'library.updates', 'library.credits']], ['reference', ['tools.handoff', 'view.cloud', 'view.maps']]]),
+      tab('insert', [['block', ['library.open', 'library.equipment', 'library.updates', 'library.credits']], ['reference', ['tools.handoff', 'view.cloud', 'view.register', 'view.maps']]]),
       tab('view', [['viewports', ['view.plan', 'view.split', 'view.3d', 'view.planfit']], ['navigate', ['view.fit', 'view.top', 'view.front', 'view.side', 'view.walk', 'view.views']], ['visual', ['view.edges', 'view.spaces', 'view.section', 'view.secbox', 'vis.hide', 'vis.isolate', 'vis.ghost', 'vis.all']]]),
-      tab('output', [['plot', ['file.print', 'file.sheets', 'file.save']], ['render', ['tools.paint', 'view.render', 'view.vr', 'file.glb']], ['quantities', ['tools.takeoff']], ['clipboard', ['edit.cut', 'edit.paste-in-place', 'edit.select-all', 'edit.select-none']]]),
+      tab('output', [['plot', ['file.print', 'file.sheets', 'file.save']], ['render', ['tools.paint', 'view.render', 'view.live', 'view.livewindow', 'view.vr', 'file.glb', 'file.usd']], ['quantities', ['tools.takeoff']], ['clipboard', ['edit.cut', 'edit.paste-in-place', 'edit.select-all', 'edit.select-none']]]),
     ],
     labels: { 'library.open': 'input.lbl.drafting.insert', 'file.print': 'input.lbl.drafting.plot', 'view.3d': 'input.lbl.drafting.3d' },
     keys: { ...CTRL_KEYS },
@@ -173,7 +177,7 @@ export const STYLES = {
       'edit.paste-in-place': ['PASTEORIG'], 'edit.duplicate': ['DUPLICATE', 'DUP'], 'edit.delete': ['ERASE', 'E'], 'edit.select-all': ['SELECTALL', 'AI_SELALL'],
       'view.dims': ['DIM'], 'tools.measure': ['DIST', 'DI', 'MEASURE'], 'view.fit': ['ZOOM', 'Z', 'ZE'], 'view.top': ['TOP'], 'view.front': ['FRONT'],
       'view.side': ['SIDE'], 'view.3d': ['3D'], 'view.plan': ['PLAN'], 'view.split': ['SPLIT', 'VPORTS'], 'view.section': ['SECTION', 'SECTIONPLANE'],
-      'view.secbox': ['SECTIONBOX'], 'view.walk': ['WALK', '3DWALK'], 'view.render': ['RENDER'], 'view.vr': ['VR'], 'file.glb': ['GLTFOUT', 'GLB'], 'tools.paint': ['PAINT', 'MATERIALS'], 'view.views': ['VIEWS', 'VIEW'], 'view.edges': ['EDGES'], 'view.spaces': ['SPACES', 'ROOMS'],
+      'view.secbox': ['SECTIONBOX'], 'view.walk': ['WALK', '3DWALK'], 'view.render': ['RENDER'], 'view.live': ['LIVEVIEW'], 'view.vr': ['VR'], 'file.glb': ['GLTFOUT', 'GLB'], 'file.usd': ['USDOUT', 'USD'], 'tools.paint': ['PAINT', 'MATERIALS'], 'view.views': ['VIEWS', 'VIEW'], 'view.edges': ['EDGES'], 'view.spaces': ['SPACES', 'ROOMS'],
       'vis.hide': ['HIDEOBJECTS', 'HIDE'], 'vis.isolate': ['ISOLATEOBJECTS', 'ISOLATE'], 'vis.ghost': ['GHOST'], 'vis.all': ['UNISOLATEOBJECTS', 'UNHIDE'],
       'library.open': ['INSERT', 'I', 'LIBRARY'], 'library.equipment': ['EQUIPMENT'], 'library.updates': ['UPDATES'], 'library.credits': ['CREDITS'],
       'file.new': ['NEW'], 'file.open': ['OPEN'], 'file.folder': ['OPENFOLDER'], 'file.save': ['SAVE', 'QSAVE', 'SAVEAS'], 'file.print': ['PLOT', 'PRINT'],
@@ -190,8 +194,8 @@ export const STYLES = {
     format: 'cadcraft-input', version: 1, id: 'viewer', name: 'input.style.viewer', builtin: true, layout: 'menubar',
     menus: [
       m('file', ['file.open', 'file.folder', '-', 'file.save', 'file.print', 'file.sheets', '-', 'app.settings', 'app.palette', 'app.help']),
-      m('view', ['view.fit', 'view.top', 'view.front', 'view.side', '-', 'view.3d', 'view.plan', 'view.split', 'view.planfit', '-', 'view.walk', 'view.views', 'view.render', 'view.vr', 'file.glb', '-', 'view.edges', 'view.spaces']),
-      m('show', ['vis.hide', 'vis.isolate', 'vis.ghost', 'vis.all', '-', 'view.section', 'view.secbox', '-', 'view.cloud', 'view.maps']),
+      m('view', ['view.fit', 'view.top', 'view.front', 'view.side', '-', 'view.3d', 'view.plan', 'view.split', 'view.planfit', '-', 'view.walk', 'view.views', 'view.render', 'view.live', 'view.livewindow', 'view.vr', 'file.glb', 'file.usd', '-', 'view.edges', 'view.spaces']),
+      m('show', ['vis.hide', 'vis.isolate', 'vis.ghost', 'vis.all', '-', 'view.section', 'view.secbox', '-', 'view.cloud', 'view.register', 'view.maps']),
       m('check', ['tools.measure', 'view.dims', '-', 'library.equipment', 'library.updates', 'library.credits', '-', 'tools.takeoff', 'tools.handoff']),
       m('edit', EDIT_MENU),
       m('model', ['file.new', 'model.draw', '-', 'model.select', 'model.wall', 'model.door', 'model.window', 'model.floor', 'model.ceiling', 'model.roof', '-', 'build.roofplane', 'build.dormer', 'build.foundation', 'build.stair', 'build.railing', 'build.countertop', 'build.framing', 'build.electrical', '-', 'build.terrain', 'build.pad', 'build.paving', 'build.section', '-', 'library.open', 'tools.paint']),
@@ -235,7 +239,9 @@ export function hooks({ root, t }) {
     },
     // a running tool keeps its own keys: digits for typed lengths, H with the door and window tools
     keepKey(combo, plain) {
-      const tool = window.bimcraftPlan?.state?.on ? window.bimcraftPlan.state.tool : 'select';
+      const st = window.bimcraftPlan?.state, tool = st?.on ? st.tool : 'select';
+      // 2026-10-24: Esc ends a running Draw tool (or its chain) — the engine's fixed Esc (Select none) took it first, in every layout
+      if (combo === 'Escape' && st?.on && (tool !== 'select' || st.chain)) return true;
       return plain && tool !== 'select' && (/^[0-9]$/.test(combo) || ((tool === 'door' || tool === 'window') && combo === 'H'));
     },
     mouse: (m) => setMouse(m),

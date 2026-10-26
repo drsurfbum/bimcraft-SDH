@@ -51,6 +51,7 @@ Each move is one undo step and travels in Studio Live. The item keeps its item n
 
 ## Good to know
 
+- Some items come in several sizes or options: the card then has a **Variant** choice, and the one you pick is the one placed. See [Place and swap a library item that has variants](topic:library-variants).
 - An item with no 3D body (a 2D symbol) is placed with a stand-in box; you give its height when asked.
 - More of the same: pick a placed item and use {{ui:Copy}} and {{ui:Paste}}, or {{key:Mod+D}}. See [Copy, paste and duplicate library items](topic:copy-paste).
 - To start every placement with wall snap on, turn on **Start with wall snap on** in [BimCraft settings](topic:settings).

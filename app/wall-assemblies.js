@@ -3,32 +3,33 @@
 // no global registry (two open documents may use the same key differently).
 import { ids, val } from './ifc-util.js';
 import { normalizeLayer, VENTILATION, writeMaterialLayers } from './project-materials.js';
+import { t as tr } from './i18n.js';
 import { checkRecordVersion, parseRecord, recordError, recordProperties } from './record-contract.js';
 export const ASSEMBLY_PSET = 'CadCraft_WallType';
 export const LAYER_FUNCTIONS = ['finish', 'substrate', 'structure', 'insulation', 'membrane'];
 const fail = (message) => { throw new Error(message); };
 export function validateAssembly(input) {
   checkRecordVersion(input, 'assembly');
-  if (!/^wall-[a-zA-Z0-9_-]{1,80}$/.test(input?.key || '')) fail('Invalid wall type key.');
+  if (!/^wall-[a-zA-Z0-9_-]{1,80}$/.test(input?.key || '')) fail(tr('wall.err.invalid_wall_type_key'));
   const name = String(input.name || '').trim();
-  if (!name || name.length > 100) fail('Enter a wall type name (up to 100 characters).');
-  if (!Array.isArray(input.layers) || !input.layers.length || input.layers.length > 32) fail('An assembly needs 1–32 layers.');
+  if (!name || name.length > 100) fail(tr('wall.err.enter_a_wall_type_name_up_to_100_characters'));
+  if (!Array.isArray(input.layers) || !input.layers.length || input.layers.length > 32) fail(tr('wall.err.an_assembly_needs_1_32_layers'));
   const layers = input.layers.map(l => {
     const mat = String(l.mat || '').trim(), t = l.t;
-    if (!mat || mat.length > 100) fail('Each layer needs a material name (up to 100 characters).');
-    if (!Number.isFinite(t) || t < 0 || t > 2000) fail('Layer thickness must be between 0 and 2000 mm.');
-    if (!LAYER_FUNCTIONS.includes(l.function)) fail('Choose a function for each layer.');
-    if(l.kind!=null && !['material','cavity'].includes(l.kind)) fail('Choose a valid layer kind.');
+    if (!mat || mat.length > 100) fail(tr('wall.err.each_layer_needs_a_material_name_up_to_100_chara'));
+    if (!Number.isFinite(t) || t < 0 || t > 2000) fail(tr('wall.err.layer_thickness_must_be_between_0_and_2000_mm'));
+    if (!LAYER_FUNCTIONS.includes(l.function)) fail(tr('wall.err.choose_a_function_for_each_layer'));
+    if(l.kind!=null && !['material','cavity'].includes(l.kind)) fail(tr('wall.err.choose_a_valid_layer_kind'));
     const layer=normalizeLayer({ ...l, mat, t, function: l.function, core: l.core === true });
-    if(t===0 && (layer.kind!=='material' || layer.function!=='membrane')) fail('Only a material layer with the Membrane function can have zero thickness.');
-    if(layer.kind==='cavity' && !VENTILATION.includes(layer.ventilation)) fail('Choose a valid cavity ventilation setting.');
+    if(t===0 && (layer.kind!=='material' || layer.function!=='membrane')) fail(tr('wall.err.only_a_material_layer_with_the_membrane_function'));
+    if(layer.kind==='cavity' && !VENTILATION.includes(layer.ventilation)) fail(tr('wall.err.choose_a_valid_cavity_ventilation_setting'));
     return {mat,t,function:layer.function,core:layer.core,kind:layer.kind,materialId:layer.materialId,...(layer.kind==='cavity'?{ventilation:layer.ventilation}:{})};
   });
-  if (layers.reduce((s,l)=>s+l.t,0)>2000) fail('Total wall thickness must not exceed 2000 mm.');
-  if(!layers.some(l=>l.t>0)) fail('An assembly needs at least one layer with physical thickness.');
-  if(!layers.some(l=>l.core && l.t>0)) fail('The core needs physical thickness.');
+  if (layers.reduce((s,l)=>s+l.t,0)>2000) fail(tr('wall.err.total_wall_thickness_must_not_exceed_2000_mm'));
+  if(!layers.some(l=>l.t>0)) fail(tr('wall.err.an_assembly_needs_at_least_one_layer_with_physic'));
+  if(!layers.some(l=>l.core && l.t>0)) fail(tr('wall.err.the_core_needs_physical_thickness'));
   const core = layers.map((l,i)=>l.core?i:-1).filter(i=>i>=0);
-  if (!core.length || core.at(-1)-core[0]+1!==core.length) fail('Mark one contiguous group of layers as the core.');
+  if (!core.length || core.at(-1)-core[0]+1!==core.length) fail(tr('wall.err.mark_one_contiguous_group_of_layers_as_the_core'));
   return { version: 1, key: input.key, name, exterior: input.exterior === true, layers, custom: true };
 }
 export function readAssemblyRecords(w) {
@@ -62,7 +63,7 @@ export function assertAssembliesEditable(w) {
 export function writeAssembly(w,input,guid=null) {
   assertAssembliesEditable(w);
   const recipe=validateAssembly(input), previous=readAssemblies(w).find(x=>x.key===recipe.key);
-  if(readAssemblies(w).some(x=>x.key!==recipe.key && x.name.toLowerCase()===recipe.name.toLowerCase())) fail('A wall type with this name already exists.');
+  if(readAssemblies(w).some(x=>x.key!==recipe.key && x.name.toLowerCase()===recipe.name.toLowerCase())) fail(tr('wall.err.a_wall_type_with_this_name_already_exists'));
   const layers=writeMaterialLayers(w,recipe.layers);
   const set=w.make('IFCMATERIALLAYERSET',layers.map(id=>w.H(id)),w.L(recipe.name),...(w.v4?[null]:[]));
   const ps=w.pset(ASSEMBLY_PSET,[['Key','IFCIDENTIFIER',recipe.key],['Thickness','IFCPOSITIVELENGTHMEASURE',w.u(recipe.layers.reduce((s,l)=>s+l.t,0))],['Recipe','IFCTEXT',JSON.stringify(recipe)]]);

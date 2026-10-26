@@ -45,6 +45,8 @@ import { straightWallJoins, endJoins } from './wall-joins.js';
 import { readJoinRecord, writeJoinSettings } from './wall-join-records.js';
 import { readAssemblies, readAssemblyRecords } from './wall-assemblies.js';
 
+/** Where a plan cuts, mm above its level (the Draw plan's CUT; rooms close against what the cut meets). */
+export const PLAN_CUT = 1200;
 export const WALL_PSET = 'CadCraft_Wall';
 export const WALLTYPE_PSET = 'CadCraft_WallType';
 const IN = 25.4;
@@ -361,6 +363,35 @@ export function wallHeight(wall, levels, base = levels.find((l) => l.id === wall
   const top = wall.topLevel ? levels.find((l) => l.guid === wall.topLevel) : null;
   if (top && base) { const h = top.elevation + wall.topOffset - (base.elevation + wall.baseOffset); if (h > 1) return h; }
   return wall.fixedHeight > 0 ? wall.fixedHeight : 2438.4;
+}
+
+/**
+ * 0.7 BIM-MLWALL, walls that run through several levels. A wall is stored on the level it starts on (IfcWall contained in
+ * that IfcBuildingStorey, as IFC asks) and its top follows any level above it (TopLevel) or a fixed height; nothing else
+ * changes. These read what that means for the other levels:
+ *   wallSpan(wall, levels)             → { baseZ, topZ } world mm
+ *   wallLevelsPassed(wall, levels)     the levels (above its own) whose floor the wall goes up past, so it shows in their plans
+ *   wallsThrough(walls, levels, levelId, cutZ)   the walls of OTHER levels the plan of `levelId` cuts at `cutZ` above its floor
+ *   topLevelChoices(levels, storeyId)  the levels a wall starting on `storeyId` can go up to, nearest first
+ */
+export function wallSpan(wall, levels) {
+  const base = levels.find((l) => l.id === wall.storey);
+  const baseZ = (base ? base.elevation : 0) + (wall.baseOffset || 0);
+  return { baseZ, topZ: baseZ + wall.height };
+}
+export function wallLevelsPassed(wall, levels) {
+  const { baseZ, topZ } = wallSpan(wall, levels);
+  return levels.filter((l) => l.id !== wall.storey && l.elevation > baseZ + 1 && l.elevation < topZ - 1);
+}
+export function wallsThrough(walls, levels, levelId, cutZ) {
+  const lv = levels.find((l) => l.id === levelId);
+  if (!lv) return [];
+  const abs = lv.elevation + cutZ;
+  return walls.filter((w) => { if (w.storey === levelId) return false; const { baseZ, topZ } = wallSpan(w, levels); return baseZ + 1 < abs && abs < topZ - 1; });
+}
+export function topLevelChoices(levels, storeyId) {
+  const i = levels.findIndex((l) => l.id === storeyId);
+  return i >= 0 ? levels.slice(i + 1) : [];
 }
 
 // --------------------------------------------------------------------------------------------------------------- writing

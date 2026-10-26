@@ -15,13 +15,13 @@ from pypdf import PdfReader
 from pypdf.generic import ContentStream
 root=Path(sys.argv[1] if len(sys.argv)>1 else '.cc-test/f08')
 def near(a,b): assert abs(a-b)<.005,(a,b)
-def physical(file,expected):
+def physical(file,expected,check_overlap=True):
  logger=ifcopenshell.validate.json_logger()
  ifcopenshell.validate.validate(str(file),logger,express_rules=True)
  assert not logger.statements,(str(file),logger.statements)
  f=ifcopenshell.open(str(file));factor=unit.calculate_unit_scale(f)*1000
  gids=[o.GlobalId for o in f.by_type('IfcRoot')];assert len(gids)==len(set(gids))
- polygons=[];actual={}
+ polygons=[];vertical=[];actual={}
  for wall in expected['walls']:
   obj=f.by_guid(wall['guid']);ps=element.get_psets(obj)['CadCraft_Wall']
   assert ps['TypeKey']==wall['typeKey'] and ps.get('ExteriorSide')==wall['extSide']
@@ -35,13 +35,15 @@ def physical(file,expected):
   assert shape.hausdorff_distance(Polygon(expected_points))<.005
   matrix=placement.get_local_placement(obj.ObjectPlacement)
   world=[(matrix[0,0]*x+matrix[0,1]*y+matrix[0,3]*factor,matrix[1,0]*x+matrix[1,1]*y+matrix[1,3]*factor) for x,y in points]
-  poly=Polygon(world);polygons.append(poly);actual[wall['guid']]=poly
+  poly=Polygon(world);polygons.append(poly);vertical.append((matrix[2,3]*factor,matrix[2,3]*factor+float(body.Depth)*factor));actual[wall['guid']]=poly
   if 'CadCraft_WallJoin' in element.get_psets(obj):
    settings=json.loads(element.get_psets(obj)['CadCraft_WallJoin']['Settings'])
    assert settings==wall['joinSettings'] and settings['version']==1
  for a in range(len(polygons)):
   for b in range(a):
    # Strictly joined fixture, not an intentionally disallowed intersecting end.
+   if not check_overlap:continue
+   if min(vertical[a][1],vertical[b][1])-max(vertical[a][0],vertical[b][0])<=.005:continue
    assert polygons[a].intersection(polygons[b]).area<.05,(file,a,b,polygons[a].intersection(polygons[b]).area)
  for ty in expected['types']:
   obj=f.by_guid(ty['guid']);recipe=json.loads(element.get_psets(obj)['CadCraft_WallType']['Recipe']);assert recipe['layers']==ty['layers']
@@ -58,7 +60,7 @@ def physical(file,expected):
  for o in expected['openings']:
   obj=f.by_guid(o['guid']);assert obj.FillsVoids[0].RelatingOpeningElement.VoidsElements[0].RelatingBuildingElement.GlobalId==o['wallGuid']
   ps=element.get_psets(obj)['CadCraft_Window'];near(ps['Width']*factor,o['width']);near(ps['Height']*factor,o['height'])
- return {'file':str(file),'schemaFindings':0,'walls':len(polygons),'overlapAreaToleranceMm2':.05,'zeroMembranes':True,'ventilatedCavities':True},actual
+ return {'file':str(file),'schemaFindings':0,'walls':len(polygons),'overlapChecked':check_overlap,'overlapAreaToleranceMm2':.05 if check_overlap else None,'zeroMembranes':True,'ventilatedCavities':True},actual
 def ideal_union(walls,through=False):
  # Independent envelope oracle: intersect offset face support lines, then
  # cap each ray with a straight seam. The application uses piecewise CORE
@@ -89,9 +91,35 @@ for name in ['seed','edited']:
  path=root/(name+'.ifc')
  if path.exists():
   expected=json.loads((root/(name+'.json')).read_text());report,polys=physical(path,expected);reports.append(report)
+compat=root.parent/'f08-07'
+for name in ['multilevel','copied']:
+ file=compat/(name+'.ifc')
+ if file.exists():
+  expected=json.loads((compat/(name+'.json')).read_text());r,polys=physical(file,expected,check_overlap=name!='copied');reports.append(r)
+  if name=='multilevel':
+   assert len(expected['walls'])==16
+   for wall in expected['walls']:near(wall['baseOffset'],125);near(wall['height'],6700)
+  else:
+   assert len(expected['walls'])==32
+   groups={}
+   for wall in expected['walls']:groups.setdefault(wall['storey'],[]).append(wall)
+   assert len(groups)==2 and all(len(rows)==16 for rows in groups.values())
+   source,copies=groups.values();assert any(not w['joinSettings'][e]['allow'] for w in source for e in ['a','b'])
+   matched=[]
+   for wall in source:
+    candidates=[x for x in copies if x['a']==wall['a'] and x['b']==wall['b'] and x['typeKey']==wall['typeKey']]
+    assert len(candidates)==1
+    copy=candidates[0];assert polys[wall['guid']].hausdorff_distance(polys[copy['guid']])<.005
+    matched.append((polys[wall['guid']],polys[copy['guid']]))
+   source_overlap=sum(a[0].intersection(b[0]).area for i,a in enumerate(matched) for b in matched[:i])
+   copy_overlap=sum(a[1].intersection(b[1]).area for i,a in enumerate(matched) for b in matched[:i])
+   assert abs(source_overlap-copy_overlap)<.00001
+   reports.append({'copiedWallPairs':16,'intentionalSquareDisallowOverlapPreservedMm2':source_overlap,'copyOverlapDifferenceMm2':abs(source_overlap-copy_overlap)})
 browser=root/'browser'
 if (browser/'saved.ifc').exists():
  expected=json.loads((browser/'expected.json').read_text());r,polys=physical(browser/'saved.ifc',expected);reports.append(r)
+ if (browser/'multilevel-saved.ifc').exists():
+  extra=json.loads((browser/'multilevel-expected.json').read_text());r,_=physical(browser/'multilevel-saved.ifc',extra);reports.append(r)
  rows=list(csv.DictReader((browser/'assemblies.csv').open(encoding='utf-8-sig',newline='')))
  for ty in expected['types']:
   layer_rows=[r for r in rows if r['record_kind']=='layer' and r['type_key']==ty['key']]

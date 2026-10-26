@@ -216,7 +216,16 @@ export class DrawingView {
 
   render() {
     if (this.raf) return;
-    this.raf = requestAnimationFrame(() => { this.raf = 0; this.draw(); });
+    this.raf = requestAnimationFrame(() => {
+      this.raf = 0;
+      try { if (!this.canvas.hidden) this.draw(); } finally {   // hidden behind the 3D view: drawn when it shows again (resize)
+        const w = this.drawnWaiters; this.drawnWaiters = null; w?.forEach((f) => f()); }
+    });
+  }
+
+  /** Resolves once the next frame is drawn: a drawing's first frame builds its paths, the slow part on a big file. */
+  whenDrawn() {
+    return new Promise((resolve) => { (this.drawnWaiters ||= []).push(resolve); this.render(); });
   }
 
   // ---- drawing ----
@@ -251,6 +260,14 @@ export class DrawingView {
         ctx.rect(vp.cx - vp.w / 2, vp.cy - vp.h / 2, vp.w, vp.h);
         ctx.clip();
         this.drawBatches(model, mul(view, m2p), this.zoom * k, this.zoom / mmPer(s));
+        if (vp.blank) {   // looks at an empty part of the model: its frame, dashed, so the sheet doesn't look broken (bimcraft.js says why)
+          this.setT(view);   // drawBatches ends in screen space (its text pass)
+          ctx.lineWidth = 1 / this.zoom;
+          ctx.setLineDash([6 / this.zoom, 4 / this.zoom]);
+          ctx.strokeStyle = this.colors.line;
+          ctx.strokeRect(vp.cx - vp.w / 2, vp.cy - vp.h / 2, vp.w, vp.h);
+          ctx.setLineDash([]);
+        }
         ctx.restore();
       }
     }

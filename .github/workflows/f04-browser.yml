@@ -2,7 +2,7 @@ name: F04 browser acceptance
 on:
   pull_request:
   push:
-    branches: [main, feature/f04-layered-plan-graphics]
+    branches: [candidate/f08-07-20261026, main, feature/f04-layered-plan-graphics, integration/upstream-0.7-20261025]
   workflow_dispatch:
 permissions:
   contents: read
@@ -44,10 +44,4 @@ jobs:
         with:
           name: f04-browser
           path: |
-            .cc-test/f04-browser/
-            !.cc-test/f04-browser/*.ifc
-            !**/*.ifc
-            !**/*.pdf
-            !**/*.csv
-            !**/expected.json
-            !**/*-expected.json
+            .cc-test/f04-browser/report.json

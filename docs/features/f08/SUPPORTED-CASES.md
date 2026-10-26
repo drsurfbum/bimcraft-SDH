@@ -35,3 +35,20 @@ allow/cap enum values and raw geometry/records remain unchanged. Each locale als
 performs a real end edit and Undo. The dedicated live-workspace adapter is still
 deferred. Semantic MCP access remains missing and blocks full acceptance; see
 [MCP-CONTRACT.md](MCP-CONTRACT.md). No additional join case is claimed.
+
+
+## 0.7 foundation candidate — October 26
+
+The bounded join cases and all tolerances above are retained. Multi-level walls
+are eligible only where joined components have the same world base/top within
+0.005 mm. Upper-floor through silhouettes and slab/room loops now receive complete
+join metadata. Changing level elevations regenerates physical depth and cleanup.
+Copy Level retains each explicit end control and remaps saved node/T members to
+new wall GlobalIds; external-level membership is refused atomically rather than
+guessed. Unsupported records still block synchronized changes without mutation.
+
+This is compatibility work, not additional curved/height/interior-X support.
+The 28-case independent matrix still uses the stricter 0.00001 mm² overlap and
+0.001 mm² union bounds; saved fixture comparisons retain 0.005 mm.
+Historical October 24 byte-identity statements describe that delivery only; the
+0.7 operation wrapper includes integrated replay/protection and the copy seam.
