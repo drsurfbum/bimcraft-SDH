@@ -1,3 +1,5 @@
+> Subsequent PM review: MCP-01 delivery 35e3fb5 is ready for bounded merge, and MCP01-PM-01 is CLOSED at that pin. [Completed review](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/MCP-01-REVIEW.md). The earlier status snapshot below is historical; F28-C/F08 remain separate.
+
 # Post-0.7 feature progress — October 26, 2026
 
 This is a status intake from current published PR handoffs and exact-head GitHub workflow metadata, not a completed PM code/browser re-review or merge recommendation. Main remains approved foundation `82da107dfd760199bc943249590812978c1a6082`. All three candidates remain draft and unmerged; no owner was messaged or interrupted.
