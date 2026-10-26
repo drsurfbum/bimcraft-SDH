@@ -8,6 +8,8 @@ import {model} from '../f02/fixtures.mjs';
 import {modelTools,propRef} from '../../../app/agents.js';
 import {documentState} from '../../../app/material-wall-agent.js';
 import {readWalls} from '../../../app/model-walls.js';
+import {readAssemblyRecords} from '../../../app/wall-assemblies.js';
+import {val} from '../../../app/ifc-util.js';
 import {createDispatcher} from '../../../app/host.js';
 import {corruptFixtures} from './negative-fixtures.mjs';
 const fixture=fs.readFileSync('fixtures/f04/layered-plans.ifc');
@@ -68,4 +70,16 @@ test('retained generic movement changes actual placement, deletion/Undo restore 
  m.ed.undo();assert.deepEqual(position(),before);await value('elements_delete',{guids:[floor]});assert.equal(m.w().byGuid(floor),null);m.ed.undo();assert.deepEqual(position(),before);
  const walls=readWalls(m.w()),opening=(await d.call('walls_list',{})).structuredContent.walls.flatMap(w=>w.openings).find(o=>o.kind==='door');
  await value('opening_change',{guid:opening.guid,width:opening.width-1});m.ed.undo();assert.deepEqual(readWalls(m.w()),walls);
+});
+
+test('generic edits cannot migrate legacy recipes; explicit semantic save migrates with reversible history',async()=>{
+ const m=await model(fixture),record=readAssemblyRecords(m.w())[0],legacy=JSON.parse(record.raw);delete legacy.version;
+ m.w().run(w=>{const ps=w.api.GetLine(w.mid,record.psetId,false),p=ps.HasProperties.map(h=>w.api.GetLine(w.mid,h.value,false)).find(p=>val(p.Name)==='Recipe');const q=w.touch(p.expressID);q.NominalValue=w.T('IFCTEXT',JSON.stringify(legacy));w.write(q);return{};});
+ const d=dispatcher(m),original=bytes(m),w=readWalls(m.w()).find(w=>w.typeKey===record.key);
+ for(const name of ['materials_list','assemblies_list','walls_list'])assert.ok(!(await d.call(name,{})).isError);
+ assert.deepEqual(bytes(m),original);
+ assert.equal((await d.call('element_set',{...state(m),guid:w.guid,set:'CadCraft_WallType',property:'Recipe',value:JSON.stringify({...legacy,version:1}),type:true})).isError,true);assert.deepEqual(bytes(m),original);
+ assert.ok(!(await d.call('element_set',{...state(m),guid:w.guid,attribute:'Name',value:'ordinary legacy edit'})).isError);m.ed.undo();assert.deepEqual(bytes(m),original);
+ assert.ok(!(await d.call('assembly_edit',{...state(m),key:record.key,typeGuid:record.guid,changes:{name:record.name+' migrated'}})).isError);
+ assert.equal(JSON.parse(readAssemblyRecords(m.w()).find(r=>r.key===record.key).raw).version,1);m.ed.undo();assert.deepEqual(bytes(m),original);m.ed.redo();assert.equal(JSON.parse(readAssemblyRecords(m.w()).find(r=>r.key===record.key).raw).version,1);
 });
