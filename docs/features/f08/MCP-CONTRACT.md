@@ -170,6 +170,11 @@ registered / transport-tested / connected independently for both surfaces.
    ownership. Assert full semantic restoration, not just a settings flag. Existing
    transport currently exposes Undo; missing Redo must remain a gap until the accepted shared history adapter
    implements/registers/tests it. A direct editor call is not transport evidence.
+   Interrupt a pending edit at the shared adapter boundary: assert atomic rollback,
+   no foreign history consumption and deterministic retry/readback. Interleave an
+   unrelated user operation; assistant Undo must refuse ownership loss without
+   undoing that operation. Repeat interrupted Undo/Redo and save/reopen, using the
+   accepted shared history semantics rather than a feature-local journal.
 3. Save with explicit save permission inside the allowed root; reopen the actual
    saved file as a new document. Read both end settings and diagnostics again;
    independently validate IFC profiles, IDs/layers/openings/dimensions and actual

@@ -105,6 +105,14 @@ try{
  check('upper-level through drawing retains authoritative F08 core/end outlines');
  const lowOpening=upperState.openings[0],throughHost=upperState.scene.through.find(w=>w.guid===lowOpening.wallGuid);assert.equal(throughHost.pieces.length,1);
  check('upper-level cut does not inherit a lower opening cut outside its height');
+ // Save is legitimately disabled for an unchanged reopened file. Exercise real end edits first.
+ await frame(multi,{x0:400,y0:20400,x1:5600,y1:25400});await pick(multi,target.guid);
+ await multi.locator('[data-mp-join-a]').selectOption('disallow');await settle(multi);
+ assert.equal((await snapshot(multi)).walls.find(w=>w.guid===target.guid).joinSettings.a.allow,false);
+ await multi.locator('[data-mp-join-a]').selectOption('allow');await settle(multi);
+ assert.deepEqual(semantic(await snapshot(multi)),semantic(upperState));
+ for(let i=0;i<3;i++){await click(multi,'[data-undo]');await settle(multi);assert.equal((await snapshot(multi)).walls.find(w=>w.guid===target.guid).joinSettings.a.allow,false);await click(multi,'[data-act="redo"]');await settle(multi);assert.deepEqual(semantic(await snapshot(multi)),semantic(upperState));}
+ check('upper-level real end changes survive three UI Undo Redo cycles');
  const upperSave=multi.waitForEvent('download');await click(multi,'[data-save]');await(await upperSave).saveAs(path.join(out,'multilevel-saved.ifc'));
  fs.writeFileSync(path.join(out,'multilevel-expected.json'),JSON.stringify(await snapshot(multi)));
  const again=await(await context()).newPage();await open(again,path.join(out,'multilevel-saved.ifc'));assert.deepEqual(semantic(await snapshot(again)),semantic(upperState));
