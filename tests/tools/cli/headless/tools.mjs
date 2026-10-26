@@ -341,7 +341,11 @@ export function headlessTools(env) {
         return { doc: keep(env, 'ifc', s, null), ...s.summary() };
       } });
     // each BimCraft tool, on the model a handle names (one undo step per edit, as in the window)
-    const bimEnv = (s) => ({ ed: () => s.ed, apply: (label, op) => s.apply(label, op) });
+    const bimEnv = (s, doc) => ({ ed: () => {
+      // A close while apply awaits must not authorize a detached document's next commit.
+      if (doc && get(env, doc, 'ifc').s !== s) throw new Error('Document changed during request.');
+      return s.ed;
+    }, apply: (label, op) => s.apply(label, op) });
     for (const def of BIM.modelTools(bimEnv(null))) {
       const schema = def.inputSchema || obj({});
       T({ ...def, description: def.description + ' Works on an IFC model opened with ifc_open or ifc_new (doc).',
@@ -351,7 +355,7 @@ export function headlessTools(env) {
           await d.s.editor();
           d.s.undoPrefix = env.undoPrefix;
           const { doc, ...rest } = a;
-          return { doc, ...await BIM.modelTools(bimEnv(d.s)).find((t) => t.name === def.name).run(rest) };
+          return { doc, ...await BIM.modelTools(bimEnv(d.s, a.doc)).find((t) => t.name === def.name).run(rest) };
         } });
     }
     T({ name: 'redo', group: 'edit', title: 'Redo an IFC edit', description: 'Redo an Assistant-owned IFC model step; a person step requires any: true.',

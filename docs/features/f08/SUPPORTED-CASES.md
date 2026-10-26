@@ -33,7 +33,7 @@ The real F08 browser sequence now checks `ftin`, `in`, `ftdec`, `mm`, `cm`, `m` 
 `es-MX`, `id` and `en-XA`. Translated labels use the server's language-pack catalog;
 allow/cap enum values and raw geometry/records remain unchanged. Each locale also
 performs a real end edit and Undo. The dedicated live-workspace adapter is still
-deferred. Semantic MCP access remains missing and blocks full acceptance; see
+deferred. That historical delivery lacked semantic MCP access; the current implementation and transport evidence are recorded in
 [MCP-CONTRACT.md](MCP-CONTRACT.md). No additional join case is claimed.
 
 
@@ -52,3 +52,14 @@ The 28-case independent matrix still uses the stricter 0.00001 mm² overlap and
 0.001 mm² union bounds; saved fixture comparisons retain 0.005 mm.
 Historical October 24 byte-identity statements describe that delivery only; the
 0.7 operation wrapper includes integrated replay/protection and the copy seam.
+
+
+## Semantic MCP update — approved main with MCP-01
+
+`wall_joins_get`, `wall_join_end_set` and `wall_join_diagnostics` expose this same
+bounded geometry through live HTTP, source stdio and the isolated fork package.
+They do not expand the supported geometry matrix. Eligibility and safe fallback
+are not certificates of cleaned joining. Generic writes to `CadCraft_WallJoin`
+and its shared-property aliases are refused; typed end edits alone invoke the
+domain operation. F08-PM-01 remains OPEN pending PM verification. See
+[the current contract](MCP-CONTRACT.md) and [exact delivery evidence](SEMANTIC-HANDOFF.md).

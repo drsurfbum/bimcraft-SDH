@@ -1,6 +1,8 @@
+> Historical reviewed delivery `82e680f`. Current approved-main reconciliation and semantic coverage are in [SEMANTIC-HANDOFF.md](SEMANTIC-HANDOFF.md). The ten-workflow counts below describe that older cutoff.
+
 # F08 — 0.7 compatibility candidate / PM re-review
 
-Status: bounded geometry candidate; draft only. Full feature acceptance BLOCKED.
+Historical status: bounded geometry candidate; draft only. Superseded by the semantic re-review handoff.
 
 ## Exact inputs and preservation
 
@@ -106,25 +108,16 @@ remain unchanged from their previously reviewed versions.
 
 ## MCP gate and remaining acceptance gaps
 
-MCP-01 intake cutoff was `9224167fe3e2e856c57679065b545d834f52ade1`.
-A fresh check found #16 draft/unmerged at `e84023e53c98352a07603ccfb36a3e09fac8e8c8`;
-main is still `82da107`. No MCP candidate was imported.
-Do not import that branch or change shared registration/history before its
-then-approved integration handoff. F08 owns the follow-on implementation of
-`wall_joins_get`, `wall_join_end_set`, `wall_join_diagnostics` through the accepted
-shared adapter. None is implemented, registered or transport-tested here.
-The [concrete contract and actual-transport plan](MCP-CONTRACT.md) covers document/
-session binding, stable wall/end IDs, strict inputs/results/permissions, readback,
-invalid/unsupported/stale/wrong-document atomic refusals, authoritative operations,
-normal and interrupted history, live/headless/packaged transport, save/reopen and
-independent saved/export validation. Existing generic wall tools are insufficient.
-Inherited MCP transport checks do not prove semantic access to F08 controls.
+MCP-01 is accepted in approved main `21ff2842e1925f148e9b75c404476b59333f7475`.
+The current F08 candidate normally merges that cutoff and implements the three
+semantic tools on its shared registry/history/package infrastructure. See the
+[current contract](MCP-CONTRACT.md) and [re-review handoff](SEMANTIC-HANDOFF.md).
+F28-C remains separate and unmerged; it is not required as an implementation base.
+Adoption remains separately gated and needs an updated approved cutoff if main advances.
 
-Adoption queue: MCP-01, F28-C, then F08. This independently prepared candidate must
-reconcile and revalidate against the then-approved main before adoption. Keep
-PERF-F04-01, PERF-F05-01, TEST-F28-01, MCP01-PM-01, UP07-MEP-01 and broader semantic
-MCP catch-up OPEN. Retain closed UP07-PM-01/02 replay/protection regressions.
-Assembly/electrical checks do not certify inherited wider MEP schema/severity.
+F08-PM-01 remains OPEN pending final PM verification. PERF-F04-01, PERF-F05-01,
+TEST-F28-01, UP07-MEP-01, broader semantic MCP catch-up and CI runtime headroom stay
+OPEN. MCP01-PM-01 and UP07-PM-01/02 remain CLOSED.
 
 ## Preview
 

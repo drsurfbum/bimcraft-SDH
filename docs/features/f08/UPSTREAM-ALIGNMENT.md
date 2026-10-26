@@ -1,3 +1,5 @@
+> Historical October 24 alignment evidence. Its MCP gap is superseded by [SEMANTIC-HANDOFF.md](SEMANTIC-HANDOFF.md), based on accepted MCP-01 in approved main.
+
 # F08-A upstream compatibility and conflict record
 
 Draft PR: https://github.com/drsurfbum/bimcraft-SDH/pull/13.

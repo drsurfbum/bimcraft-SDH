@@ -1,3 +1,17 @@
+# Current update — semantic MCP and protection re-review
+
+Approved main: `21ff2842e1925f148e9b75c404476b59333f7475`, including accepted MCP-01.
+The preserved candidate normally merges it and adds the three semantic join tools
+and the central join-record protection fix. Current delivery/evidence:
+[SEMANTIC-HANDOFF.md](f08/SEMANTIC-HANDOFF.md). F08-PM-01 remains OPEN pending PM
+verification. Full F08 remains partial outside the bounded straight-wall slice;
+F28-C remains separate/unmerged, and PR #13 remains draft/unmerged.
+
+The dated sections below describe historical cutoffs; their old MCP gaps and
+baseline availability statements are superseded by the current contract/handoff.
+
+---
+
 # Current update — 0.7 foundation compatibility, October 26, 2026
 
 The new isolated candidate is `bimcraft-f08-07-candidate`, branch
@@ -7,7 +21,7 @@ The new isolated candidate is `bimcraft-f08-07-candidate`, branch
 Merge source `e470ab54f530b6f517af257bbc193010f02f42bf`; final published delivery and
 exact-head CI are recorded in draft PR #13. See [the current PM re-review handoff](f08/FOUNDATION07-HANDOFF.md).
 Earlier evidence below remains historical and is not an observation of the 0.7 candidate.
-**Full F08 acceptance remains BLOCKED by unimplemented semantic join tools.**
+Historical semantic gap resolved by the current implementation; final PM verification remains required.
 
 ---
 
@@ -21,9 +35,9 @@ CI are recorded in its description and delivery response.
 
 See [upstream compatibility and conflict record](f08/UPSTREAM-ALIGNMENT.md), the
 unchanged geometry envelope in [supported cases](f08/SUPPORTED-CASES.md), and the
-[proposed semantic MCP contract](f08/MCP-CONTRACT.md).
-**MCP join/end coverage remains GAP and blocks full feature acceptance.** No new
-join tools or broad dispatcher changes were implemented. F28-C remains separate.
+[current semantic MCP contract](f08/MCP-CONTRACT.md).
+At that historical cutoff, MCP join/end coverage was a GAP. The current delivery
+implements it on the accepted adapter; F28-C remains separate.
 No readiness, merge, deployment, default-layout or shared-roadmap change.
 
 The current candidate is isolated at `bimcraft-f08-upstream-candidate`. The original

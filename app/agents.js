@@ -54,6 +54,7 @@ import { t } from './i18n.js';
 import { materialWallTools, documentState, bindDocument, exactWalls, BINDING, WALL_SETTINGS, requireType, requireWalls, assertLibrary, validateTop } from './material-wall-agent.js';
 import { placementPath, placementReference } from './wall-placement.js';
 import { liveHistory } from './agent-history.js';
+import { wallJoinTools } from './wall-join-agent.js';
 export { BINDING, bindDocument, documentState } from './material-wall-agent.js';
 
 const LIMIT = 1000;
@@ -201,6 +202,7 @@ function modelDefinitions(env) {
   const guidsOf = (r) => [...(r?.made?.keys?.() || [])];
   return [
     ...materialWallTools(env),
+    ...wallJoinTools(env),
     {
       name: 'model_describe', group: 'read', title: 'Describe the model',
       description: 'The open BimCraft model in millimetres: its levels (name, GlobalId, elevation, height), walls by type, doors, windows, rooms with their areas, floors drawn by outline, ramps, grid line tags, columns and the site; also the wall, door and window types walls_add and opening_add take.',

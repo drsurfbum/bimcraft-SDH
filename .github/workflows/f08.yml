@@ -58,6 +58,16 @@ jobs:
         run: node tests/features/f08/browser.mjs
       - name: Independent actual IFC and vector geometry
         run: .cc-test/f08-reader/bin/python -I tests/features/f08/independent.py
+      - name: Actual semantic source stdio and isolated packaged consumer
+        run: |
+          node tests/features/f08/semantic-stdio.mjs
+          .cc-test/f08-reader/bin/python -I tests/features/f08/semantic-independent.py .cc-test/f08-semantic-stdio
+          node tests/features/f08/semantic-package.mjs
+          .cc-test/f08-reader/bin/python -I tests/features/f08/semantic-independent.py .cc-test/f08-semantic-package/consumer
+      - name: Actual semantic HTTP to live browser
+        run: |
+          node tests/features/f08/semantic-browser.mjs
+          .cc-test/f08-reader/bin/python -I tests/features/f08/semantic-independent.py .cc-test/f08-semantic-browser
       - name: Render actual exported detail for review
         if: ${{ always() && hashFiles('.cc-test/f08/browser/detail.pdf') != '' }}
         run: |
@@ -74,4 +84,15 @@ jobs:
             .cc-test/f08/independent.json
             .cc-test/f08/browser/report.json
             .cc-test/f08/browser/*.png
+            .cc-test/f08-semantic-stdio/report.json
+            .cc-test/f08-semantic-stdio/catalog.json
+            .cc-test/f08-semantic-stdio/independent.json
+            .cc-test/f08-semantic-package/report.json
+            .cc-test/f08-semantic-package/consumer/report.json
+            .cc-test/f08-semantic-package/consumer/catalog.json
+            .cc-test/f08-semantic-package/consumer/independent.json
+            .cc-test/f08-semantic-browser/report.json
+            .cc-test/f08-semantic-browser/catalog.json
+            .cc-test/f08-semantic-browser/independent.json
+            .cc-test/f08-semantic-browser/*.png
           retention-days: 90
