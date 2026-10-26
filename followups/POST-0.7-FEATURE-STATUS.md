@@ -1,3 +1,5 @@
+> Latest F08 PM status: delivery `7880004` closes F08-PM-01 and implements/tests all three join tools. F08-PM-02 remains OPEN for incorrect progress/Undo receipts after a person interleaves an edit or Undo. All eleven exact-head workflow types pass; PR #13 stays draft/unmerged. [Semantic re-review](F08-SEMANTIC-PM-REVIEW.md). Earlier snapshots are historical.
+
 > Subsequent F08 PM review: PR #13 at `82e680f` needs changes. F08-PM-01 is OPEN: real MCP generic property edits bypass join regeneration. Semantic join tools and published current-main reconciliation also remain gates. [F08 review](F08-0.7-PM-REVIEW.md). Earlier status snapshots below are historical.
 
 > Current status: MCP-01 is merged at `21ff284`; all ten exact-main workflow types pass and integrated validation is complete for the bounded MCP adoption. F28-C passed bounded desktop UI compatibility review but remains draft/unmerged with documentation MCP and published new-main reconciliation gates. F08 remains separate. [MCP adoption](MCP-01-INTEGRATED.md) · [Current C review](F28-C-0.7-PM-REVIEW.md). The earlier snapshot below is historical.
