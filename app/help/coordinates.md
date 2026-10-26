@@ -16,7 +16,7 @@ Know where you are in a model at a glance: which level you are drawing on, how f
 - **On the plan** (bottom right, while {{ui:Draw}} is on): the level the plan shows and the height of its floor, and the pointer's **X and Y** while it is over the plan.
 - When the file has a map conversion (it was exported with map coordinates), both boxes add the **eastings and northings** on the map grid, in the map's own unit.
 
-Every X, Y and Z is measured from the **project origin**, in the units chosen in the {{ui:Levels}} panel (feet and inches, or millimetres). Positive Y points to the model's north, which is not always true north.
+Every X, Y and Z is measured from the **project origin**, in the {{ui:Units}} chosen on the toolbar (feet and inches, inches, decimal feet, millimeters, centimeters or meters). Positive Y points to the model's north, which is not always true north.
 
 ## The two markers
 

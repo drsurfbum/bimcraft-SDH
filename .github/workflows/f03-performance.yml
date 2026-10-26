@@ -2,9 +2,14 @@
 # Provisional Linux/headless reference, kept separate from local model measurements.
 name: F03 performance evidence
 on:
+  push:
+    branches: [integration/upstream-0.7-20261025]
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: f03-performance-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   measure:
     runs-on: ubuntu-latest
@@ -12,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -48,5 +54,13 @@ jobs:
         with:
           name: f03-browser-evidence
           path: |
-            .cc-test/f03-ci/
-            .cc-test/f03-server.log
+            .cc-test/f03-ci/browser-raw.json
+            .cc-test/f03-ci/gpu.json
+            .cc-test/f03-ci/summary.json
+            .cc-test/f03-ci/comparison.md
+            .cc-test/f03-ci/profiles.json
+            .cc-test/f03-ci/profiles.md
+            .cc-test/f03-ci/phases.json
+            .cc-test/f03-ci/phases.md
+            .cc-test/f03-ci/trace-summary.json
+            .cc-test/f03-ci/trace-summary.md

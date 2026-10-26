@@ -51,13 +51,15 @@ export class IfcModel {
     }
   }
 
-  async load(bytes, onProgress = () => {}, { keyBase = 0 } = {}) {
+  /** `coordination`: the coordination matrix to keep (a reload after an edit: the model stays where it was in the scene). */
+  async load(bytes, onProgress = () => {}, { keyBase = 0, coordination = null } = {}) {
     this.close();
     const { api, WebIFC } = this;
+    const settings = coordination ? { COORDINATE_TO_ORIGIN: true, COORDINATION_MATRIX: [...coordination] } : { COORDINATE_TO_ORIGIN: true };
     let modelID = -1;
     if (typeof api.AdoptModel === 'function') {
-      try { modelID = api.AdoptModel(await openIfcAsync(bytes), { COORDINATE_TO_ORIGIN: true }); } catch (e) { modelID = -1; }
-    } else modelID = api.OpenModel(bytes, { COORDINATE_TO_ORIGIN: true });
+      try { modelID = api.AdoptModel(await openIfcAsync(bytes), settings); } catch (e) { modelID = -1; }
+    } else modelID = api.OpenModel(bytes, settings);
     if (modelID < 0) throw new Error(t('ifc.open.failed'));
     this.modelID = modelID;
 
@@ -262,6 +264,8 @@ function finishBatch(b) {
     space: b.space,          // IfcSpace volumes: hidden by default in the viewer
     color: b.color,
     positions: Float32Array.from(b.pos),
+    // Drawings must not round-trip through GPU floats when a coordination frame changes.
+    documentPositions: Float64Array.from(b.pos),
     normals: Float32Array.from(b.nrm),
     indices: Uint32Array.from(b.idx),
     triIds: Uint32Array.from(b.ids),   // element key per triangle (faceIndex → element)

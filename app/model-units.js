@@ -6,12 +6,24 @@
  *   fmtLen(3810, 'ftin')          → 12'-6"         (to 1/16"; fmtLen(-12.7, 'ftin') → -1/2")
  *   fmtLen(3810, 'mm')            → 3810
  *   parseLen("12'6\"", 'ftin')    → 3810           a bare number is inches in 'ftin', millimetres in 'mm';
- *   parseLen('3.81 m', 'ftin')    → 3810           any unit can be typed (mm, cm, m, in, ft, ' and ")
+ *   parseLen('3.81 m', 'ftin')    → 3810           any unit can be typed (mm, cm, m, in, ft, ' and ", and since 0.7
+ *                                                  UNITS every length mark of the shared table: 3 yd, 1 ch, 10 US ft)
  *   parseTyped("@1200,-300", 'mm') → { kind: 'rel', dx, dy }   what the wall tool takes from the keyboard (see below)
  */
 import { parseLength } from './libitem.js';
+import { parseTo } from './unit-table.js';   // 0.7 UNITS: the shared table (lib/units; a copy: tools/units/sync.mjs)
+import { defaultUnit, fillSelect } from './unit-prefs.js';
 
+/*
+ * Display units and the toolbar selector: Joel (yisraelk), getcadcraft/bimcraft PR #4 (0.7). Since 0.7 UNITS they are
+ * BimCraft's use of the shared unit table: the selector lists the units turned on in Settings › General › Units (plus
+ * the one in use), a new browser starts on the starred length unit when BimCraft has it, and the choice saved in
+ * localStorage "bimcraft.model.units" is kept as it was.
+ */
 export const UNITS = ['ftin', 'in', 'ftdec', 'mm', 'cm', 'm'];
+/** BimCraft's unit → the shared table's id. */
+export const TABLE_ID = Object.freeze({ ftin: 'ft-in', in: 'in', ftdec: 'ft', mm: 'mm', cm: 'cm', m: 'm' });
+const FROM_TABLE = Object.fromEntries(Object.entries(TABLE_ID).map(([k, v]) => [v, k]));
 const INCH = 25.4;
 const FACTOR = { mm: 1, cm: 10, m: 1000, in: INCH, ftdec: 12 * INCH };
 export const isMetric = (unit) => ['mm', 'cm', 'm'].includes(unit);
@@ -19,7 +31,19 @@ let displayUnits = null;
 export function getDisplayUnits() {
   if (displayUnits) return displayUnits;
   try { const saved = localStorage.getItem('bimcraft.model.units'); if (UNITS.includes(saved)) return saved; } catch (e) { /* no storage */ }
-  return defaultUnits();
+  const star = defaultUnit('length', { offer: Object.values(TABLE_ID) });
+  return star ? FROM_TABLE[star] : defaultUnits();
+}
+/**
+ * The toolbar's unit <select> rebuilt from Settings › General › Units: the units turned on (in the table's order) and
+ * `current` always; each option keeps BimCraft's own words (read once from the options ui.inc printed).
+ */
+export function fillUnitSelect(select, current) {
+  if (!select) return [];
+  if (!select._bcLabels) select._bcLabels = new Map([...select.options].map((o) => [o.value, o.textContent]));
+  const words = select._bcLabels;
+  select.value = current;
+  return fillSelect(select, 'length', { offer: UNITS.map((u) => [u, TABLE_ID[u]]), keep: [current], label: (id, v) => words.get(v) || v });
 }
 export function setDisplayUnits(unit) {
   if (!UNITS.includes(unit)) return;
@@ -67,7 +91,9 @@ export function parseLen(text, units = 'ftin') {
   if (m && !isMetric(units)) return (Number(m[1]) + Number(m[2]) / Number(m[3])) * INCH;
   m = s.match(/^(-?)\s*(\d+)\/(\d+)$/);
   if (m && !isMetric(units) && Number(m[3])) return (m[1] ? -1 : 1) * Number(m[2]) / Number(m[3]) * INCH;
-  return NaN;
+  // any other length mark in the shared table (0.7 UNITS): 2.5 dm, 3 yd, 1 ch, 10 US ft, 400 nm
+  const r = parseTo(s, 'length', 'mm');
+  return r.ok ? r.value : NaN;
 }
 
 /**

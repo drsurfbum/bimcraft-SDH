@@ -68,6 +68,7 @@ export function mountAnalysisBim(host) {
   const keyOf = (id) => id;                         // the open model is the first one: its keys are its express ids
   const panel = framePanel({
     el, t,
+    design: true,   // 0.7 SU.878: the sections carry an I shape (analysis-bim.js), so the Design checks block shows
     cls: { block: 'fa-block', note: 'bc-muted', head: 'fa-head', table: 'bc-qto-table fa-table', btn: 'btn-line btn-sm-cc', primary: 'btn-plot btn-sm-cc', link: 'bc-linkbtn', select: 'select-cc fa-select', input: 'bc-input fa-input', error: 'fa-error' },
     version: () => version,
     analysis: () => state()?.settings || defaultAnalysis(t),

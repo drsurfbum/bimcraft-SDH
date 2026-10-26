@@ -71,7 +71,7 @@ for (const group of groups) {
   test(`${group.name}: absent source verifies bundled assets and explicitly skips live parity`, () => harness(group, ({ run }) => {
     const r = run();
     assert.equal(r.status, 0, r.output);
-    assert.match(r.stdout, /bundled integrity verified against 72664187/);
+    assert.match(r.stdout, /bundled integrity verified against c778c7ca3f83eeecc3e815078417f152b2ca7a94/);
     assert.match(r.stdout, /SKIP .* live source comparison/);
   }));
   for (const state of ['partial', 'file', 'dangling']) {

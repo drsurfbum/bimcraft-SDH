@@ -22,7 +22,7 @@
  *   readRamps(w) · placeRamp(spec) → op · changeRamp(guid, ch) → op · removeRamps(guids) → op · syncRamps(w, storey)
  *   Errors: model.err.ramp.rise (no rise: no level above and none typed), model.err.ramp.width, model.err.ramp.short.
  */
-import { op } from './model-ops.js';
+import { reserveGuid, op } from './model-ops.js';
 import { readLevels } from './model-levels.js';
 import { ids, val } from './ifc-util.js';
 import { round } from './model-write.js';
@@ -140,7 +140,7 @@ export function placeRamp(spec) {
     const storey = w.byGuid(s.storey);
     if (!storey) refuse('model.err.nolevel');
     const st = w.api.GetLine(w.mid, storey, false);
-    const g = w.gid(s.guid); s.guid = g;
+    const g = reserveGuid(w, s);
     const name = w.L(tr('model.ramp'));
     const id = w.v4
       ? w.make('IFCRAMP', g, w.ownerHistory(), name, null, null, w.H(w.placeAt(st.ObjectPlacement.value, 0, 0, 0, 0)), null, null, 'STRAIGHT_RUN_RAMP')

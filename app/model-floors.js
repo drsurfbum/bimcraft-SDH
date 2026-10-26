@@ -20,7 +20,7 @@
  *   Errors: model.err.fl.shape (not a usable outline), model.err.fl.hole (an opening outside the floor or crossing its edge or
  *   another opening), model.err.fl.thick.
  */
-import { op } from './model-ops.js';
+import { reserveGuid, op } from './model-ops.js';
 import { FLOOR_KINDS } from './model-slabs.js';
 import { ids, val } from './ifc-util.js';
 import { round } from './model-write.js';
@@ -115,8 +115,7 @@ export function placeDrawnFloor(spec) {
     const k = FLOOR_KINDS.find((x) => x.key === s.kind) || FLOOR_KINDS[1];
     const T = s.thickness > 0 ? s.thickness : k.t;
     const st = w.api.GetLine(w.mid, storey, false);
-    const g = w.gid(s.guid);
-    s.guid = g;
+    const g = reserveGuid(w, s);
     const name = w.L(tr(s.use === 'landing' ? 'model.fl.landing' : 'model.fl.drawn'));
     const id = w.make('IFCSLAB', g, w.ownerHistory(), name, null, name, w.H(w.placeAt(st.ObjectPlacement.value, 0, 0, 0, 0)), null, null, s.use === 'landing' ? 'LANDING' : 'FLOOR');
     w.noteGuid(g, id);
@@ -148,13 +147,13 @@ export function changeDrawnFloor(guid, ch) {
 
 export function addFloorOpening(guid, points) {
   const pts = points.map((q) => [q[0], q[1]]);
-  let og = null;
+  const identity = {};
   return op((w) => {
     const f = readDrawnFloors(w).find((x) => x.guid === guid);
     if (!f) refuse('model.err.fl.none');
     if (polyProblem(pts)) refuse('model.err.fl.shape');
     if (!inside(f.points, pts) || f.openings.some((h) => pts.some((q) => inPoly(q, h.points)) || h.points.some((q) => inPoly(q, pts)))) refuse('model.err.fl.hole');
-    if (!og) og = val(w.guid());
+    const og = reserveGuid(w, identity);
     writeOpening(w, f, pts, og);
     writeFloorShape(w, { ...readDrawnFloors(w).find((x) => x.guid === guid) });   // the net quantities
     return { id: f.id, ids: [f.id] };

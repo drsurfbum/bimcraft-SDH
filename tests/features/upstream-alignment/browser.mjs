@@ -18,7 +18,7 @@ try{
  const ctx=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});await ctx.addInitScript(()=>{if(!localStorage.getItem('bimcraft.model.units'))localStorage.setItem('bimcraft.model.units','mm');});page=await ctx.newPage();page.on('pageerror',e=>report.errors.push(e.stack||e.message));page.on('console',m=>{if(['warning','error'].includes(m.type()))report.console.push({type:m.type(),text:m.text()});});
  async function open(){await page.goto(`http://127.0.0.1:${port}/?workspace=live&space=paper`,{waitUntil:'networkidle'});await page.locator('[data-file]').setInputFiles(path.resolve('fixtures/f04/layered-plans.ifc'));await settle();const b=page.locator('[data-pb-plan]').first();await b.focus();await b.press('Enter');await settle();}
  await open();const before=await records();
- const cases=[['ftin',"10'",3048],['in','120',3048],['ftdec','10',3048],['mm','3048',3048],['cm','304.8',3048],['m','3.048',3048]];
+ const cases=[['mm','3048',3048],['cm','304.8',3048],['m','3.048',3048],['in','120',3048],['ftdec','10',3048],['ftin',"10'",3048]];
  assert.deepEqual(await page.locator('[data-model-units] option').evaluateAll(xs=>xs.map(x=>x.value)),cases.map(x=>x[0]));check('all six upstream unit choices are present in the live workspace');
  for(const [unit,input,mm]of cases){
   await page.locator('[data-model-units]').selectOption(unit);await settle();
@@ -27,7 +27,7 @@ try{
   await page.keyboard.press('Escape');await settle();assert.deepEqual(await records(),before);check(unit+': shared display state and typed height retain raw IFC records');
   await open();assert.equal(await page.locator('[data-model-units]').inputValue(),unit);assert.equal(await page.evaluate(()=>bimcraftPlan.state.units),unit);check(unit+': unit choice survives a real page reload');
  }
- await page.locator('[data-ws-fallback]').first().click();assert.ok(await page.locator('[data-model-units]').evaluate(e=>!!e.closest('.bc-toolbar')));assert.equal(await page.locator('[data-model-units]').inputValue(),'m');await page.locator('[data-model-units]').selectOption('cm');assert.equal(await page.evaluate(()=>bimcraftPlan.state.units),'cm');check('established fallback restores the upstream global control and its handler');
+ await page.locator('[data-ws-fallback]').first().click();assert.ok(await page.locator('[data-model-units]').evaluate(e=>!!e.closest('.bc-toolbar')));assert.equal(await page.locator('[data-model-units]').inputValue(),'ftin');await page.locator('[data-model-units]').selectOption('cm');assert.equal(await page.evaluate(()=>bimcraftPlan.state.units),'cm');check('established fallback restores the upstream global control and its handler');
  await page.locator('[data-ws-launch]').click();await settle();assert.equal(await page.locator('[data-model-units]').inputValue(),'cm');assert.deepEqual(await records(),before);check('live workspace round trip preserves units and the exact authored model');
  await page.screenshot({path:path.join(out,'six-units.png')});
  if(process.env.REBASE_REQUIRE_PHP==='1'){

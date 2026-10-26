@@ -27,10 +27,13 @@ export const elevationDirs = { north: [0, -1], east: [-1, 0], south: [0, 1], wes
 
 export function modelTriangles(model, M, { skip = null, classes = null } = {}) {
   const map = new Map();
-  const ap = (x, y, z) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]];
+  // Canonicalize sub-nanometre transform cancellation in drawing coordinates only.
+  // The IFC, raw dimensions and 0.005 mm fixture acceptance bounds are unchanged.
+  const canonical = v => Number(v.toFixed(9));
+  const ap = (x, y, z) => [M[0] * x + M[4] * y + M[8] * z + M[12], M[1] * x + M[5] * y + M[9] * z + M[13], M[2] * x + M[6] * y + M[10] * z + M[14]].map(canonical);
   for (const b of model.batches || []) {
     if (b.space) continue;
-    const P = b.positions, I = b.indices, T = b.triIds, kb = model.keyBase || 0;
+    const P = b.documentPositions || b.positions, I = b.indices, T = b.triIds, kb = model.keyBase || 0;
     for (let t = 0; t < I.length / 3; t++) {
       const key = T[t];
       if (skip && skip.has(key)) continue;
@@ -64,7 +67,7 @@ function clipTri(t, d0, side = 1) {
 
 export function projectView(elements, options = {}) {
   const { dir, cut, far = 0, walls, openings = [], materials = null } = options;
-  if (!Array.isArray(dir) || dir.length !== 2 || !dir.every(Number.isFinite) || Math.abs(Math.hypot(...dir)-1)>1e-8 || !Number.isFinite(far) || far<0 || (cut && (!Array.isArray(cut.o)||cut.o.length!==2||!cut.o.every(Number.isFinite)))) throw new Error('Invalid projected view plane/depth');
+  if (!Array.isArray(dir) || dir.length !== 2 || !dir.every(Number.isFinite) || Math.abs(Math.hypot(...dir)-1)>1e-8 || !Number.isFinite(far) || far<0 || (cut && (!Array.isArray(cut.o)||cut.o.length!==2||!cut.o.every(Number.isFinite)))) throw new Error('Invalid projected view plane/depth');   // i18n-ignore: a programming error
   const byKey = new Map((walls||[]).map(w=>[w.key??w.id,{...w,junctionUnsupported:!isolatedWall(w,walls)}]));
   const sourced = elements.map(e=>byKey.has(e.key)?{...e,edges:wallSurfaceEdges(byKey.get(e.key),openings)}:e);
   const view = projectMeshView(sourced, options);
