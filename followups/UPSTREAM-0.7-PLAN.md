@@ -1,3 +1,5 @@
+> Execution update: Gate A/B candidate is now delivered in draft PR #17 at 6ff9f38 with nine workflow types passing. PM review remains pending; main is unchanged. See [current delivery status](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/UPSTREAM-0.7-REVIEW.md). The original planning state below is historical.
+
 # BimCraft 0.7 integration plan
 
 Prepared October 25, 2026. Status: **planning and read-only assessment complete; implementation has not started**. Main, feature branches, original checkouts, running previews and browser projects have not been rebased, merged, reset or switched by this assessment. Roadmap publication records planning status only.
