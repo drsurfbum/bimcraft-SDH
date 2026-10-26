@@ -61,5 +61,6 @@ bounded geometry through live HTTP, source stdio and the isolated fork package.
 They do not expand the supported geometry matrix. Eligibility and safe fallback
 are not certificates of cleaned joining. Generic writes to `CadCraft_WallJoin`
 and its shared-property aliases are refused; typed end edits alone invoke the
-domain operation. F08-PM-01 remains OPEN pending PM verification. See
+domain operation. F08-PM-01 is CLOSED by PM at `7880004`. F08-PM-02's
+receipt correction awaits PM re-review; it adds no supported geometry. See
 [the current contract](MCP-CONTRACT.md) and [exact delivery evidence](SEMANTIC-HANDOFF.md).

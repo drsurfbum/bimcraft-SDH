@@ -9,7 +9,7 @@ import {createLiveServer} from '../../tools/mcp/live-server.mjs';
 import {initialized,tool} from '../mcp01/client.mjs';
 import {semanticFixtures} from './semantic-fixtures.mjs';
 import {semanticWorkflow,REQUIRED} from './semantic-workflow.mjs';
-import {liveOwnership,liveFileClose} from './semantic-live-ownership.mjs';
+import {liveOwnership,liveFileClose,liveInterleavings} from './semantic-live-ownership.mjs';
 import {modelTools} from '../../../app/agents.js';
 const out=path.resolve('.cc-test/f08-semantic-browser');fs.mkdirSync(out,{recursive:true});const info=await semanticFixtures(out);
 const {chromium}=await import(pathToFileURL(path.resolve(process.env.F08_PLAYWRIGHT||'.cc-test/f08-deps/node_modules/playwright/index.mjs')));
@@ -47,6 +47,7 @@ try{
  await call('wall_join_end_set',args,true);assert.deepEqual(await fingerprint(other),foreignBefore);check('actual live MCP save/download/reopen preserves profiles/records and refuses old instance binding');
  report.ownership=await liveOwnership(page,call,info.file,info.a,settle,check);
  report.fileClose=await liveFileClose(page,call,Array.from(fs.readFileSync(info.file)),info.a,settle,check);
+ report.interleavings=await liveInterleavings(page,call,Array.from(fs.readFileSync(info.file)),info.a,settle,check,fingerprint);
  for(const n of info.negatives){
   await open(n.file);const s=await call('model_describe'),before=await fingerprint(page);
   const read=await call('wall_joins_get',{documentId:s.documentId,wall:n.wall},['duplicate-id','duplicate-neighbor'].includes(n.kind));

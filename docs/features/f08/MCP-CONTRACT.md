@@ -102,6 +102,13 @@ Successful results include synchronous commit-time readback (never a reread of a
 `changed`, `completedSteps`, `complete` and an assistant `undo` receipt with the
 original editor's documentId/revision and actual history label. This is the
 accepted ordinary editor history, not a feature-local ownership token/journal.
+`completedSteps` counts this request's confirmed mutations: one for this single-end
+operation, zero for a genuine no-op. Later person editing or Undo cannot increase
+or erase that confirmed progress. Undo is available only if the original document
+remains safely bound and the exact expected Assistant-owned entry is still on top,
+with its result identity, preceding entries/ownership labels and cleared Redo
+stack intact. Otherwise `undo.available:false` and `undo.owner:null` make no claim
+over the person's next history step.
 `affectedWalls` compares authoritative persisted join records and stored profiles
 before/after across the document. `geometryChangedWalls` identifies actual
 physical-profile changes separately. Neither comes from screen selection.
@@ -116,6 +123,15 @@ native project switch returns `isError:true`, `code:'POST_COMMIT_INTERRUPTED'`,
 `changed:true`, `complete:false`, completed progress and readback from the original
 editor. It never claims rollback or `changed:false` after a confirmed mutation.
 The original editor retains its normal undo step; no foreign history is consumed.
+An intervening edit or Undo similarly returns `POST_COMMIT_INTERRUPTED` with
+`stopped.code:'history_changed'`, one confirmed step, `complete:false` and
+`readback.current:false`. The original entry may already be in Redo or below a
+person-owned edit. All top-level record/geometry, `before`/`after` and affected-wall
+values remain explicitly captured commit-time data; they do not claim to describe
+the current model. The top-level revision is the original editor's observed history
+revision at response assembly. Inspect again before further edits. There is no
+automatic rollback, undo or retry. Ordinary native editing and Undo/Redo stay usable;
+the accepted MCP Undo guard still refuses a person-owned next entry as `person_owned`.
 Normal rendering may reparse IFC behind the same editor. Commit-time results stay authoritative through that rebuild. If a whole-project replacement closes or rebinds the original IFC during notification,
 confirmed readback captured synchronously at commit is labeled with
 `readback.phase:'synchronous-commit'` and `originalDocumentReadable:false`.
@@ -150,6 +166,7 @@ permissions, native project switching, save/reopen and independent physical IFC
 validation. Existing MCP-01 native history/alias, F08 browser/export/multi-level/
 Copy Level tests, strict comparison and 28-case matrix remain required.
 
-F08-PM-01 stays OPEN pending PM verification of the final published delivery.
+F08-PM-01 is CLOSED by PM at `78800041c6960d4081b5bcdacae3ca6a432ff591`.
+F08-PM-02 remains OPEN pending PM verification of the receipt correction.
 PERF-F04-01, PERF-F05-01, TEST-F28-01, UP07-MEP-01, broader semantic MCP catch-up and
 CI runtime headroom stay OPEN. MCP01-PM-01 and UP07-PM-01/02 remain CLOSED.

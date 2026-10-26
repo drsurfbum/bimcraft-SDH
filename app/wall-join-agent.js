@@ -97,9 +97,9 @@ export function wallJoinTools(env) {
         const next = { ...before.record.effective, [a.end]: { ...before.record.effective[a.end], ...a.patch } };
         if (before.record.classification === 'supported' && JSON.stringify(next) === JSON.stringify(before.record.effective))
           return { ...before, changed: false, affectedWalls: [], geometryChangedWalls: [], completedSteps: 0 };
-        const prior = physical(ed), history = ed.changes.length, operation = changeWall(a.wall, { joinSettings: next });
+        const prior = physical(ed), history = ed.changes.map(entry => ({ entry, label: entry.label, kind: entry.kind })), operation = changeWall(a.wall, { joinSettings: next });
         let originalFile = ed.api.file(ed.mid), firstCommit = true;
-        let committed = false, error = null, committedAfter = null, committedProfiles = null;
+        let committed = false, committedResult = null, error = null, committedAfter = null, committedProfiles = null;
         try {
           await env.apply('wall_join_end_set', current => {
             if (firstCommit) {
@@ -108,14 +108,25 @@ export function wallJoinTools(env) {
             }
             uniqueWall(writer(current), a.wall);
             const result = operation(current);
-            committed = true;
             // A later file switch may close this editor's IFC. Capture confirmed domain readback
             // before yielding to UI notification; a read failure must not erase a committed step.
-            try { committedAfter = readback(current, a.wall); committedProfiles = physical(current); } catch { /* report unavailable readback honestly below */ }
+            // Redo reuses this domain callback; it is not another commit by the original request.
+            if (!committed) {
+              committed = true; committedResult = result;
+              try { committedAfter = readback(current, a.wall); committedProfiles = physical(current); } catch { /* report unavailable readback honestly below */ }
+            }
             return result;
           });
           if (env.ed() !== ed || env.busy?.() || !ed.api.IsModelOpen(ed.mid)) error = 'The active document changed or became busy after the original edit completed.';
         } catch (e) { if (!committed) throw e; error = e.message || String(e); }
+        // Match the actual expected entry/transition, including ownership and the unchanged prefix,
+        // as ordinary MCP history does. Net stack growth credits person edits and loses undone work.
+        const ownStep = ed.changes[history.length];
+        const expectedHistory = committed && ed.changes.length === history.length + 1 && ed.undone.length === 0 &&
+          history.every((x, i) => ed.changes[i] === x.entry && x.entry.label === x.label && x.entry.kind === x.kind) &&
+          ownStep?.result === committedResult && ownStep.kind === 'model' && ownStep.label === 'Assistant: wall_join_end_set';
+        const interleaved = !expectedHistory;
+        if (interleaved) error ||= 'History changed outside this request after its confirmed edit. Inspect the document again before retrying.';
         // Never reread an editor's rebound model handle after an awaited UI notification.
         // A normal renderer rebuild reparses IFC too; the confirmed synchronous readback
         // is the original mutation's result in both cases, without mistaking a new project for it.
@@ -123,10 +134,11 @@ export function wallJoinTools(env) {
         const after = { ...(committedAfter || { ...before, record: null, ends: null, geometry: null, diagnostics: null }), ...documentHistoryState(ed) };
         const now = committedProfiles, readable = !error;
         return { ...after, ok: !error, changed: committed, end: a.end, endId: a.wall + ':' + a.end, before: before.ends[a.end], after: after.ends?.[a.end] ?? null,
-          readback: { phase: committedAfter ? 'synchronous-commit' : 'unavailable', originalDocumentReadable: readable },
+          readback: { phase: committedAfter ? 'synchronous-commit' : 'unavailable', originalDocumentReadable: readable, current: readable && expectedHistory },
           affectedWalls: now ? [...now].filter(([guid, value]) => prior.get(guid) !== value).map(([guid]) => guid) : null,
           geometryChangedWalls: now ? [...now].filter(([guid, value]) => JSON.stringify(JSON.parse(prior.get(guid) || '{}').shape) !== JSON.stringify(JSON.parse(value).shape)).map(([guid]) => guid) : null,
-          completedSteps: ed.changes.length - history, undo: { owner: 'assistant', available: readable && ed.changes.length > history, label: 'Assistant: wall_join_end_set', documentId: after.documentId, revision: after.revision },
+          completedSteps: committed ? 1 : 0, undo: { owner: readable && expectedHistory ? 'assistant' : null, available: readable && expectedHistory, label: 'Assistant: wall_join_end_set', documentId: after.documentId, revision: after.revision },
+          ...(interleaved ? { stopped: { code: 'history_changed', message: 'History changed outside this request. Captured commit-time data may no longer describe the current model.' } } : {}),
           ...(error ? { error, isError: true, code: 'POST_COMMIT_INTERRUPTED', complete: false } : { complete: true }) };
       } },
   ];

@@ -9,6 +9,7 @@ import { ModelWriter } from '../../../app/model-write.js';
 import { documentState } from '../../../app/material-wall-agent.js';
 import { readWalls, storedShape } from '../../../app/model-walls.js';
 import { changeWall } from '../../../app/model-ops.js';
+import { liveHistory } from '../../../app/agent-history.js';
 import { readJoinRecord, JOIN_PSET } from '../../../app/wall-join-records.js';
 if (!fs.existsSync(fixture)) fs.writeFileSync(fixture, await generate());
 const target = m => readWalls(m.w()).find(w => w.extSide === 'right');
@@ -48,14 +49,14 @@ for (const end of ['a','b']) for (const allow of [false,true]) for (const cap of
   assert.equal(r.changed, true); assert.equal(r.completedSteps, 1); assert.ok(r.affectedWalls.includes(w.guid));
   const saved = inspect(m), other = end === 'a' ? 'b' : 'a';
   assert.deepEqual(saved.walls.find(x => x.guid === w.guid).joinSettings[other], w.joinSettings[other]);
-  assert.equal(r.after.allow, allow); assert.equal(r.after.cap, cap); assert.equal(r.undo.owner, 'assistant');
+  assert.equal(r.after.allow, allow); assert.equal(r.after.cap, cap); assert.equal(r.undo.owner, 'assistant');assert.equal(r.undo.available,true);assert.equal(r.readback.current,true);
   assert.deepEqual(saved.openings, before.openings); assert.deepEqual(saved.dims, before.dims); assert.deepEqual(saved.anchors, before.anchors);
   if (end === 'a' && allow && cap === 'envelope') assert.notDeepEqual(saved.shapes, before.shapes);
   for (let i = 0; i < 4; i++) { m.ed.undo(); assert.deepEqual(inspect(m).shapes, before.shapes); m.ed.redo(); assert.deepEqual(inspect(m).shapes, saved.shapes); }
   const reopen = await model(m.ed.save()); assert.deepEqual(inspect(reopen).shapes, saved.shapes);
   assert.deepEqual(readJoinRecord(reopen.w(), target(reopen).id).settings, saved.walls.find(x => x.guid === w.guid).joinSettings);
   const count = m.ed.changes.length, noOp = await value(d, 'wall_join_end_set', patch(m, end, { allow, cap }));
-  assert.equal(noOp.changed, false); assert.equal(m.ed.changes.length, count);
+  assert.equal(noOp.changed, false);assert.equal(noOp.completedSteps,0); assert.equal(m.ed.changes.length, count);
 });
 test('central guard refuses direct, forged and actually resolved shared aliases with bytes and both histories intact', async () => {
   const m = await model(), w = target(m); m.change(changeWall(w.guid, { joinSettings: w.joinSettings }));
@@ -139,4 +140,29 @@ test('IFC handle rebinding behind an unchanged editor cannot retarget precommit 
   if(phase==='before'){assert.match(JSON.stringify(r),/Original IFC instance changed before commit/);assert.equal(m.ed.changes.length,0);}
   else{const s=r.structuredContent;assert.equal(s.changed,true);assert.equal(s.completedSteps,1);assert.equal(s.documentId,a.documentId);assert.equal(s.after.allow,false);assert.equal(s.readback.phase,'synchronous-commit');assert.ok(s.affectedWalls.includes(a.wall));}
  }
+});
+
+for (const action of ['undo', 'person-edit']) test(`postcommit native-domain ${action} cannot change request progress or advertise an owned Undo`, async () => {
+ const m=await model(),a=patch(m),initial=inspect(m);let interleaved;
+ const d=dispatcher(m,{apply:async(label,op)=>{
+  const result=m.ed.modelChange(op,{label:'Assistant: '+label});await Promise.resolve();
+  if(action==='undo')m.ed.undo();else m.ed.modelChange(changeWall(a.wall,{height:2900}),{label:'Wall'});
+  interleaved=fingerprint(m);return result;
+ }});
+ const r=await d.call('wall_join_end_set',a),s=r.structuredContent;
+ assert.equal(s.completedSteps,1);assert.equal(s.changed,true);assert.equal(r.isError,true);
+ assert.equal(s.complete,false);assert.equal(s.code,'POST_COMMIT_INTERRUPTED');assert.equal(s.stopped.code,'history_changed');
+ assert.equal(s.undo.available,false);assert.equal(s.undo.owner,null);assert.equal(s.readback.phase,'synchronous-commit');assert.equal(s.readback.current,false);
+ assert.equal(s.after.allow,false);assert.equal(s.geometry.height,3000); // Explicitly captured data, not current person state.
+ assert.deepEqual(fingerprint(m),interleaved); // Receipt assembly cannot undo/retry the person's action.
+ const current=readWalls(m.w()).find(w=>w.guid===a.wall);
+ assert.equal(current.joinSettings.a.allow,action==='undo');assert.equal(current.height,action==='undo'?3000:2900);
+ const history=liveHistory({ed:()=>m.ed,busy:()=>false,settle:async()=>{},undo:async hooks=>{hooks.before(m.ed);hooks.after(m.ed,m.ed.undo());},redo:async hooks=>{hooks.before(m.ed);hooks.after(m.ed,m.ed.redo());}});
+ const refused=await history('undo',{...binding(m),steps:1});
+ assert.equal(refused.isError,true);assert.equal(refused.stopped.code,action==='undo'?'history_empty':'person_owned');assert.deepEqual(fingerprint(m),interleaved);
+ // Ordinary person Undo/Redo stays usable, including redoing the already-undone agent step.
+ if(action==='person-edit')m.ed.undo();else m.ed.redo();
+ assert.equal(readWalls(m.w()).find(w=>w.guid===a.wall).joinSettings.a.allow,false);
+ m.ed.undo();
+ assert.deepEqual(inspect(m).shapes,initial.shapes);
 });
