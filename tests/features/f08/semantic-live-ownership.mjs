@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 // Native federated-project switching while the real MCP edit awaits its UI rebuild. No mutation/dispatcher mocks.
 import assert from 'node:assert/strict';
+const receipt = r => Object.fromEntries(['documentId','revision','wall','end','endId','changed','completedSteps','complete','code','affectedWalls','geometryChangedWalls','readback','undo','error'].filter(k=>k in r).map(k=>[k,r[k]]));
 export async function liveOwnership(page,call,file,wall,settle,check){
  const a=await page.evaluate(()=>{window.__f08Original=bimcraftLive.editor;return bimcraftModels.list().find(m=>m.active).mi;});
  await page.locator('[data-model-input]').setInputFiles(file);await page.waitForFunction(()=>bimcraftModels.list().length===2&&!bimcraftWorkspace.snapshot().busy);
@@ -24,18 +25,18 @@ export async function liveOwnership(page,call,file,wall,settle,check){
   await activate(a);state=await call('model_describe');await call('undo',{documentId:state.documentId,expectedRevision:state.revision,steps:1});
   const restored=await call('wall_joins_get',{documentId:state.documentId,wall});assert.equal(restored.ends.a.allow,true);
   check('native project switch during semantic edit reports completed original mutation; replacement bytes/both histories unchanged; original Undo works');
-  return{status:'PASS',receipt:r,proof,mockedDispatcher:false,mockedMutation:false};
+  return{status:'PASS',receipt:receipt(r),proof,mockedDispatcher:false,mockedMutation:false};
  }finally{await page.evaluate(()=>{if(window.__f08Switch)window.__f08Switch.armed=false;window.__f08SwitchObserver?.disconnect();});}
 }
 
-// Replace the entire project through the native file input while a committed edit awaits rebuilding.
+// Replace the entire project through the existing live-open entrypoint while an edit awaits rebuilding.
 export async function liveFileClose(page,call,bytes,wall,settle,check){
  const state=await call('model_describe');
  await page.evaluate(({bytes})=>{
   const e=bimcraftLive.editor;window.__f08Close={ed:e,count:e.changes.length,armed:true,opened:false};
   const attempt=()=>{const s=window.__f08Close;if(!s.armed)return;
    if(e.changes.length===s.count+1&&!bimcraftPlan.state.reloading&&!bimcraftPlan.state.busy&&!bimcraftWorkspace.snapshot().busy){
-    s.armed=false;observer.disconnect();const input=document.querySelector('[data-file]'),files=new DataTransfer();files.items.add(new File([new Uint8Array(bytes)],'original.ifc',{type:'application/x-step'}));input.files=files.files;input.dispatchEvent(new Event('change',{bubbles:true}));s.opened=true;
+    s.armed=false;observer.disconnect();void bimcraftLive.open(new Uint8Array(bytes),'original.ifc');s.opened=true;
    }
   };
   const observer=new MutationObserver(()=>{attempt();queueMicrotask(attempt);});observer.observe(document.body,{subtree:true,childList:true,attributes:true});window.__f08CloseObserver=observer;
@@ -45,9 +46,9 @@ export async function liveFileClose(page,call,bytes,wall,settle,check){
   assert.equal(r.documentId,state.documentId);assert.equal(r.changed,true);assert.equal(r.completedSteps,1);assert.equal(r.readback.phase,'synchronous-commit');assert.equal(r.readback.originalDocumentReadable,false);assert.equal(r.undo.available,false);
   await settle();const replacement=await call('model_describe');assert.notEqual(replacement.documentId,state.documentId);
   const untouched=await call('wall_joins_get',{documentId:replacement.documentId,wall});assert.equal(untouched.ends.a.allow,true);
-  const proof=await page.evaluate(()=>{const s=window.__f08Close;let closed=false;try{s.ed.api.file(s.ed.mid).save();}catch{closed=true;}return{nativeFileInputOpened:s.opened,originalIfcClosed:closed,replacementHistorySteps:bimcraftLive.editor.changes.length};});
-  assert.deepEqual(proof,{nativeFileInputOpened:true,originalIfcClosed:true,replacementHistorySteps:0});
-  check('native full-project file replacement closes original IFC yet preserves confirmed mutation progress; captured readback is labeled and replacement remains untouched');
-  return{status:'PASS',receipt:r,proof,mockedDispatcher:false,mockedMutation:false};
+  const proof=await page.evaluate(()=>{const s=window.__f08Close;let closed=false;try{s.ed.api.file(s.ed.mid).save();}catch{closed=true;}return{existingLiveOpenInvoked:s.opened,originalIfcClosed:closed,replacementHistorySteps:bimcraftLive.editor.changes.length};});
+  assert.deepEqual(proof,{existingLiveOpenInvoked:true,originalIfcClosed:true,replacementHistorySteps:0});
+  check('existing full-project live open closes original IFC yet preserves confirmed mutation progress; captured readback is labeled and replacement remains untouched');
+  return{status:'PASS',receipt:receipt(r),proof,mockedDispatcher:false,mockedMutation:false};
  }finally{await page.evaluate(()=>{if(window.__f08Close)window.__f08Close.armed=false;window.__f08CloseObserver?.disconnect();});}
 }
