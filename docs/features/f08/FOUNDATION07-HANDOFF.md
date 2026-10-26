@@ -55,6 +55,10 @@ IFC; the 28-case angle/core/orientation matrix retains its original strict bound
 Intentional disallow/square overlaps in the copied scenario are measured and
 preserved, not misreported as clean joined output.
 
+The browser retains all existing assertions and records the exact headless WebGPU
+adapter-fallback warning already accepted by foundation/F04; application exceptions
+and every other unexpected warning/error still fail. No required module is hidden.
+
 Final source, browser/export observations and exact-head CI will be recorded in
 `evidence/f08-07/` after execution. The complete offline vendor audit is locally
 blocked by a missing cached CPython-WASI LICENSE; this is not hidden as a pass.

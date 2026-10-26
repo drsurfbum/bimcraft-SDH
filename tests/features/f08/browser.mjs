@@ -120,7 +120,8 @@ try{
  fs.writeFileSync(path.join(out,'multilevel-expected.json'),JSON.stringify(await snapshot(multi)));
  const again=await(await context()).newPage();await open(again,path.join(out,'multilevel-saved.ifc'));assert.deepEqual(semantic(await snapshot(again)),semantic(upperEdited));
  check('actual multi-level download reopens with offsets, joins, dimensions and opening identities');
- check('no application exceptions',report.errors.length===0);check('no unexpected warning/error console entries',report.console.every(m=>/bootstrap-icons|favicon/.test(m.text)));
+ check('no application exceptions',report.errors.length===0);check('no unexpected warning/error console entries',report.console.every(m=>/bootstrap-icons|favicon/.test(m.text)||(m.type==='warning'&&m.text==='Failed to create WebGPU Context Provider')));
+ report.expectedWebGPUFallbackWarnings=report.console.filter(m=>m.type==='warning'&&m.text==='Failed to create WebGPU Context Provider').length;
  report.status='PASS';
 }catch(e){report.status='FAIL';report.error=e.stack||String(e);console.error(e);process.exitCode=1;if(page)await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});}
 finally{
