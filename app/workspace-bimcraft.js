@@ -140,7 +140,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
   root.addEventListener('change', (e) => {
     if (!engine?.layout) return;
     if (e.target.matches('[data-msched-kind]')) { const v = listViews().find(v => v.kind === 'schedule' && v.ref === e.target.value); if (v) ctx.open(v.id); return; }
-    const key = e.target.dataset?.wsSetting; if (key) commands.execute(key, key === 'scale' ? Number(e.target.value) : e.target.value, viewProps.contains(e.target) ? viewPropsTarget : undefined);
+    const key = e.target.dataset?.wsSetting; if (key) commands.execute(key, key === 'scale' ? Number(e.target.value) : e.target.value, viewProps.contains(e.target) ? viewPropsTarget || { document: null, id: null } : undefined);
   });
   const scaleLabel = node('label', {}, T('ws.scale') + ' ', scaleSelect), detailLabel = node('label', {}, T('ws.detail') + ' ', detailSelect);
 
@@ -186,7 +186,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
         const off = !s || s.disabled || s.getAttribute('aria-disabled') === 'true';
         return { enabled: !off, reason: off ? s?.title || T('ws.why.off') : '' };
       }
-      return availability(id, commands, snapshot(), { root, t: T }, block === 'properties' ? viewPropsTarget : undefined);
+      return availability(id, commands, snapshot(), { root, t: T }, block === 'properties' ? viewPropsTarget || { document: null, id: null } : undefined);
     },
     async run(id, block) {
       if (block === 'toolbox') {
@@ -198,7 +198,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
         s.closest('details.bc-mb-more')?.removeAttribute('open');
         return;
       }
-      if (commands.ids.includes(id)) return commands.execute(id, undefined, block === 'properties' ? viewPropsTarget : undefined);
+      if (commands.ids.includes(id)) return commands.execute(id, undefined, block === 'properties' ? viewPropsTarget || { document: null, id: null } : undefined);
       if (ENGINE[id]) return engineRun(root, ENGINE[id], { activatePlan: () => api.activatePlan(), showModel: () => ctx?.palette('panel'), state: snapshot });
     },
     pressed: (id, block) => block === 'toolbox' && src(id)?.getAttribute('aria-pressed') === 'true' && drawOn(),
@@ -288,7 +288,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
       if (!viewProps.hidden) renderViewProperties();
       syncSelect(detailSelect, s.settings?.detail || 'coarse'); syncSelect(scaleSelect, s.settings?.scale || 0);
       for (const sel of [detailSelect, scaleSelect, ...viewProps.querySelectorAll('[data-ws-setting]')]) {
-        const a = commands.describe(sel.dataset.wsSetting, viewProps.contains(sel) ? viewPropsTarget : undefined);
+        const a = commands.describe(sel.dataset.wsSetting, viewProps.contains(sel) ? viewPropsTarget || { document: null, id: null } : undefined);
         sel.disabled = !a.enabled; sel.parentElement.title = a.reason; sel.parentElement.setAttribute('tabindex', a.enabled ? '-1' : '0'); sel.parentElement.dataset.wsReason = a.reason;
       }
       walls.refresh(); restrictProperties();

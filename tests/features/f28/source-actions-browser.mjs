@@ -37,7 +37,7 @@ export async function verifySourceActions({newContext,openProject,settle,out,che
       assert.equal(await button.evaluate((el,p)=>document.elementFromPoint(p.x,p.y)?.closest('button')===el,point),true);
       if(gesture==='touch')await page.touchscreen.tap(point.x,point.y);else await page.mouse.click(point.x,point.y);
     }
-    const dialog=page.getByRole('dialog',{name:'Command availability'});await dialog.waitFor({state:'visible'});
+    const dialog=page.locator('dialog.ws-explain');await dialog.waitFor({state:'visible'});
     assert.match(await dialog.textContent(),/Open the source shown in Properties/);
     assert.equal(await page.locator('[data-sh-dialog][open]').count(),0);assert.equal(downloads.length,n);
     await dialog.getByRole('button',{name:'Close',exact:true}).click();

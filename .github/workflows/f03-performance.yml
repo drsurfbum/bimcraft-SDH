@@ -2,6 +2,7 @@
 # Provisional Linux/headless reference, kept separate from local model measurements.
 name: F03 performance evidence
 on:
+  pull_request:
   push:
     branches: [integration/upstream-0.7-20261025]
   workflow_dispatch:

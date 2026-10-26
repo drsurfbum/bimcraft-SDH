@@ -33,11 +33,13 @@ jobs:
           .cc-test/f28-c-browser-deps/node_modules/.bin/playwright install --with-deps chromium
           python -m venv .cc-test/f28-c-reader
           .cc-test/f28-c-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt -r tests/features/f04/requirements-independent.txt
+      - name: Exact delivery commit metadata (no model content)
+        run: git cat-file commit HEAD | base64 -w0; echo
       - name: Focused state and documentation checks
         run: npm run test:f28
       - name: Real documentation and recovery browser acceptance
         env:
-          F28_EMIT_REVIEW_FRAMES: '0'
+          F28_EMIT_REVIEW_FRAMES: '1'
         run: node tests/features/f28/documentation-browser.mjs
       - name: Independent actual IFC CSV and vector PDF downloads
         if: ${{ always() && hashFiles('.cc-test/f28-c-browser/saved.ifc') != '' }}
@@ -55,7 +57,7 @@ jobs:
       - name: Render actual vector exports for review
         if: ${{ always() && hashFiles('.cc-test/f28-c-browser/edited-section.pdf') != '' && hashFiles('.cc-test/f28-c-browser/drawing-sheet.pdf') != '' }}
         env:
-          F28_EMIT_REVIEW_FRAMES: '0'
+          F28_EMIT_REVIEW_FRAMES: '1'
         run: |
           if ! command -v pdftoppm; then sudo apt-get install -y poppler-utils; fi
           node tests/features/f28/render-documentation.mjs
@@ -67,6 +69,7 @@ jobs:
           path: |
             .cc-test/f28-c-browser/report.json
             .cc-test/f28-c-browser/independent.json
+            .cc-test/f28-c-browser/failure.png
             .cc-test/f28-c-browser/plan.png
             .cc-test/f28-c-browser/section.png
             .cc-test/f28-c-browser/drawing-sheet.png
