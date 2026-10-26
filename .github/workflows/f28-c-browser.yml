@@ -48,6 +48,7 @@ jobs:
         if: ${{ always() && hashFiles('.cc-test/f28-c-browser/saved.ifc') != '' }}
         run: .cc-test/f28-c-reader/bin/python -I tests/features/f28/documentation-independent.py
       - name: Six units and real PHP locale controls on the shared host
+        if: always()
         env:
           F28_ALIGN_REQUIRE_PHP: '1'
           F28_ALIGN_PLAYWRIGHT: .cc-test/f28-c-browser-deps/node_modules/playwright/index.mjs
