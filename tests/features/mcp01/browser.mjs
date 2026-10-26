@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url';
 import { start } from '../../../devshell/serve.mjs';
 import { createLiveServer } from '../../tools/mcp/live-server.mjs';
 import { workflow, REQUIRED } from './workflow.mjs';
+import {compatibilityCalls} from './compatibility-calls.mjs';
 import { initialized, tool } from './client.mjs';
 import {historyBrowser} from './history-browser.mjs';
 const {chromium}=await import(pathToFileURL(path.resolve(process.env.MCP01_PLAYWRIGHT||'.cc-test/mcp01-deps/node_modules/playwright/index.mjs')));
@@ -25,7 +26,7 @@ try {
  console.log('STAGE app listening, browser launched');
  await page.goto('http://127.0.0.1:8046/?workspace=live',{waitUntil:'networkidle'});await open(path.resolve('fixtures/f04/layered-plans.ifc'));
  // Only this fresh test browser is enabled. No user client, credentials or persisted preferences are changed.
- await page.evaluate(async()=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');getHost({app:'bimcraft'}).control.configure({enabled:true,groups:['read','edit','save'],version:'0.4.0-mcp01.1'});});
+ await page.evaluate(async()=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');getHost({app:'bimcraft'}).control.configure({enabled:true,groups:['read','edit','save'],version:'0.7.0-mcp01.1'});});
  live=createLiveServer({port:0,forward:(message,session)=>page.evaluate(async({message,sid})=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');return getHost({app:'bimcraft'}).control.handle(message,sid);},{message,sid:session.id})});
  const connection=await live.start();let sessionId=null,seq=0;
  const client={async request(method,params={}){
@@ -40,6 +41,7 @@ try {
  const other=await context.newPage();await other.goto('http://127.0.0.1:8046/?workspace=live',{waitUntil:'networkidle'});await other.locator('[data-file]').setInputFiles(path.resolve('fixtures/f04/layered-plans.ifc'));await other.waitForFunction(()=>bimcraftLive?.editor&&bimcraftWorkspace.snapshot().document&&!bimcraftWorkspace.snapshot().busy);
  const otherBytes=await other.evaluate(()=>Array.from(bimcraftLive.editor.save()));
  const call=async(name,args={},fails=false)=>{const r=await tool(client,name,args,fails);await settle();return r;};
+ await compatibilityCalls(call,check);
  const result=await workflow(call,check);
  for(const unit of ['ftin','in','ftdec','mm','cm','m']) {await page.locator('[data-model-units]').selectOption(unit);await settle();assert.deepEqual((await call('walls_list')).walls,result.walls);}
  check('six display-unit modes leave exact machine-readable mm values unchanged');
@@ -50,7 +52,7 @@ try {
  const s=await call('model_describe'),editArgs={documentId:s.documentId,expectedRevision:s.revision,id:'material-mcp01',changes:{defaultThickness:400}};
  await page.evaluate(()=>{bimcraftPlan.state.chain={points:[[0,0]],guids:[]};});await call('material_edit',editArgs,true);await page.evaluate(()=>{bimcraftPlan.state.chain=null;});
  await page.evaluate(async()=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');getHost({app:'bimcraft'}).control.configure({groups:['read']});});
- await call('material_edit',editArgs,true);await call('model_save',{},true);
+ await call('material_edit',editArgs,true);await call('element_set',{guid:result.walls[0].guid,attribute:'Name',value:'denied'},true);await call('model_save',{},true);
  await page.evaluate(async()=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');getHost({app:'bimcraft'}).control.configure({groups:['read','edit','save']});});
  assert.deepEqual((await call('walls_list')).walls,result.walls);check('live busy drawing and denied edit/save permissions refuse without partial changes');
  const download=page.waitForEvent('download');const save=call('model_save');await(await download).saveAs(path.join(out,'saved.ifc'));assert.equal((await save).saved,true);

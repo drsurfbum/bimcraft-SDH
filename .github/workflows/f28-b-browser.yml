@@ -1,11 +1,13 @@
 name: F28-B wall workspace acceptance
 on:
+  push:
+    branches: [integration/upstream-0.7-20261025]
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: f28-b-browser-${{ github.ref }}
+  group: f28-b-browser-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   browser:
@@ -36,8 +38,6 @@ jobs:
       - name: Wall command and model invariants
         run: npm run test:f28
       - name: Real wall workspace browser acceptance
-        env:
-          F28_EMIT_REVIEW_FRAMES: '1'
         run: node tests/features/f28/walls-browser.mjs
       - name: Independent actual downloaded IFC and exports
         if: ${{ always() && hashFiles('.cc-test/f28-b-browser/saved.ifc') != '' && hashFiles('.cc-test/f28-b-browser/assemblies.csv') != '' && hashFiles('.cc-test/f28-b-browser/plan.pdf') != '' }}
@@ -53,5 +53,5 @@ jobs:
         with:
           name: f28-b-browser
           path: |
-            .cc-test/f28-b-browser/
+            .cc-test/f28-b-browser/report.json
             evidence/f28-b/performance-node.json

@@ -21,7 +21,7 @@ export async function historyBrowser(context, out, check) {
   await page.waitForFunction(()=>bimcraftModels.list().length===2&&!bimcraftWorkspace.snapshot().busy);
   const b=await page.evaluate(()=>bimcraftModels.list().find(m=>!m.active).mi);
   const activate=async mi=>{await page.evaluate(mi=>document.querySelector(`[data-model-active="${mi}"]`).click(),mi);await settle();};
-  await page.evaluate(async()=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');getHost({app:'bimcraft'}).control.configure({enabled:true,groups:['read','edit','save'],version:'0.4.0-mcp01.1'});});
+  await page.evaluate(async()=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');getHost({app:'bimcraft'}).control.configure({enabled:true,groups:['read','edit','save'],version:'0.7.0-mcp01.1'});});
   server=createLiveServer({port:0,forward:(message,session)=>page.evaluate(async({message,sid})=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');return getHost({app:'bimcraft'}).control.handle(message,sid);},{message,sid:session.id})});
   const connection=await server.start();let sid,seq=0;
   const client={async request(method,params={}){const r=await fetch(connection.url,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+connection.token,...(sid?{'Mcp-Session-Id':sid}:{})},body:JSON.stringify({jsonrpc:'2.0',id:++seq,method,params})});assert.equal(r.status,200);sid=r.headers.get('mcp-session-id')||sid;return r.json();}};

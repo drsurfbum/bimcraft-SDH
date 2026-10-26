@@ -92,7 +92,7 @@ export function sectionModel(w, storey, keyBase = 0) {
  * station includes jambs (closed intervals); sill/head bound the open void.
  */
 export function wallSectionGraphics(view, walls, openings, materials, {dir,cut,detail='coarse',scale=50,box=null}={}) {
-  if (!PLAN_DETAILS.includes(detail)) throw new Error('Invalid section detail');
+  if (!PLAN_DETAILS.includes(detail)) throw new Error('Invalid section detail')   // i18n-ignore: a programming error (callers pass PLAN_DETAILS);
   const warnings = [...(view.warnings || [])], cuts = [...view.cuts], right = [dir[1],-dir[0]];
   if (!cut) return {...view,detail,warnings}; // elevations NEVER expose hidden layers
   const materialById = new Map((materials || []).map(m=>[m.id,m]));

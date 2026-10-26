@@ -1,0 +1,46 @@
+# MCP-01 first post-0.7 compatibility candidate
+
+Draft PR #16 continues normally from its reviewed cutoff. This candidate is for PM re-review; no finding is closed, readiness asserted or adoption into main performed.
+
+## Pins and preservation
+
+- Feature/fix cutoff: `9224167fe3e2e856c57679065b545d834f52ade1`; original faulty control: `64000d39e6a194e83053a84c90c95d349125ef6c`.
+- Integrated foundation: `82da107dfd760199bc943249590812978c1a6082`; reviewed foundation delivery: `90782a41b00c90bcc93c435e693360d3c3353ef9`; upstream pin: `c778c7ca3f83eeecc3e815078417f152b2ca7a94`.
+- Main and PR #16 freshly matched those pins before work. Feature checkout was clean at the cutoff, with no unfinished merge or tracked unpublished state. New independent clone: `bimcraft-mcp-01-up07-candidate`, branch `integration/mcp01-upstream07-candidate`; original owner branch/checkout remains at the reviewed cutoff. A normal merge retains both histories. The foundation bundle SHA256 matches `58bb12fad9e6a426f7ae37235e5291014ddaf3c77a8b47cb7c4e519f71c338c5`; its HEAD was fetched explicitly, not substituted.
+- Both pins descend from old accepted main `1afe80e78a42aa27ee9af5d1ac937cd38cd1b711`. Foundation has the exact reviewed tree and upstream ancestry. No other feature branch is imported. Existing previews, projects, recovery records and unfinished feature work are preserved. Git identity is repository-local DrSurfBum.
+
+## Conflict and capability decisions
+
+| Conflict | Decision |
+| --- | --- |
+| `app/agents.js` | One shared model registry retains upstream `element_set`, deletion, movement, wall/opening changes, USD and render registrations, plus all eight semantic tools. Every model edit now shares session/revision, busy, exclusion and library validation; rechecks before first engine commit remain outside saved-op replay. Existing domain operations and protected-property alias guards remain authoritative. `wall_change` also discovers authored types dynamically, validates IDs and returns raw mm. |
+| `app/bimcraft.js` | Before/after receipts bracket the actual synchronous Undo/Redo engine calls. Forward them through existing workspace commands, with guarded direct fallback when commands are unavailable. Preserve upstream USD/render callbacks and rebuild/multi-project behavior. |
+| Headless `tools.mjs` | Retain all 0.7 app-family routes and unavailable-sibling diagnostics; require BIM registration. Preserve explicit `doc`, checked bindings, fork Redo and exact semantic responses. |
+| `pack.mjs` | Retain upstream closure copier and full-distribution mode; standalone BimCraft mode now packs a versioned private fork tarball with bins, exact engine closure and notices. Missing required relative modules throw. Render's window-only lazy imports remain deliberately excluded by the existing static-only rule. |
+| MCP `package.json` | Private `@drsurfbum/bimcraft-mcp@0.7.0-mcp01.1`; upstream optional dependencies retained. No package publication. Foundation closure test now explicitly asserts the new fork name/version AND agreement with source manifest; hashes and license checks remain intact. |
+
+The before/after inventories include full schemas and permissions. Foundation/feature/candidate registered catalogs: live **23 / 24 / 32**, headless family **38 / 40 / 47**; no union tool is missing or duplicated. With the exercised read/edit/save grants, real transport catalogs contain **29 live / 43 headless** tools. Counts include retained unrelated/unavailable family capabilities; they are not semantic parity claims. New required CI comparison checks every prior name/group/top-level argument/required list, dynamic wall types and guarded generic schemas; existing exact semantic schema equality tests remain.
+
+MCP-01's eight semantic tools, six location lines, instance height/top settings, exact-mm results, stable identities and version diagnostics are unchanged. Legacy upstream generic bindings remain optional for compatibility, but when supplied are checked, and every request pins its actual editor even without a token. New semantic writes still require both bindings. Protected domain records cannot be changed through generic `element_set`, even through ordinary property aliases/shared owners. Corrupt/future/core/material-reference/top/location records refuse generic edits too; reads never migrate. Permission enforcement stays in the common dispatcher. No new geometry/store/history engine or DOM-click API.
+
+Capability-to-tool details and sample calls remain in `MCP-01-HANDOFF.md` and the updated `MCP-01-CONNECTION.md`. Documentation/reference/export semantic APIs and F08 join/end APIs remain separate. USD/render are retained upstream capabilities, not expanded acceptance scope.
+
+## History finding and verification
+
+The original PM reproduction was rerun on exact faulty `64000d3`: targets `[A,B]`, both histories changed, erroneous success. Before compatibility, exact submitted `9224167` passed all 32 retained contract/history tests. After compatibility those same tests remain unmodified and passing, plus eight targeted compatibility tests (40 total). They cover cross-route exclusion, checked generic bindings, deferred commit switches/revisions/busy state, ordinary-set aliases and all eight malformed persisted fixture classes. The retained 19 history cases still exercise multiple Undo/Redo, before-mutation/initial-settle/rebuild switches, unrelated/lower-stack/ownership changes, busy/concurrent requests, exhaustion and honest partial failures.
+
+The required real native project-switch regression runs through HTTP MCP to the actual application. After A completes one step and its first rebuild settles, a MutationObserver clicks B's native model radio before the pending request continues. A reports requested 2/completed 1/complete false/document_changed; B's actual IFC bytes and both stack identities remain unchanged. Normal two-step Undo/Redo and subsequent A Redo pass. Strict zero-application-error assertions remain intact. The separate transient IFC-unload interval is outside this verified native-switch boundary; the prior failed CI evidence is retained in the older PM handoff. This candidate does not certify switching inside that interval or claim rollback of completed steps. MCP01-PM-01 remains OPEN awaiting PM verification.
+
+## Executed evidence and limits
+
+Local macOS arm64, Node 26.9.0, Playwright 1.62.1 / Chromium 151.0.7922.34, IfcOpenShell 0.9.0. Fresh direct baseline stages: **709 passed, zero failed, four separate availability notices**; foundation/F28 focused tests **38 passed, zero failed/skipped**. The full local `npm run test:baseline -- --offline` entry failed on absent pinned CPython-WASI assets; direct stages are separately identified and are not called a full offline asset audit. CI retains full pinned retrieval and baseline gates.
+
+Real stdio: 12 workflow checks; isolated package: four closure/startup checks plus the same complete 12-check workflow; HTTP/browser: 17 checks. Added common real calls verify generic protected-property/binding/invalid-batch refusal, ordinary Name edit/Undo and authored `wall_change`/Undo. Headless malformed fixtures additionally try generic bypasses, comparing actual before/after saves. Read-only clients refuse generic mutation as well as semantic edit/save.
+
+All three actual saved MCP IFC outputs independently pass EXPRESS/schema/identity/placement/extrusion/material-layer/cavity/membrane/opening/dimension checks: 23 walls, four authored types, 15 materials, two preserved dimensions, zero findings each. Retained foundation replay/electrical independent checks pass on 38 saved files, including all 33 electrical kinds; this does not certify inherited wider MEP conformance. UP07-PM-01/02 retained tests are unmodified.
+
+Final source/delivery SHAs, exact-head CI links and sanitized evidence are recorded in the delivery supplement and PR. All nine integrated foundation workflow types and the MCP workflow must run on that exact delivery. Raw IFC, full expected-model snapshots, temporary controls and npm tarballs stay ignored/local or ephemeral CI execution. Only allowlisted reports/catalogs/screenshots are published.
+
+The missing CivilCraft LandXML dependency still stops broad `--draw06`; this is an unavailable control, not a passing test. Optional absent CivilCraft/PartCraft/CadCraft integrations, native OS picker/platform coverage, transient IFC unload and representative-house performance remain explicit limits. Inherited UP07-MEP-01 severity/schema issues are not certified clean by assembly/electrical validation.
+
+PERF-F04-01, PERF-F05-01, TEST-F28-01, MCP01-PM-01, UP07-MEP-01 and broader semantic MCP catch-up remain OPEN. UP07-PM-01 and UP07-PM-02 remain closed at the approved foundation with their tests retained. PM must review this candidate and explicitly authorize adoption before later F28-C/F08 reconciliation against then-approved main. No persistent user client has been configured. User-only setup remains choosing allowed folders/permissions and opting into the project-scoped connection example.

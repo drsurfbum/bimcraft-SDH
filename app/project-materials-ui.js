@@ -6,7 +6,7 @@ import { fmtLen, parseLen } from './model-units.js';
 export function openMaterialLibrary(A,onClose=()=>{}, {createNew=false}={}) {
   const editor=A.ed(); if(!editor) return;
   const writer=()=>new ModelWriter(editor.W,editor.api,editor.mid);
-  const t=k=>A.t('materials.'+k);
+  const t=k=>A.t('materials.'+k.replace(/[A-Z]/g,c=>'_'+c.toLowerCase()));   // field names are camelCase, language keys snake_case
   const button=(text,fn,props={})=>el('button',{type:'button',className:'btn-line btn-sm-cc',onClick:fn,...props},text);
   const error=el('p',{className:'bc-error',role:'alert'}), fields=el('div'), picker=el('select',{className:'bc-input','aria-label':t('select')});
   const dlg=el('dialog',{className:'bc-dialog bc-fam-dlg','aria-label':t('title'),'data-material-library':''});

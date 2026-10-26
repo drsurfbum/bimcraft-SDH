@@ -1,14 +1,33 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* i18n-ignore-file — every word a person reads comes from the add-on (api.t) or the app's language file. */
 /**
- * bimcraft-api.js — BimCraft's add-on API 1.0 and its own add-on loader (0.5 AO.7; docs/ADDONS-SPEC.md §5.7).
+ * bimcraft-api.js — BimCraft's add-on API 1.1 and its own add-on loader (0.5 AO.7; docs/ADDONS-SPEC.md §5.7; 1.1: 0.7 LC.9,
+ * session `mep-07`).
  * Once BimCraft's manifest says "addons": "own", the shell's boot (app-addons.js) steps aside and bimcraft.js calls
  * startAddons({ … }) with the open model and the hooks listed below.
  *
  *   api = { ...sharedApi (ui.toolbarGroup, ui.panelSection, ui.settingsSection, files.importer / exporter),
- *           model: { current, properties, selection, select, onChange },
+ *           model: { current, properties, selection, select, onChange, write },
  *           edit: { setAttribute, setProperty },   (each one undo step through BimCraft's IfcEditor, then the panels refresh)
+ *           mep: { runs, ports },                   (1.1, read-only)
  *           commands: { add, run, has }, props: { section }, ui.panelTab, status }
+ *
+ * 1.1 (0.7): model.write(label, fn) → Promise<{ created, guids, value }> writes geometry and relations into the open model as ONE
+ * undo step. fn(w) gets BimCraft's ModelWriter (model-write.js: make, placeAt, profile, extrudeAt, rep, setShape, upsertPset,
+ * contain, relateType, dropProduct, byGuid …; mm in) and returns any JSON value. It goes through IfcEditor.modelChange like the
+ * Draw tools (so Studio Live sends it, the plan and the 3D view follow); Redo runs fn again with the same GlobalIds handed out in
+ * the same order, so fn must make the same lines from the same model (no clocks, no random numbers; find things by GlobalId).
+ * A throw writes nothing and rejects. created = express ids of the elements, ports, spatial elements and types it made (not
+ * relations or property sets; ids change after Undo / Redo, guids don't). mep.runs() → the pipe and duct runs (mep-model.js readRuns, plain data, storeys by GlobalId); mep.ports() → every
+ * distribution port (mep/ports.js readPorts); mep.equipment() → the generic equipment placed (mep/equipment.js readEquipment);
+ * model.read(fn) → fn(w)'s value (a ModelWriter with no journal: any write throws; nothing recorded); mep.placeRun(spec) →
+ * Promise<{ guid, created }> draws a pipe or duct run as the Pipe and Duct tools do (mep-model.js placeRun; one undo step), spec =
+ * { storey (GlobalId), kind: 'pipe' | 'duct', system, points: [[x, y, z]] (storey plan mm), pipe: mat, cls, size, slope?; duct:
+ * shape, w, h, flow?; ends?: [{ eq, port } | null, …] }; mep.spools() → [{ id, run, index, s0, s1, parts }] the steel spools written (CadCraft_Spool; s0 / s1 = mm along the run's drawn
+ * line from its first point); mep.addPorts(w, elementId, ports) — inside model.write's fn only — writes ports on an element the add-on made, the way
+ * BimCraft's own equipment has them (IfcDistributionPort nested, CadCraft_Port set; ports in the LibraryCraft item shape:
+ * { name, system, direction, shape, size, h?, nominal?, x, y, z, axis }, mm in the element's own axes) → [{ id, name }].
+ * Add-ons written for 1.0 keep working (the loader takes 1.0 and 1.1 manifests).
  *
  * The model is BimCraft's IFC model (ifc-model.js: properties(id) → { id, cls, name, guid, tag, sets: [{ name, rows: [{ name,
  * value, edit }] }] }); ids are the open model's express ids. Importers return { ifc: Uint8Array, name } (opened like an .ifc
@@ -23,15 +42,23 @@
 import { AddonLoader, sharedApi } from '../addons.js';
 import { EDITABLE_ATTRS } from '../ifc-edit.js';
 import { installTrust, bundledOnly, NO_PACKAGES } from './trust.js';
+import { ModelWriter } from '../model-write.js';
+import { op } from '../model-ops.js';
+import { readRuns, placeRun, PIPE_SYSTEMS, DUCT_SYSTEMS } from '../mep-model.js';
+import { readPorts } from '../mep/ports.js';
+import { writePorts, readEquipment } from '../mep/equipment.js';
+import { readSpools } from '../mep/spools.js';
+import { val } from '../ifc-util.js';
 
-export const BIMCRAFT_API_VERSION = '1.0';
+export const BIMCRAFT_API_VERSION = '1.1';
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{0,40}$/;
 const clone = (v) => (v === undefined || v === null ? v ?? null : JSON.parse(JSON.stringify(v)));
 
 /**
  * The API one add-on gets. ctx = { editor() → IfcEditor | null, model() → IfcModel | null, name() → file name, selection() →
  * [ids], select(ids), afterEdit() (the panels after an edit), status(text), registry, commands, props, tabs, changeListeners,
- * find(selector), showTab(key) }.
+ * find(selector), showTab(key), write?(run, { label }) → Promise<op result> (1.1: the app's way to apply a model op so the
+ * views follow; without it the op goes straight to editor.modelChange and afterEdit) }.
  */
 export function makeBimcraftApi(base, addon, ctx) {
   const shared = sharedApi(base, addon, ctx.registry);
@@ -49,6 +76,79 @@ export function makeBimcraftApi(base, addon, ctx) {
     selection: () => [...ctx.selection()],
     select: (ids) => ctx.select([...ids].map(Number)),
     onChange(fn) { listen.add(fn); const off = () => listen.delete(fn); track(off); return off; },
+    /** 1.1: read the open model through a writer that cannot write (no journal: a write throws). → fn's value (a copy). */
+    read(fn) {
+      if (typeof fn !== 'function') throw new Error('model.read: (fn)');
+      const ed = needEditor();
+      const v = fn(new ModelWriter(ed.W, ed.api, ed.mid));
+      return v === undefined ? null : clone(v);
+    },
+    /** 1.1: write into the open model, one undo step labelled "<add-on>: <label>" (see the header). */
+    async write(label, fn) {
+      if (typeof fn !== 'function') throw new Error('model.write: (label, fn)');
+      const ed = needEditor();
+      let value;
+      const run = op((w) => {
+        value = fn(w);
+        const made = new Map();
+        // elements, ports, spaces and types made (not the relations and property sets that hang off them)
+        for (const lid of w.journal.created) {
+          const l = w.api.GetLine(w.mid, lid, false), g = l && l.GlobalId ? val(l.GlobalId) : null;
+          if (g && !/^IFC(REL|PROPERTYSET|ELEMENTQUANTITY)/.test(String(w.api.GetNameFromTypeCode(l.type) || '').toUpperCase())) made.set(g, lid);
+        }
+        const created = [...made.values()];
+        return { id: created[0] ?? null, ids: created, made };
+      });
+      const meta = { label: addon.name + ': ' + String(label || '').slice(0, 120) };
+      const r = ctx.write ? await ctx.write(run, meta) : (() => { const x = ed.modelChange(run, { label: meta.label, verb: '' }); ctx.afterEdit(meta.label); return x; })();
+      const made = r?.made instanceof Map ? r.made : new Map();
+      return { created: [...made.values()], guids: [...made.keys()], value: value === undefined ? null : clone(value) };
+    },
+  };
+
+  /** 1.1: the pipe and duct runs and every distribution port, read-only (plain data, a fresh read each call). */
+  const writer = () => { const ed = needEditor(); return new ModelWriter(ed.W, ed.api, ed.mid); };
+  const mep = {
+    runs() {
+      const w = writer();
+      return readRuns(w).map((r) => clone({ guid: r.guid, id: r.id, storey: r.storey ? w.guidOf(r.storey) : null, kind: r.kind, system: r.system, points: r.points,
+        mat: r.mat, cls: r.cls, size: r.size, shape: r.kind === 'duct' ? r.shape : null, w: r.kind === 'duct' ? r.w : null, h: r.kind === 'duct' ? r.h : null,
+        slope: r.slope, flow: r.flow, valves: r.valves, parts: r.parts }));
+    },
+    ports() {
+      const w = writer();
+      return readPorts(w).map((p) => clone({ ...p, storey: p.storey ? w.guidOf(p.storey) : null }));
+    },
+    /** 1.1: a pipe or duct run drawn by the add-on (one undo step, as the Pipe and Duct tools draw it). */
+    async placeRun(spec = {}) {
+      const s = spec && typeof spec === 'object' ? spec : {};
+      const kind = s.kind === 'duct' ? 'duct' : s.kind === 'pipe' ? 'pipe' : null;
+      if (!kind || !(kind === 'pipe' ? PIPE_SYSTEMS : DUCT_SYSTEMS)[s.system]) throw new Error('mep.placeRun: kind pipe | duct and a system of that kind');
+      if (!Array.isArray(s.points) || s.points.length < 2 || s.points.length > 500 || !s.points.every((q) => Array.isArray(q) && q.length >= 2 && q.slice(0, 3).every(Number.isFinite))) throw new Error('mep.placeRun: points [[x, y, z]] (2 to 500, mm)');
+      needEditor();
+      const run = { storey: String(s.storey || ''), kind, system: s.system, points: s.points.map((q) => [Number(q[0]), Number(q[1]), Number(q[2]) || 0]),
+        ...(kind === 'pipe' ? { mat: String(s.mat || ''), cls: String(s.cls || ''), size: String(s.size || ''), slope: Number(s.slope) || 0 } : { shape: String(s.shape || 'rect'), w: Number(s.w), h: Number(s.h ?? s.w), flow: Number(s.flow) || 0 }),
+        ends: Array.isArray(s.ends) ? s.ends.slice(0, 2) : [null, null] };
+      const meta = { label: addon.name + ': ' + String(s.label || kind).slice(0, 120) };
+      const op = placeRun(run);
+      const r = ctx.write ? await ctx.write(op, meta) : (() => { const x = ctx.editor().modelChange(op, { label: meta.label, verb: '' }); ctx.afterEdit(meta.label); return x; })();
+      const made = r?.made instanceof Map ? r.made : new Map();
+      return { guid: [...made.keys()][0] ?? null, created: [...(r?.ids || [])] };
+    },
+    spools() {
+      const w = writer();
+      return readSpools(w, readRuns(w)).map((s) => clone(s));
+    },
+    equipment() {
+      const w = writer();
+      return readEquipment(w).map((e) => clone({ ...e, storey: e.storey ? w.guidOf(e.storey) : null }));
+    },
+    /** Only inside model.write's fn (w = the writer it was given). */
+    addPorts(w, elementId, ports) {
+      if (!w || !w.journal) throw new Error('mep.addPorts: call it inside model.write(label, (w) => …) with that w');
+      if (!Array.isArray(ports) || !ports.length || ports.length > 32) throw new Error('mep.addPorts: 1 to 32 ports');
+      return writePorts(w, Number(elementId), ports);
+    },
   };
 
   const edit = {
@@ -98,7 +198,7 @@ export function makeBimcraftApi(base, addon, ctx) {
   };
 
   const ui = { ...shared.ui, panelTab: panelTabMaker(ctx, id, base, track, '.bc-rtabs[role="tablist"]', 'bc-rtab', 'bc-rpane-') };
-  const api = { ...shared, ui, model, edit, commands, props, status: (text) => ctx.status(String(text)) };
+  const api = { ...shared, ui, model, edit, mep, commands, props, status: (text) => ctx.status(String(text)) };
   return api;
 }
 

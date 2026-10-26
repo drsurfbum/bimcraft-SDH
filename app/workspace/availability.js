@@ -1,19 +1,17 @@
 /* SPDX-License-Identifier: Apache-2.0 */
-import { catalog } from './catalog.js';
-export function availability(id, commands, state) {
+import { ENGINE, engineWhy } from './engine.js';
+import { reviewAvailability } from './availability-review.js';
+/**
+ * Can ribbon tool `id` run now, and if not, why (in words for the person). Doc's own commands (commands.js) answer for
+ * themselves; a tool BimCraft has (engine.js) asks the app's own button; anything else is not built yet.
+ * ctx = { root, t } (the app root and its text function).
+ */
+export function availability(id, commands, state, context) {
+  if (!context) return reviewAvailability(id, commands, state);
+  const { root, t } = context;
+  if (id === 'copy' && state.selection?.length && state.wall?.supported) return { enabled: false, reason: t('ws.why.wallcopy') };
   if (commands.ids.includes(id)) return commands.describe(id);
-  const tool = catalog.tools[id];
-  if (!tool) return { enabled: false, reason: 'This action has not been verified for this workspace slice.' };
-  let reason;
-  if (tool.status === 'unmapped') reason = 'Not currently on the roadmap — decision needed.';
-  else if (tool.status === 'uncertain') reason = 'Mapping uncertain — unavailable pending review. ' + tool.scope;
-  else if (id === 'copy' && state.selection.length) reason = 'Wall Copy is not supported in the authored-wall paths. General clipboard support does not enable wall Copy. Scope to be verified in F09 (audit, not a delivery promise).';
-  else if (tool.status === 'planned') reason = tool.scope;
-  else reason = 'Not wired in this workspace slice. Use the established layout for supported actions. ' + tool.scope;
-  if (tool.feature) {
-    const f = catalog.features[tool.feature];
-    reason += ' ' + tool.feature + ' — ' + (f?.title || 'Mapping requires review') + '.';
-    if (['F09', 'F24'].includes(tool.feature)) reason += ' Scope to be verified in ' + tool.feature + '; this is an audit, not a delivery promise.';
-  }
-  return { enabled: false, reason, status: tool.status, evidence: tool.evidence };
+  const spec = ENGINE[id];
+  if (spec) { const why = engineWhy(root, spec, state, t); return { enabled: !why, reason: why }; }
+  return { enabled: false, reason: t('ws.why.notbuilt') };
 }

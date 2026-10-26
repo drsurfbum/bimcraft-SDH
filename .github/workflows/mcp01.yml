@@ -35,6 +35,14 @@ jobs:
           .cc-test/mcp01-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
       - name: Required registration, schema, precision and ownership tests (no optional imports)
         run: npm run test:mcp01
+      - name: Required foundation and feature capability union (no silent registration loss)
+        run: |
+          git worktree add --detach .cc-test/mcp01-control-feature 9224167fe3e2e856c57679065b545d834f52ade1
+          git worktree add --detach .cc-test/mcp01-control-foundation 82da107dfd760199bc943249590812978c1a6082
+          node tests/features/mcp01/inventory.mjs --root .cc-test/mcp01-control-feature --out .cc-test/mcp01-compat/inventory-feature.json
+          node tests/features/mcp01/inventory.mjs --root .cc-test/mcp01-control-foundation --out .cc-test/mcp01-compat/inventory-foundation.json
+          node tests/features/mcp01/inventory.mjs --out .cc-test/mcp01-compat/inventory-candidate.json
+          node tests/features/mcp01/compare-inventory.mjs
       - name: Actual stdio MCP and independent saved IFC
         run: |
           node tests/features/mcp01/headless.mjs
@@ -53,6 +61,7 @@ jobs:
         with:
           name: mcp01-evidence
           path: |
+            .cc-test/mcp01-compat/*.json
             .cc-test/mcp01-headless/report.json
             .cc-test/mcp01-headless/catalog.json
             .cc-test/mcp01-headless/independent.json

@@ -29,7 +29,7 @@
  *   Errors: model.err.dr.short (under 2 points / 10 mm), model.err.dr.area (a hatch under 3 corners or no area),
  *       model.err.dr.pattern, model.err.dr.view, model.err.gone
  */
-import { op } from './model-ops.js';
+import { reserveGuid, op } from './model-ops.js';
 import { ids, val } from './ifc-util.js';
 import { round } from './model-write.js';
 
@@ -136,14 +136,14 @@ function check(d) {
 export function addDrafting(spec) {
   const kind = spec.kind === 'hatch' ? 'hatch' : 'lines';
   const d = { kind, pts: clean(spec.pts), closed: kind === 'hatch' || !!spec.closed, holes: (spec.holes || []).map(clean).filter((h) => h.length >= 3), pattern: spec.pattern || 'diagonal', scale: scaleOf(spec.scale), view: String(spec.view || '') };
-  let guid = spec.guid || null;
+  const identity = { guid: spec.guid || null };
   return op((w) => {
     if (!isViewKey(d.view)) refuse('model.err.dr.view');
     const st = w.byGuid(spec.level);
     if (!st) refuse('model.err.nolevel');
     if (d.closed && d.pts.length > 2) { const a = d.pts[0], b = d.pts[d.pts.length - 1]; if (Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.5) d.pts.pop(); }
     check(d);
-    if (!guid) guid = val(w.guid());
+    const guid = reserveGuid(w, identity);
     const sl = w.api.GetLine(w.mid, st, false);
     const id = w.make('IFCANNOTATION', guid, w.ownerHistory(), w.L(kind === 'hatch' ? 'Hatch region' : 'Drafting line'), null, w.L(OBJECT_TYPE), w.H(w.placeAt(sl.ObjectPlacement.value, 0, 0, 0, 0)), null, ...(/^IFC4X3/i.test(w.schema || '') ? ['USERDEFINED'] : []));   // i18n-ignore: IFC Name / ObjectType (IFC4X3 adds PredefinedType)
     w.noteGuid(guid, id);

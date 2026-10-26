@@ -11,7 +11,10 @@
  *
  *   const lib = new LibraryPanel(container, host);
  *   host = { mode() 'ifc'|'dwg'|'none', dwg() {db, fileName}|null, ifcApi() Promise<IfcAPI>, readDrawing(bytes, 'dwg'|'dxf') Promise<model>,
- *            readRevit(bytes, name), status(msg, isError), place(entry), swapTarget() {id, name}|null, swap(entry) }
+ *            readRevit(bytes, name), status(msg, isError), place(entry), swapTarget() {id, name, uuid?, version?, variant?, library?}|null, swap(entry) }
+ * 0.7 W3.19: an item with `variants` shows a Variant choice in its detail (the plan, size and body follow it) and is placed as the
+ * chosen one (entry.meta.variant = { id, name, values }); a swap target that is a variant of a LibraryCraft item lists its other
+ * variants at the top of the panel, each one click away.
  *   lib.open(uuid)  lib.refresh()  lib.updates(refs)  lib.fetchItem(uuid, version)  lib.registerUse(entry, fileLabel)
  */
 import { el } from './ui-util.js';
@@ -42,6 +45,7 @@ export class LibraryPanel {
     this.fileEntries = [];      // from Files…
     this.fileNotes = [];
     this.detail = null;
+    this.swapVars = null;       // { key, item, got, list } | { key, loading } | { key, error }: the other variants of the swap target
     this.page = 1;
     this.total = 0;
     this.token = this.readToken();
@@ -267,6 +271,8 @@ export class LibraryPanel {
         src('files', t('lib.src.files'), t('lib.src.files.title')),
         src('feed', t('lib.src.feed'), t('lib.src.feed.title'))),
     ];
+    const swapV = this.swapVariantsBlock();
+    if (swapV) kids.unshift(swapV);
     if (this.source === 'librarycraft') kids.push(this.signInRow());
     if (this.source === 'feed') kids.push(this.feedRow(feeds));
     if (this.source === 'files') kids.push(this.filesRow());
@@ -290,6 +296,47 @@ export class LibraryPanel {
       }
     }
     this.box.replaceChildren(...kids.filter(Boolean));
+  }
+
+  /** The other variants of the item the swap target is a variant of (0.7 W3.19): read once per item version, then one button each. */
+  swapVariantsBlock() {
+    const tg = this.host.swapTarget();
+    if (!tg || !tg.uuid || tg.library !== 'librarycraft' || this.host.mode() !== 'ifc') return null;
+    const key = tg.uuid + '@' + tg.version;
+    if (!this.swapVars || this.swapVars.key !== key) { this.swapVars = { key, loading: true }; this.loadSwapVariants(tg, key); return null; }
+    const sv = this.swapVars;
+    if (!sv.list || sv.list.length < 2) return null;
+    return el('div', { className: 'bc-lib-swapvars', 'data-lib-swapvars': '' },
+      el('p', { className: 'bc-h' }, t('lib.swap.variants.title', { name: sv.item.name })),
+      el('ul', { className: 'bc-lib-variants' }, sv.list.map((v) => {
+        const vi = L.itemAsVariant(sv.item, v.id), here = v.id === tg.variant;
+        return el('li', {}, el('button', { type: 'button', className: 'btn-line btn-sm-cc', 'data-lib-swap-variant': v.id, disabled: here,
+          onClick: () => this.host.swap(this.variantEntry(sv.item, v, sv.got)) },
+          el('i', { className: 'bi bi-arrow-left-right', 'aria-hidden': 'true' }), ' ' + (here ? t('lib.swap.variants.placed', { name: v.name }) : t('lib.swap.variants.to', { name: v.name })),
+          el('span', { className: 'bc-sub' }, ' ' + this.variantSize(vi))));
+      })));
+  }
+  async loadSwapVariants(tg, key) {
+    try {
+      const got = await this.fetchItem(tg.uuid, tg.version);
+      const item = L.localizedItem(got.item, locale());
+      this.swapVars = { key, item, got, list: L.variantList(item) };
+    } catch (e) { this.swapVars = { key, error: (e && e.message) || String(e) }; }
+    this.render();
+  }
+  /** An entry for the host to place or swap in: the item read as that variant, and the meta that says which. */
+  variantEntry(item, v, got) {
+    return {
+      item: L.itemAsVariant(item, v.id, { named: true }),
+      meta: { library: 'librarycraft', source: 'LibraryCraft', sha256: got?.item?.provenance?.sha256 || item.provenance?.sha256 || '', info: got?.info, version: got?.version,   // i18n-ignore: product name
+        withdrawn: got?.version?.status === 'withdrawn', variant: { id: v.id, name: v.name, values: v.values } },
+    };
+  }
+  /** "180 × 90 × 10 mm" of an item read as a variant, or ''. */
+  variantSize(vi) {
+    const p = vi.params || {};
+    const parts = [p.width, p.depth, p.height].filter((x) => x > 0).map((x) => String(Math.round(x * 100) / 100));
+    return parts.length ? parts.join(' × ') + ' mm' : '';
   }
 
   emptyText() {
@@ -408,21 +455,38 @@ export class LibraryPanel {
     const back = el('p', {}, el('button', { type: 'button', className: 'bc-linkbtn', onClick: () => { this.detail = null; this.render(); } }, el('i', { className: 'bi bi-arrow-left', 'aria-hidden': 'true' }), ' ' + t('lib.back')));
     if (d.loading) return el('div', { className: 'bc-lib-detail' }, back, el('p', { className: 'bc-muted', 'aria-live': 'polite' }, t('lib.detail.reading')));
     if (d.error) return el('div', { className: 'bc-lib-detail' }, back, el('p', { className: 'bc-input-err', role: 'alert' }, d.error));
-    const it = d.item, m = d.meta, p = it.params || {};
-    const loc = L.localized(it, locale()), put = L.localizedItem(it, locale());   // 0.6 WL.7: the item in the page's language
+    const it = d.item, m0 = d.meta;
+    const loc = L.localized(it, locale()), put0 = L.localizedItem(it, locale());   // 0.6 WL.7: the item in the page's language
+    // 0.7 W3.19: an item with variants: the chosen one (the default until a choice is made) is what is shown and placed
+    const vlist = L.variantList(put0);
+    const vid = vlist.length ? (vlist.some((v) => v.id === d.variant) ? d.variant : vlist.find((v) => v.default).id) : null;
+    const vrow = vid ? vlist.find((v) => v.id === vid) : null;
+    const shown = vid ? L.itemAsVariant(it, vid) : it;
+    const put = vid ? L.itemAsVariant(put0, vid, { named: true }) : put0;
+    const m = vid ? { ...m0, variant: { id: vid, name: vrow.name, values: vrow.values } } : m0;
+    const p = shown.params || {};
     const fmt = (v) => (v > 0 ? Math.round(v) + ' mm' : '');
     const mode = this.host.mode(), swapT = this.host.swapTarget();
     const lic = it.license;
     const rows = [[t('lib.row.type'), loc.type || ''], [t('lib.row.category'), L.CATEGORIES[it.category] ? t('lib.category.option', { group: it.category.split('/')[0], label: L.CATEGORIES[it.category] }) : it.category], [t('lib.row.kind'), it.kind],
       [t('lib.row.maker'), it.maker], [t('lib.row.model'), it.model], [t('lib.row.width'), fmt(p.width)], [t('lib.row.depth'), fmt(p.depth)], [t('lib.row.height'), fmt(p.height)],
       [t('lib.row.elec'), p.elec ? Object.entries(p.elec).map(([k, v]) => loc.label('elec.' + k, k) + ' ' + v).join(', ') : ''], [t('lib.row.plumb'), p.plumb ? Object.entries(p.plumb).map(([k, v]) => loc.label('plumb.' + k, k.toUpperCase()) + ' ' + v).join(', ') : ''],
-      [t('lib.row.remarks'), p.remarks], [t('lib.row.body'), it.body ? (it.body.type === 'box' ? t('lib.body.box') : t('lib.body.mesh', { n: it.body.indices.length / 3 })) : t('lib.body.none')],
+      [t('lib.row.remarks'), p.remarks], [t('lib.row.body'), shown.body ? (shown.body.type === 'box' ? t('lib.body.box') : t('lib.body.mesh', { n: shown.body.indices.length / 3 })) : t('lib.body.none')],
+      [t('lib.row.ports'), (shown.ports || []).length ? t('lib.ports.count', { n: shown.ports.length }) : ''],
       [t('lib.row.version'), it.version ? String(it.version) : ''], [t('lib.row.from'), m.source]];
-    const url = svgUrl(L.previewSvg(it));
+    const url = svgUrl(L.previewSvg(shown));
     const withdrawn = m.withdrawn || e.withdrawn;
+    let variantPick = null;
+    if (vid) {
+      const sel = el('select', { id: 'bc-lib-variant', className: 'select-cc', 'data-lib-variant': '' },
+        vlist.map((v) => el('option', { value: v.id, selected: v.id === vid }, t('lib.variant.option', { name: v.name, size: this.variantSize(L.itemAsVariant(it, v.id)) }))));
+      sel.addEventListener('change', () => { d.variant = sel.value; this.render(); });
+      variantPick = el('div', { className: 'bc-lib-variant' }, el('label', { for: 'bc-lib-variant', className: 'bc-h' }, t('lib.variant.label', { n: vlist.length })), sel);
+    }
     return el('div', { className: 'bc-lib-detail' }, back,
       el('div', { className: 'bc-lib-bigprev' }, el('img', { src: url, alt: t('lib.detail.plan_alt', { name: it.name }) })),
       el('p', { className: 'bc-prop-name', 'data-lib-name': '' }, loc.name),
+      variantPick,
       loc.translated && loc.name !== it.name ? el('p', { className: 'bc-muted', 'data-lib-original': '' }, t('lib.detail.original', { name: it.name })) : null,
       loc.description ? el('p', { className: 'bc-lib-desc', 'data-lib-desc': '' }, loc.description) : null,
       withdrawn ? el('p', { className: 'bc-input-err', role: 'alert' }, m.version?.withdrawn_reason ? t('lib.withdrawn.reason', { reason: m.version.withdrawn_reason }) : t('lib.withdrawn.default')) : null,

@@ -4,16 +4,16 @@ This is an opt-in local client setup; no global configuration or credentials are
 
 ## Build the exact local package
 
-From `bimcraft-mcp-01`:
+From the isolated `bimcraft-mcp-01-up07-candidate` checkout:
 
 ```sh
 npm run fetch-vendor
 node --input-type=module -e "import {buildMirror} from './devshell/test.mjs';buildMirror()"
-node .cc-test/tools/mcp/pack.mjs --out .cc-test/mcp-package --tgz
+node .cc-test/tools/mcp/pack.mjs --bimcraft-only --out .cc-test/mcp-package --tgz
 node .cc-test/mcp-package/mcp/server.mjs --version
 ```
 
-Expected package: `@drsurfbum/bimcraft-mcp`, version `0.4.0-mcp01.1`. Build output imports the fork's exact required application and IFC module closure. Missing required modules fail startup. The packer runs `npm pack`, never `npm publish`. `npm_config_cache` may point to a writable local cache if the host restricts its normal npm cache.
+Expected package: `@drsurfbum/bimcraft-mcp`, version `0.7.0-mcp01.1`. Build output imports the fork's exact required application and IFC module closure. Missing required modules fail startup. The packer runs `npm pack`, never `npm publish`. `npm_config_cache` may point to a writable local cache if the host restricts its normal npm cache.
 
 ## Project-scoped stdio example
 
@@ -25,8 +25,8 @@ Manually add this to the intended project's supported MCP settings, substituting
     "sdh-bim-mcp01": {
       "command": "node",
       "args": [
-        "/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/.cc-test/mcp-package/mcp/server.mjs",
-        "--root", "/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/fixtures",
+        "/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01-up07-candidate/.cc-test/mcp-package/mcp/server.mjs",
+        "--root", "/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01-up07-candidate/fixtures",
         "--allow", "read,edit,save"
       ]
     }
@@ -38,7 +38,7 @@ Without `--allow`, only read is permitted. Without `--root`, no files are reacha
 
 ## First calls
 
-The server uses newline-delimited JSON-RPC on stdio. A client initializes with MCP `2025-03-26`, then calls `tools/list` and `tools/call`. Verify version `0.4.0-mcp01.1` and required tools including `materials_list`, `assemblies_list`, `assembly_duplicate`, `walls_edit`; do not infer semantic support from tool counts alone.
+The server uses newline-delimited JSON-RPC on stdio. A client initializes with MCP `2025-03-26`, then calls `tools/list` and `tools/call`. Verify version `0.7.0-mcp01.1` and required tools including `materials_list`, `assemblies_list`, `assembly_duplicate`, `walls_edit`; do not infer semantic support from tool counts alone.
 
 Tool arguments below are passed as `{"name":"…","arguments":{…}}` to `tools/call`:
 

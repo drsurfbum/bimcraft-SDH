@@ -79,7 +79,7 @@ export function mountWallDimensions(modelUi) {
         }
       }}
       if(refs.length===2 && at){const d=candidate(at);if(d)o.dims.push(d);}},
-    toolChanged(){reset();},escape(){reset();return true;}
+    toolChanged(){reset();},escape(){if(A.S.tool!=='wallDimension')return false;const had=refs.length||editing;reset();return !!had;}   // only its own picks: Esc ends any other tool, and this one once nothing is picked (2026-10-24: it took every Esc)
   };
   A=modelUi.extend(extension);
   const optionSelect=(choices,current,change)=>{const s=el('select',{className:'bc-mb-select'},...choices.map(([v,text])=>el('option',{value:v,selected:v===current},text)));s.addEventListener('change',()=>change(s.value));return s;};

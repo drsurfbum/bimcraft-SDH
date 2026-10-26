@@ -25,6 +25,10 @@ $__detailUrl = $__detailBuild && in_array('handoff', $__detailBuild['manifest'][
 $__takeoff = Catalog::app('takeoffcraft');
 $__takeoffBuild = $__takeoff && Catalog::openIn($__takeoff, $__area['key']) ? AppBuilds::resolve($__takeoff['slug'], $__area['key']) : null;
 $__takeoffUrl = $__takeoffBuild && in_array('handoff', $__takeoffBuild['manifest']['accepts'] ?? [], true) ? $__area['path'] . '/' . $__takeoff['slug'] : '';
+// Project bundles (0.7 BIM-BUNDLE-OPEN): a layout's PDF goes to the markup app, its DWG to the drafting app above — same rule.
+$__markup = Catalog::app('markupcraft');
+$__markupBuild = $__markup && Catalog::openIn($__markup, $__area['key']) ? AppBuilds::resolve($__markup['slug'], $__area['key']) : null;
+$__markupUrl = $__markupBuild && in_array('handoff', $__markupBuild['manifest']['accepts'] ?? [], true) ? $__area['path'] . '/' . $__markup['slug'] : '';
 // RVT preview (0.5 SG.8 b, rvt-convert.js): a spike, so the lab only — a release of this build keeps it off in /use. The
 // library's pinned URL is handed to the page here, not through manifest.json (and written so the packers' vendor scan does
 // not see it), so editions, the public repo and Studio never carry it before the owner's legal look (docs/spikes/rvt-preview.md).
@@ -32,7 +36,12 @@ $__rvtLib = 'rvt';
 $__rvtVer = ($__area['key'] ?? '') === 'lab' ? basename((string)@readlink(dirname(__DIR__, 3) . "/vendor/$__rvtLib/current")) : '';
 $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" : '';
 ?>
-<main id="main" class="bc" data-bimcraft<?php if ($__editUrl): ?> data-edit-url="<?= e($__editUrl) ?>" data-edit-app="<?= e($__edit['name']) ?>"<?php endif; ?><?php if ($__rvtPreview): ?> data-rvt-preview="<?= e($__rvtPreview) ?>"<?php endif; ?>>
+<main id="main" class="bc" data-bimcraft
+      data-pdf-worker="<?= e($__manifest['pdfWorker'] ?? '') ?>"
+      data-pdf-cmaps="<?= e($__manifest['pdfCmaps'] ?? '') ?>"
+      data-pdf-fonts="<?= e($__manifest['pdfFonts'] ?? '') ?>"
+      data-pdf-wasm="<?= e($__manifest['pdfWasm'] ?? '') ?>"
+      data-pdf-icc="<?= e($__manifest['pdfIcc'] ?? '') ?>"<?php if ($__editUrl): ?> data-edit-url="<?= e($__editUrl) ?>" data-edit-app="<?= e($__edit['name']) ?>"<?php endif; ?><?php if ($__markupUrl): ?> data-pdf-url="<?= e($__markupUrl) ?>" data-pdf-app="<?= e($__markup['name']) ?>"<?php endif; ?><?php if ($__rvtPreview): ?> data-rvt-preview="<?= e($__rvtPreview) ?>"<?php endif; ?>>
   <aside class="bc-panel bc-left" aria-label="<?= Lang::e('qto.sp.file') ?>">
     <section class="bc-sec">
       <h2 class="bc-h"><?= Lang::e('ui.open.title') ?></h2>
@@ -40,9 +49,11 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
         <i class="bi bi-folder2-open" aria-hidden="true"></i>
         <span class="bc-drop-main"><?= Lang::e('ui.drop.main') ?></span>
         <span class="bc-drop-sub"><?= Lang::e('ui.drop.sub') ?></span>
-        <input type="file" id="bc-file" class="visually-hidden" accept=".ifc,.rvt,.rfa,.rte,.rft,.dwg,.dxf,.pln,.pla,.tpl,.bpn,.ccbundle,.zip,.las,.laz,.xyz,.pts,.ply,.pcd,.ptx,.e57" data-file>
+        <input type="file" id="bc-file" class="visually-hidden" accept=".ifc,.rvt,.rfa,.rte,.rft,.dwg,.dxf,.step,.stp,.pln,.pla,.tpl,.bpn,.ccbundle,.zip,.las,.laz,.xyz,.pts,.ply,.pcd,.ptx,.e57" data-file>
       </label>
       <button type="button" class="btn-line bc-folder-btn" data-pick-folder><i class="bi bi-folder-symlink" aria-hidden="true"></i> <?= Lang::e('ui.open.folder') ?></button>
+      <?php /* Register scans (0.7 LC.3): bimcraft.js openRegister + register-ui.js; also in the Show menu once a model is open. */ ?>
+      <button type="button" class="btn-line bc-folder-btn" data-cloud-register title="<?= Lang::e('reg.menu.title') ?>"><i class="bi bi-bounding-box-circles" aria-hidden="true"></i> <?= Lang::e('reg.menu') ?></button>
       <?php /* New building (0.5 part 3): bimcraft.js "New building", new-model.js */ ?>
       <button type="button" class="btn-line bc-folder-btn" data-new><i class="bi bi-building-add" aria-hidden="true"></i> <?= Lang::e('new.button') ?></button>
       <input type="file" class="visually-hidden" webkitdirectory multiple tabindex="-1" aria-hidden="true" data-folder-input>
@@ -163,91 +174,126 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
   </aside>
 
   <section class="bc-stage" aria-label="<?= Lang::e('ui.stage.label') ?>">
+    <?php /* The view toolbar, built like CadCraft's .cc-tools (closing 0.7 part 2 § A, owner 2026-10-24): named groups (role=group
+       + aria-label; data-tb-key = the English name, so a saved Arrange order holds in every language), each a small title
+       (.bc-tool-label) over a .bc-tool-row of flat tools, icon above label. The shell's toolbar settings (icons / labels, group
+       names) and Arrange the toolbar find the groups by that shape. Units come right after the Edit tools (owner 2026-10-24). */ ?>
     <div class="bc-toolbar" role="toolbar" aria-label="<?= Lang::e('ui.toolbar.view') ?>" data-toolbar hidden>
-      <button type="button" class="bc-tool" data-view="iso" title="<?= Lang::e('ui.view.fit.title') ?>"><i class="bi bi-box" aria-hidden="true"></i><span><?= Lang::e('ui.view.fit') ?></span></button>
-      <button type="button" class="bc-tool" data-view="top" title="<?= Lang::e('ui.view.top.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('viewcube.face.top') ?></span></button>
-      <button type="button" class="bc-tool" data-view="front" title="<?= Lang::e('ui.view.front.title') ?>"><i class="bi bi-layout-sidebar-inset" aria-hidden="true"></i><span><?= Lang::e('viewcube.face.front') ?></span></button>
-      <button type="button" class="bc-tool" data-view="side" title="<?= Lang::e('ui.view.side.title') ?>"><i class="bi bi-layout-sidebar-inset-reverse" aria-hidden="true"></i><span><?= Lang::e('ui.view.side') ?></span></button>
-      <span class="bc-mb-layout" role="group" aria-label="<?= Lang::e('model.layout') ?>" data-model-layout-group hidden>
-        <button type="button" class="bc-tool" data-model-layout="plan" aria-pressed="false"><?= Lang::e('model.layout.plan') ?></button>
-        <button type="button" class="bc-tool" data-model-layout="split" aria-pressed="false"><?= Lang::e('model.layout.split') ?></button>
-        <button type="button" class="bc-tool" data-model-layout="3d" aria-pressed="true" title="<?= Lang::e('model.layout.3d.title') ?>"><?= Lang::e('model.layout.3d') ?></button>
-      </span>
-      <label class="bc-global-units"><span><?= Lang::e('model.units') ?></span> <select class="bc-mb-select" data-model-units aria-label="<?= Lang::e('model.units') ?>">
-        <option value="ftin"><?= Lang::e('model.units.ftin') ?></option>
-        <option value="in"><?= Lang::e('model.units.in') ?></option>
-        <option value="ftdec"><?= Lang::e('model.units.ftdec') ?></option>
-        <option value="mm"><?= Lang::e('model.units.mm') ?></option>
-        <option value="cm"><?= Lang::e('model.units.cm') ?></option>
-        <option value="m"><?= Lang::e('model.units.m') ?></option>
-      </select></label>
-      <span class="bc-tool-sep" aria-hidden="true"></span>
-      <button type="button" class="bc-tool" data-toggle="edges" aria-pressed="true" title="<?= Lang::e('ui.edges.title') ?>"><i class="bi bi-bounding-box" aria-hidden="true"></i><span><?= Lang::e('ui.edges') ?></span></button>
-      <button type="button" class="bc-tool" data-toggle="spaces" aria-pressed="false" title="<?= Lang::e('ui.spaces.title') ?>"><i class="bi bi-grid-3x3" aria-hidden="true"></i><span><?= Lang::e('qto.view.spaces') ?></span></button>
-      <span class="bc-tool-sep" aria-hidden="true"></span>
+      <div class="bc-tool-group" role="group" data-tb-key="View" aria-label="<?= Lang::e('ui.tbgroup.view') ?>">
+        <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('ui.tbgroup.view') ?></span>
+        <div class="bc-tool-row">
+          <button type="button" class="bc-tool" data-view="iso" title="<?= Lang::e('ui.view.fit.title') ?>"><i class="bi bi-box" aria-hidden="true"></i><span><?= Lang::e('ui.view.fit') ?></span></button>
+          <button type="button" class="bc-tool" data-view="top" title="<?= Lang::e('ui.view.top.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('viewcube.face.top') ?></span></button>
+          <button type="button" class="bc-tool" data-view="front" title="<?= Lang::e('ui.view.front.title') ?>"><i class="bi bi-layout-sidebar-inset" aria-hidden="true"></i><span><?= Lang::e('viewcube.face.front') ?></span></button>
+          <button type="button" class="bc-tool" data-view="side" title="<?= Lang::e('ui.view.side.title') ?>"><i class="bi bi-layout-sidebar-inset-reverse" aria-hidden="true"></i><span><?= Lang::e('ui.view.side') ?></span></button>
+          <button type="button" class="bc-tool" data-toggle="edges" aria-pressed="true" title="<?= Lang::e('ui.edges.title') ?>"><i class="bi bi-bounding-box" aria-hidden="true"></i><span><?= Lang::e('ui.edges') ?></span></button>
+          <button type="button" class="bc-tool" data-toggle="spaces" aria-pressed="false" title="<?= Lang::e('ui.spaces.title') ?>"><i class="bi bi-grid-3x3" aria-hidden="true"></i><span><?= Lang::e('qto.view.spaces') ?></span></button>
+        </div>
+        <?php /* Plan / Split / 3D (model-ui.js) while Draw is on: beside the row, not in it, so Arrange never moves it. */ ?>
+        <span class="bc-mb-layout" role="group" aria-label="<?= Lang::e('model.layout') ?>" data-model-layout-group hidden>
+          <button type="button" class="bc-tool" data-model-layout="plan" aria-pressed="false"><?= Lang::e('model.layout.plan') ?></button>
+          <button type="button" class="bc-tool" data-model-layout="split" aria-pressed="false"><?= Lang::e('model.layout.split') ?></button>
+          <button type="button" class="bc-tool" data-model-layout="3d" aria-pressed="true" title="<?= Lang::e('model.layout.3d.title') ?>"><?= Lang::e('model.layout.3d') ?></button>
+        </span>
+      </div>
       <?php /* Edit: bimcraft.js (search "Edit menu") keeps aria-disabled and each title (the reason when it cannot act) up to date. */ ?>
-      <button type="button" class="bc-tool" data-act="undo" title="<?= Lang::e('ui.undo.title') ?>"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span><?= Lang::e('ui.undo') ?></span></button>
-      <button type="button" class="bc-tool" data-act="redo" title="<?= Lang::e('ui.redo.title') ?>"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i><span><?= Lang::e('ui.redo') ?></span></button>
-      <button type="button" class="bc-tool" data-act="copy" title="<?= Lang::e('edit.copy.title') ?>"><i class="bi bi-copy" aria-hidden="true"></i><span><?= Lang::e('ui.copy') ?></span></button>
-      <button type="button" class="bc-tool" data-act="paste" title="<?= Lang::e('edit.paste.title') ?>"><i class="bi bi-clipboard-plus" aria-hidden="true"></i><span><?= Lang::e('ui.paste') ?></span></button>
-      <details class="bc-menu" data-edit-menu>
-        <summary class="bc-tool" title="<?= Lang::e('ui.more.title') ?>"><i class="bi bi-three-dots" aria-hidden="true"></i><span><?= Lang::e('ui.more') ?></span></summary>
-        <div class="bc-menu-list" role="menu" aria-label="<?= Lang::e('ui.more.label') ?>">
-          <button type="button" role="menuitem" data-act="cut"><?= Lang::e('ui.cut') ?> <kbd>Ctrl+X</kbd></button>
-          <button type="button" role="menuitem" data-act="copy"><?= Lang::e('ui.copy') ?> <kbd>Ctrl+C</kbd></button>
-          <button type="button" role="menuitem" data-act="paste"><?= Lang::e('ui.paste') ?> <kbd>Ctrl+V</kbd></button>
-          <button type="button" role="menuitem" data-act="paste-in-place"><?= Lang::e('ui.paste.inplace') ?> <kbd>Ctrl+Shift+V</kbd></button>
-          <button type="button" role="menuitem" data-act="duplicate"><?= Lang::e('ui.duplicate') ?> <kbd>Ctrl+D</kbd></button>
-          <button type="button" role="menuitem" data-act="delete"><?= Lang::e('ui.delete') ?> <kbd>Delete</kbd></button>
-          <hr>
-          <button type="button" role="menuitem" data-act="select-all"><?= Lang::e('ui.selectall') ?> <kbd>Ctrl+A</kbd></button>
-          <button type="button" role="menuitem" data-act="select-none"><?= Lang::e('ui.selectnone') ?> <kbd>Esc</kbd></button>
+      <div class="bc-tool-group" role="group" data-tb-key="Edit" aria-label="<?= Lang::e('ui.tbgroup.edit') ?>">
+        <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('ui.tbgroup.edit') ?></span>
+        <div class="bc-tool-row">
+          <button type="button" class="bc-tool" data-act="undo" title="<?= Lang::e('ui.undo.title') ?>"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><span><?= Lang::e('ui.undo') ?></span></button>
+          <button type="button" class="bc-tool" data-act="redo" title="<?= Lang::e('ui.redo.title') ?>"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i><span><?= Lang::e('ui.redo') ?></span></button>
+          <button type="button" class="bc-tool" data-act="copy" title="<?= Lang::e('edit.copy.title') ?>"><i class="bi bi-copy" aria-hidden="true"></i><span><?= Lang::e('ui.copy') ?></span></button>
+          <button type="button" class="bc-tool" data-act="paste" title="<?= Lang::e('edit.paste.title') ?>"><i class="bi bi-clipboard-plus" aria-hidden="true"></i><span><?= Lang::e('ui.paste') ?></span></button>
+          <details class="bc-menu" data-edit-menu>
+            <summary class="bc-tool" title="<?= Lang::e('ui.more.title') ?>"><i class="bi bi-three-dots" aria-hidden="true"></i><span><?= Lang::e('ui.more') ?></span></summary>
+            <div class="bc-menu-list" role="menu" aria-label="<?= Lang::e('ui.more.label') ?>">
+              <button type="button" role="menuitem" data-act="cut"><?= Lang::e('ui.cut') ?> <kbd>Ctrl+X</kbd></button>
+              <button type="button" role="menuitem" data-act="copy"><?= Lang::e('ui.copy') ?> <kbd>Ctrl+C</kbd></button>
+              <button type="button" role="menuitem" data-act="paste"><?= Lang::e('ui.paste') ?> <kbd>Ctrl+V</kbd></button>
+              <button type="button" role="menuitem" data-act="paste-in-place"><?= Lang::e('ui.paste.inplace') ?> <kbd>Ctrl+Shift+V</kbd></button>
+              <button type="button" role="menuitem" data-act="duplicate"><?= Lang::e('ui.duplicate') ?> <kbd>Ctrl+D</kbd></button>
+              <button type="button" role="menuitem" data-act="delete"><?= Lang::e('ui.delete') ?> <kbd>Delete</kbd></button>
+              <hr>
+              <button type="button" role="menuitem" data-act="select-all"><?= Lang::e('ui.selectall') ?> <kbd>Ctrl+A</kbd></button>
+              <button type="button" role="menuitem" data-act="select-none"><?= Lang::e('ui.selectnone') ?> <kbd>Esc</kbd></button>
+            </div>
+          </details>
         </div>
-      </details>
+      </div>
+      <?php /* Units (yisraelk's PR #4) open the Model group, right after the Edit tools. Arrange keys it by its select's data-model-units. */ ?>
       <?php /* Model (0.5 part 3, track BM; model-ui.js): Draw opens the plan view of a level beside the 3D view, with the building tools. */ ?>
-      <span class="bc-tool-sep" aria-hidden="true"></span>
-      <button type="button" class="bc-tool" data-model-toggle aria-pressed="false" title="<?= Lang::e('model.draw.title') ?>"><i class="bi bi-bricks" aria-hidden="true"></i><span><?= Lang::e('model.draw') ?></span></button>
-      <span class="bc-tool-sep" aria-hidden="true"></span>
-      <button type="button" class="bc-tool" data-lib-tool="library" title="<?= Lang::e('ui.lib.title') ?>"><i class="bi bi-collection" aria-hidden="true"></i><span><?= Lang::e('ui.library') ?></span></button>
-      <button type="button" class="bc-tool" data-lib-tool="equipment" aria-pressed="false" title="<?= Lang::e('ui.equip.title') ?>"><i class="bi bi-list-check" aria-hidden="true"></i><span><?= Lang::e('ui.equipment') ?></span></button>
-      <button type="button" class="bc-tool" data-lib-tool="updates" title="<?= Lang::e('ui.updates.title') ?>"><i class="bi bi-arrow-repeat" aria-hidden="true"></i><span><?= Lang::e('ui.updates') ?></span></button>
-      <button type="button" class="bc-tool" data-lib-tool="credits" title="<?= Lang::e('ui.credits.title') ?>"><i class="bi bi-c-circle" aria-hidden="true"></i><span><?= Lang::e('ui.credits') ?></span></button>
-      <span class="bc-tool-sep" aria-hidden="true"></span>
-      <?php /* Show (0.4 B12): bimcraft.js (search "Hide and isolate") keeps aria-disabled and the titles up to date. A menu, so the toolbar keeps its two rows. */ ?>
-      <details class="bc-menu" data-vis-menu>
-        <summary class="bc-tool" title="<?= Lang::e('vis.menu.title') ?>"><i class="bi bi-eye" aria-hidden="true"></i><span><?= Lang::e('vis.toolbar') ?></span></summary>
-        <div class="bc-menu-list" role="menu" aria-label="<?= Lang::e('vis.toolbar') ?>">
-          <button type="button" role="menuitem" data-vis="hide" title="<?= Lang::e('vis.hide.title') ?>"><?= Lang::e('vis.hide') ?> <kbd>H</kbd></button>
-          <button type="button" role="menuitem" data-vis="isolate" title="<?= Lang::e('vis.isolate.title') ?>"><?= Lang::e('vis.isolate') ?> <kbd>I</kbd></button>
-          <button type="button" role="menuitem" data-vis="ghost" title="<?= Lang::e('vis.ghost.title') ?>"><?= Lang::e('vis.ghost') ?> <kbd>T</kbd></button>
-          <button type="button" role="menuitem" data-vis="secbox" title="<?= Lang::e('vis.secbox.title') ?>"><?= Lang::e('vis.secbox') ?> <kbd>Shift+X</kbd></button><?php /* i18n-ignore: key names */ ?>
-          <hr>
-          <button type="button" role="menuitem" data-vis="all" title="<?= Lang::e('vis.showall.title') ?>"><?= Lang::e('vis.showall') ?> <kbd>Shift+H</kbd></button><?php /* i18n-ignore: key names */ ?>
-          <hr>
-          <?php /* Point clouds (0.5 SG.1): bimcraft.js "Point clouds" + cloud-ui.js (its bar is built there). In this menu, so the toolbar keeps its two rows. */ ?>
-          <button type="button" role="menuitem" data-cloud-open aria-pressed="false" title="<?= Lang::e('pc.tool.title') ?>"><?= Lang::e('pc.tool') ?></button>
-          <?php /* Map layers on the ground (0.5 SG.3): bimcraft.js "Map layers" + maps-bim.js / maplayers.js. */ ?>
-          <button type="button" role="menuitem" data-map-open title="<?= Lang::e('ml.bim.tool.title') ?>"><?= Lang::e('ml.bim.tool') ?></button>
+      <div class="bc-tool-group" role="group" data-tb-key="Model" aria-label="<?= Lang::e('ui.tbgroup.model') ?>">
+        <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('ui.tbgroup.model') ?></span>
+        <div class="bc-tool-row">
+          <label class="bc-global-units"><span><?= Lang::e('model.units') ?></span> <select class="bc-mb-select" data-model-units aria-label="<?= Lang::e('model.units') ?>">
+            <option value="ftin"><?= Lang::e('model.units.ftin') ?></option>
+            <option value="in"><?= Lang::e('model.units.in') ?></option>
+            <option value="ftdec"><?= Lang::e('model.units.ftdec') ?></option>
+            <option value="mm"><?= Lang::e('model.units.mm') ?></option>
+            <option value="cm"><?= Lang::e('model.units.cm') ?></option>
+            <option value="m"><?= Lang::e('model.units.m') ?></option>
+          </select></label>
+          <button type="button" class="bc-tool" data-model-toggle aria-pressed="false" title="<?= Lang::e('model.draw.title') ?>"><i class="bi bi-bricks" aria-hidden="true"></i><span><?= Lang::e('model.draw') ?></span></button>
         </div>
-      </details>
-      <span class="bc-tool-sep" aria-hidden="true"></span>
-      <button type="button" class="bc-tool" data-toggle="section" aria-pressed="false" title="<?= Lang::e('ui.section.title') ?>"><i class="bi bi-scissors" aria-hidden="true"></i><span><?= Lang::e('sec.button') ?></span></button>
-      <button type="button" class="bc-tool" data-toggle="walk" aria-pressed="false" title="<?= Lang::e('walk.title') ?>"><i class="bi bi-person-walking" aria-hidden="true"></i><span><?= Lang::e('walk.button') ?></span></button>
-      <?php /* Render a picture (0.5 RC.11): bimcraft.js "Render a picture" → render-bim.js + the shared render/ (ModelCraft's, synced). */ ?>
-      <button type="button" class="bc-tool" data-render-open title="<?= Lang::e('ui.render.title') ?>"><i class="bi bi-camera" aria-hidden="true"></i><span><?= Lang::e('ui.render') ?></span></button>
-      <?php /* Review in VR (0.6 LC.19, session lc-model): bimcraft.js "Review in VR" → the shared xr/ (ModelCraft's, synced). */ ?>
-      <button type="button" class="bc-tool" data-xr-enter aria-disabled="true" title="<?= Lang::e('ui.vr.title') ?>"><i class="bi bi-headset-vr" aria-hidden="true"></i><span><?= Lang::e('ui.vr') ?></span></button>
-      <?php /* Model for rendering programs (0.6 DC.22, session bim-extra_PART_2): bimcraft.js "exportGlb" → glb-bim.js (.glb). */ ?>
-      <button type="button" class="bc-tool" data-glb-export title="<?= Lang::e('glb.title') ?>"><i class="bi bi-box-arrow-up" aria-hidden="true"></i><span><?= Lang::e('glb.button') ?></span></button>
-      <?php /* Paint materials (0.5 RC.7): bimcraft.js "Paint materials" → paint-ui-bim.js + paint-bim.js. */ ?>
-      <button type="button" class="bc-tool" data-paint-open="paint" aria-pressed="false" title="<?= Lang::e('ui.paint.title') ?>"><i class="bi bi-paint-bucket" aria-hidden="true"></i><span><?= Lang::e('ui.paint') ?></span></button>
-      <?php /* Views (0.5 RC.7): bimcraft.js "Views" → views-ui-bim.js + views-bim.js (saved cameras and walkthroughs in the IFC). */ ?>
-      <button type="button" class="bc-tool" data-saved-views="views" aria-pressed="false" title="<?= Lang::e('ui.views.title') ?>"><i class="bi bi-camera-reels" aria-hidden="true"></i><span><?= Lang::e('ui.views') ?></span></button>
-      <?php if ($__detailUrl): ?>
-      <span class="bc-tool-sep" aria-hidden="true"></span>
-      <button type="button" class="bc-tool" data-handoff-ifc data-handoff-url="<?= e($__detailUrl) ?>" data-handoff-app="<?= e($__detail['name']) ?>" title="<?= Lang::e('handoff.ifc.title', ['app' => $__detail['name']]) ?>"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i><span><?= Lang::e('handoff.ifc.button', ['app' => $__detail['name']]) ?></span></button>
-      <?php endif; ?>
-      <button type="button" class="bc-tool" data-toggle="measure" aria-pressed="false" title="<?= Lang::e('measure.title') ?>"><i class="bi bi-rulers" aria-hidden="true"></i><span><?= Lang::e('measure.button') ?></span></button>
+      </div>
+      <div class="bc-tool-group" role="group" data-tb-key="Library" aria-label="<?= Lang::e('ui.tbgroup.library') ?>">
+        <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('ui.tbgroup.library') ?></span>
+        <div class="bc-tool-row">
+          <button type="button" class="bc-tool" data-lib-tool="library" title="<?= Lang::e('ui.lib.title') ?>"><i class="bi bi-collection" aria-hidden="true"></i><span><?= Lang::e('ui.library') ?></span></button>
+          <button type="button" class="bc-tool" data-lib-tool="equipment" aria-pressed="false" title="<?= Lang::e('ui.equip.title') ?>"><i class="bi bi-list-check" aria-hidden="true"></i><span><?= Lang::e('ui.equipment') ?></span></button>
+          <button type="button" class="bc-tool" data-lib-tool="updates" title="<?= Lang::e('ui.updates.title') ?>"><i class="bi bi-arrow-repeat" aria-hidden="true"></i><span><?= Lang::e('ui.updates') ?></span></button>
+          <button type="button" class="bc-tool" data-lib-tool="credits" title="<?= Lang::e('ui.credits.title') ?>"><i class="bi bi-c-circle" aria-hidden="true"></i><span><?= Lang::e('ui.credits') ?></span></button>
+        </div>
+      </div>
+      <?php /* Show (0.4 B12): bimcraft.js (search "Hide and isolate") keeps aria-disabled and the titles up to date. A menu, so the toolbar keeps its two rows. */ ?>
+      <div class="bc-tool-group" role="group" data-tb-key="Review" aria-label="<?= Lang::e('ui.tbgroup.review') ?>">
+        <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('ui.tbgroup.review') ?></span>
+        <div class="bc-tool-row">
+          <details class="bc-menu" data-vis-menu>
+            <summary class="bc-tool" title="<?= Lang::e('vis.menu.title') ?>"><i class="bi bi-eye" aria-hidden="true"></i><span><?= Lang::e('vis.toolbar') ?></span></summary>
+            <div class="bc-menu-list" role="menu" aria-label="<?= Lang::e('vis.toolbar') ?>">
+              <button type="button" role="menuitem" data-vis="hide" title="<?= Lang::e('vis.hide.title') ?>"><?= Lang::e('vis.hide') ?> <kbd>H</kbd></button>
+              <button type="button" role="menuitem" data-vis="isolate" title="<?= Lang::e('vis.isolate.title') ?>"><?= Lang::e('vis.isolate') ?> <kbd>I</kbd></button>
+              <button type="button" role="menuitem" data-vis="ghost" title="<?= Lang::e('vis.ghost.title') ?>"><?= Lang::e('vis.ghost') ?> <kbd>T</kbd></button>
+              <button type="button" role="menuitem" data-vis="secbox" title="<?= Lang::e('vis.secbox.title') ?>"><?= Lang::e('vis.secbox') ?> <kbd>Shift+X</kbd></button><?php /* i18n-ignore: key names */ ?>
+              <hr>
+              <button type="button" role="menuitem" data-vis="all" title="<?= Lang::e('vis.showall.title') ?>"><?= Lang::e('vis.showall') ?> <kbd>Shift+H</kbd></button><?php /* i18n-ignore: key names */ ?>
+              <hr>
+              <?php /* Point clouds (0.5 SG.1): bimcraft.js "Point clouds" + cloud-ui.js (its bar is built there). In this menu, so the toolbar keeps its two rows. */ ?>
+              <button type="button" role="menuitem" data-cloud-open aria-pressed="false" title="<?= Lang::e('pc.tool.title') ?>"><?= Lang::e('pc.tool') ?></button>
+              <?php /* Register scans (0.7 LC.3, session scans): register-ui.js, loaded on first use. */ ?>
+              <button type="button" role="menuitem" data-cloud-register title="<?= Lang::e('reg.menu.title') ?>"><?= Lang::e('reg.menu') ?></button>
+              <?php /* Map layers on the ground (0.5 SG.3): bimcraft.js "Map layers" + maps-bim.js / maplayers.js. */ ?>
+              <button type="button" role="menuitem" data-map-open title="<?= Lang::e('ml.bim.tool.title') ?>"><?= Lang::e('ml.bim.tool') ?></button>
+            </div>
+          </details>
+          <button type="button" class="bc-tool" data-toggle="section" aria-pressed="false" title="<?= Lang::e('ui.section.title') ?>"><i class="bi bi-scissors" aria-hidden="true"></i><span><?= Lang::e('sec.button') ?></span></button>
+          <button type="button" class="bc-tool" data-toggle="walk" aria-pressed="false" title="<?= Lang::e('walk.title') ?>"><i class="bi bi-person-walking" aria-hidden="true"></i><span><?= Lang::e('walk.button') ?></span></button>
+          <button type="button" class="bc-tool" data-toggle="measure" aria-pressed="false" title="<?= Lang::e('measure.title') ?>"><i class="bi bi-rulers" aria-hidden="true"></i><span><?= Lang::e('measure.button') ?></span></button>
+        </div>
+      </div>
+      <div class="bc-tool-group" role="group" data-tb-key="Output" aria-label="<?= Lang::e('ui.tbgroup.output') ?>">
+        <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('ui.tbgroup.output') ?></span>
+        <div class="bc-tool-row">
+          <?php /* Render a picture (0.5 RC.11): bimcraft.js "Render a picture" → render-bim.js + the shared render/ (ModelCraft's, synced). */ ?>
+          <button type="button" class="bc-tool" data-render-open title="<?= Lang::e('ui.render.title') ?>"><i class="bi bi-camera" aria-hidden="true"></i><span><?= Lang::e('ui.render') ?></span></button>
+          <button type="button" class="bc-tool" data-live-open title="<?= Lang::e('rt.menu') ?>"><i class="bi bi-play-btn" aria-hidden="true"></i><span><?= Lang::e('rt.menu') ?></span></button>
+          <button type="button" class="bc-tool" data-live-window title="<?= Lang::e('rt.menu.window') ?>"><i class="bi bi-window-stack" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('rt.menu.window') ?></span></button>
+          <?php /* Review in VR (0.6 LC.19, session lc-model): bimcraft.js "Review in VR" → the shared xr/ (ModelCraft's, synced). */ ?>
+          <button type="button" class="bc-tool" data-xr-enter aria-disabled="true" title="<?= Lang::e('ui.vr.title') ?>"><i class="bi bi-headset-vr" aria-hidden="true"></i><span><?= Lang::e('ui.vr') ?></span></button>
+          <?php /* Model for rendering programs (0.6 DC.22, session bim-extra_PART_2): bimcraft.js "exportGlb" → glb-bim.js (.glb). */ ?>
+          <button type="button" class="bc-tool" data-glb-export title="<?= Lang::e('glb.title') ?>"><i class="bi bi-box-arrow-up" aria-hidden="true"></i><span><?= Lang::e('glb.button') ?></span></button>
+          <?php /* Export › USD (0.7 XF.8, session usd): bimcraft.js "exportUsd" → usd-bimcraft.js on cc-usd (./usd/, lib/usd synced). */ ?>
+          <button type="button" class="bc-tool" data-usd-export title="<?= Lang::e('usd.export.title') ?>"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i><span><?= Lang::e('usd.export.button') ?></span></button>
+          <?php /* Paint materials (0.5 RC.7): bimcraft.js "Paint materials" → paint-ui-bim.js + paint-bim.js. */ ?>
+          <button type="button" class="bc-tool" data-paint-open="paint" aria-pressed="false" title="<?= Lang::e('ui.paint.title') ?>"><i class="bi bi-paint-bucket" aria-hidden="true"></i><span><?= Lang::e('ui.paint') ?></span></button>
+          <?php /* Views (0.5 RC.7): bimcraft.js "Views" → views-ui-bim.js + views-bim.js (saved cameras and walkthroughs in the IFC). */ ?>
+          <button type="button" class="bc-tool" data-saved-views="views" aria-pressed="false" title="<?= Lang::e('ui.views.title') ?>"><i class="bi bi-camera-reels" aria-hidden="true"></i><span><?= Lang::e('ui.views') ?></span></button>
+          <?php if ($__detailUrl): ?>
+          <button type="button" class="bc-tool" data-handoff-ifc data-handoff-url="<?= e($__detailUrl) ?>" data-handoff-app="<?= e($__detail['name']) ?>" title="<?= Lang::e('handoff.ifc.title', ['app' => $__detail['name']]) ?>"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i><span><?= Lang::e('handoff.ifc.button', ['app' => $__detail['name']]) ?></span></button>
+          <?php endif; ?>
+        </div>
+      </div>
       <input type="file" class="visually-hidden" accept=".las,.laz,.xyz,.pts,.ply,.pcd,.ptx,.e57" tabindex="-1" aria-hidden="true" data-cloud-input>
     </div>
     <?php /* Section plane (viewer3d.js setSection): bimcraft.js (search "Section plane") fills and wires it. */ ?>
@@ -325,92 +371,119 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
     <div class="bc-plan" data-plan-wrap hidden>
       <canvas data-plan-canvas aria-label="<?= Lang::e('model.plan.label') ?>"></canvas>
       <div class="bc-modelbar" role="toolbar" aria-label="<?= Lang::e('model.bar.label') ?>" data-modelbar>
-        <div class="bc-modelbar-row">
-          <label><span class="visually-hidden"><?= Lang::e('model.level') ?></span><select class="bc-mb-select" data-model-level aria-label="<?= Lang::e('model.level') ?>"></select></label>
-          <?php /* 0.6 DC.117 (bim-views_PART_2): the level's floor plan or its reflected ceiling plan */ ?>
-          <label><span class="visually-hidden"><?= Lang::e('model.viewkind') ?></span><select class="bc-mb-select" data-model-viewkind aria-label="<?= Lang::e('model.viewkind') ?>"><option value="plan"><?= Lang::e('model.viewkind.plan') ?></option><option value="rcp"><?= Lang::e('model.viewkind.rcp') ?></option></select></label>
-          <span class="bc-mb-tools">
-            <button type="button" class="bc-tool" data-mtool="select" aria-pressed="true" title="<?= Lang::e('model.tool.select.title') ?>"><i class="bi bi-cursor" aria-hidden="true"></i><span><?= Lang::e('model.tool.select') ?></span></button>
-            <button type="button" class="bc-tool" data-mtool="wall" aria-pressed="false" title="<?= Lang::e('model.tool.wall.title') ?>"><i class="bi bi-bricks" aria-hidden="true"></i><span><?= Lang::e('model.tool.wall') ?></span></button>
-            <button type="button" class="bc-tool" data-mtool="door" aria-pressed="false" title="<?= Lang::e('model.tool.door.title') ?>"><i class="bi bi-door-open" aria-hidden="true"></i><span><?= Lang::e('model.tool.door') ?></span></button>
-            <button type="button" class="bc-tool" data-mtool="window" aria-pressed="false" title="<?= Lang::e('model.tool.window.title') ?>"><i class="bi bi-window" aria-hidden="true"></i><span><?= Lang::e('model.tool.window') ?></span></button>
-            <button type="button" class="bc-tool" data-mtool="floor" aria-pressed="false" title="<?= Lang::e('model.tool.floor.title') ?>"><i class="bi bi-layers" aria-hidden="true"></i><span><?= Lang::e('model.tool.floor') ?></span></button>
-            <button type="button" class="bc-tool" data-mtool="ceiling" aria-pressed="false" title="<?= Lang::e('model.tool.ceiling.title') ?>"><i class="bi bi-layers-half" aria-hidden="true"></i><span><?= Lang::e('model.tool.ceiling') ?></span></button>
-            <button type="button" class="bc-tool" data-mtool="roof" aria-pressed="false" title="<?= Lang::e('model.tool.roof.title') ?>"><i class="bi bi-house" aria-hidden="true"></i><span><?= Lang::e('model.tool.roof') ?></span></button>
-            <button type="button" class="bc-tool" data-mtool="electrical" aria-pressed="false" title="<?= Lang::e('res.tool.electrical.title') ?>"><i class="bi bi-plug" aria-hidden="true"></i><span><?= Lang::e('res.tool.electrical') ?></span></button>
-            <?php /* The residential tools (0.5 part 4, track RC; res-ui.js through model-ui.js extend()). */ ?>
-            <details class="bc-mb-more" data-res-tools>
-              <summary class="bc-tool" title="<?= Lang::e('res.tools.title') ?>"><i class="bi bi-tools" aria-hidden="true"></i><span><?= Lang::e('res.tools') ?></span></summary>
-              <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('res.tools') ?>">
-                <?php /* Grids and columns (0.6 DF.16, bim-draw): model-grids-ui.js through model-ui.js extend(). */ ?>
-                <button type="button" class="bc-tool" data-mtool="grid" aria-pressed="false" title="<?= Lang::e('model.tool.grid.title') ?>"><i class="bi bi-hash" aria-hidden="true"></i><span><?= Lang::e('model.tool.grid') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="column" aria-pressed="false" title="<?= Lang::e('model.tool.column.title') ?>"><i class="bi bi-square-fill" aria-hidden="true"></i><span><?= Lang::e('model.tool.column') ?></span></button>
-                <?php /* Floors of any shape and ramps (0.6 DF.18, bim-draw): model-floors-ui.js. */ ?>
-                <button type="button" class="bc-tool" data-mtool="drawfloor" aria-pressed="false" title="<?= Lang::e('model.tool.drawfloor.title') ?>"><i class="bi bi-pentagon" aria-hidden="true"></i><span><?= Lang::e('model.tool.drawfloor') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="ramp" aria-pressed="false" title="<?= Lang::e('model.tool.ramp.title') ?>"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span><?= Lang::e('model.tool.ramp') ?></span></button>
-                <?php /* Pipes, ducts and valves (0.6 DF.29, bim-draw): mep-ui.js. */ ?>
-                <button type="button" class="bc-tool" data-mtool="pipe" aria-pressed="false" title="<?= Lang::e('mep.tool.pipe.title') ?>"><i class="bi bi-droplet" aria-hidden="true"></i><span><?= Lang::e('mep.tool.pipe') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="duct" aria-pressed="false" title="<?= Lang::e('mep.tool.duct.title') ?>"><i class="bi bi-wind" aria-hidden="true"></i><span><?= Lang::e('mep.tool.duct') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="valve" aria-pressed="false" title="<?= Lang::e('mep.tool.valve.title') ?>"><i class="bi bi-hourglass" aria-hidden="true"></i><span><?= Lang::e('mep.tool.valve') ?></span></button>
-                <?php /* The site and the building on it (0.6 DF.20, bim-draw): model-site-ui.js. */ ?>
-                <button type="button" class="bc-tool" data-mtool="site" aria-pressed="false" title="<?= Lang::e('model.tool.site.title') ?>"><i class="bi bi-map" aria-hidden="true"></i><span><?= Lang::e('model.tool.site') ?></span></button>
-                <?php /* Families (0.6 DC.114, bim-families_PART_2): family-ui.js — every family with its sizes, and placing one on a floor. */ ?>
-                <button type="button" class="bc-tool" data-fam-list title="<?= Lang::e('fam.list.open.title') ?>"><i class="bi bi-collection" aria-hidden="true"></i><span><?= Lang::e('fam.list.open') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="family" aria-pressed="false" title="<?= Lang::e('fam.tool.title') ?>"><i class="bi bi-box" aria-hidden="true"></i><span><?= Lang::e('fam.tool') ?></span></button>
-                <?php /* From a traced drawing (0.6 DF.23, bim-draw): model-trace-ui.js opens its dialog. */ ?>
-                <button type="button" class="bc-tool" data-trace-open title="<?= Lang::e('model.trace.open.title') ?>"><i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i><span><?= Lang::e('model.trace.open') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="roofplane" aria-pressed="false" title="<?= Lang::e('res.tool.roofplane.title') ?>"><i class="bi bi-triangle" aria-hidden="true"></i><span><?= Lang::e('res.tool.roofplane') ?></span></button>
-                <?php /* Dormers (0.6 round 2, bim-comforts_PART_2): comforts-ui.js through model-ui.js extend(). */ ?>
-                <button type="button" class="bc-tool" data-mtool="dormer" aria-pressed="false" title="<?= Lang::e('comforts.tool.dormer.title') ?>"><i class="bi bi-house-up" aria-hidden="true"></i><span><?= Lang::e('comforts.tool.dormer') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="foundation" aria-pressed="false" title="<?= Lang::e('res.tool.foundation.title') ?>"><i class="bi bi-bounding-box" aria-hidden="true"></i><span><?= Lang::e('res.tool.foundation') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="countertop" aria-pressed="false" title="<?= Lang::e('res.tool.countertop.title') ?>"><i class="bi bi-square-half" aria-hidden="true"></i><span><?= Lang::e('res.tool.countertop') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="stair" aria-pressed="false" title="<?= Lang::e('res.tool.stair.title') ?>"><i class="bi bi-reception-4" aria-hidden="true"></i><span><?= Lang::e('res.tool.stair') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="railing" aria-pressed="false" title="<?= Lang::e('res.tool.railing.title') ?>"><i class="bi bi-distribute-horizontal" aria-hidden="true"></i><span><?= Lang::e('res.tool.railing') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="framing" aria-pressed="false" title="<?= Lang::e('res.tool.framing.title') ?>"><i class="bi bi-grid-3x3" aria-hidden="true"></i><span><?= Lang::e('res.tool.framing') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="terrain" aria-pressed="false" title="<?= Lang::e('res.tool.terrain.title') ?>"><i class="bi bi-image-alt" aria-hidden="true"></i><span><?= Lang::e('res.tool.terrain') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="pad" aria-pressed="false" title="<?= Lang::e('res.tool.pad.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('res.tool.pad') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="paving" aria-pressed="false" title="<?= Lang::e('res.tool.paving.title') ?>"><i class="bi bi-signpost-split" aria-hidden="true"></i><span><?= Lang::e('res.tool.paving') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="section" aria-pressed="false" title="<?= Lang::e('res.tool.section.title') ?>"><i class="bi bi-slash-square" aria-hidden="true"></i><span><?= Lang::e('res.tool.section') ?></span></button>
+        <?php /* The Draw bar's first row in CadCraft's toolbar shape (closing 0.7 part 2 § A): named groups, each a small title over
+           a row of flat tools, icon above label. Hooks unchanged; wall-assemblies-ui.js fills the Library row ([data-mb-library]). */ ?>
+        <div class="bc-modelbar-row bc-mb-groups">
+          <div class="bc-tool-group" role="group" data-tb-key="View" aria-label="<?= Lang::e('model.bar.group.view') ?>">
+            <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('model.bar.group.view') ?></span>
+            <div class="bc-tool-row">
+              <label><span class="visually-hidden"><?= Lang::e('model.level') ?></span><select class="bc-mb-select" data-model-level aria-label="<?= Lang::e('model.level') ?>"></select></label>
+              <?php /* 0.6 DC.117 (bim-views_PART_2): the level's floor plan or its reflected ceiling plan */ ?>
+              <label><span class="visually-hidden"><?= Lang::e('model.viewkind') ?></span><select class="bc-mb-select" data-model-viewkind aria-label="<?= Lang::e('model.viewkind') ?>"><option value="plan"><?= Lang::e('model.viewkind.plan') ?></option><option value="rcp"><?= Lang::e('model.viewkind.rcp') ?></option></select></label>
+              <?php /* dimensions, print, sheets, takeoff, fit: the plan's own (the toolbox layout moves this span to its Document slot) */ ?>
+              <span class="bc-mb-right">
+                <button type="button" class="bc-tool" data-model-dims aria-pressed="true" title="<?= Lang::e('model.dims.title') ?>"><i class="bi bi-arrows" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('model.dims') ?></span></button>
+                <button type="button" class="bc-tool" data-model-print title="<?= Lang::e('model.print.title') ?>"><i class="bi bi-printer" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('model.print') ?></span></button>
+                <button type="button" class="bc-tool" data-res-sheetsopen title="<?= Lang::e('res.sh.open.title') ?>"><i class="bi bi-files" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('res.sh.title') ?></span></button>
+                <button type="button" class="bc-tool" data-res-takeoff data-handoff-url="<?= e($__takeoffUrl) ?>" title="<?= Lang::e('res.to.title') ?>"><i class="bi bi-calculator" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('res.to.button') ?></span></button>
+                <button type="button" class="bc-tool" data-model-fit title="<?= Lang::e('model.fit.title') ?>"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('model.fit') ?></span></button>
+              </span>
+            </div>
+          </div>
+          <div class="bc-mb-tools">
+            <div class="bc-tool-group" role="group" data-tb-key="Draw" aria-label="<?= Lang::e('model.bar.group.draw') ?>">
+              <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('model.bar.group.draw') ?></span>
+              <div class="bc-tool-row">
+                <button type="button" class="bc-tool" data-mtool="select" aria-pressed="true" title="<?= Lang::e('model.tool.select.title') ?>"><i class="bi bi-cursor" aria-hidden="true"></i><span><?= Lang::e('model.tool.select') ?></span></button>
+                <button type="button" class="bc-tool" data-mtool="wall" aria-pressed="false" title="<?= Lang::e('model.tool.wall.title') ?>"><i class="bi bi-bricks" aria-hidden="true"></i><span><?= Lang::e('model.tool.wall') ?></span></button>
+                <button type="button" class="bc-tool" data-mtool="door" aria-pressed="false" title="<?= Lang::e('model.tool.door.title') ?>"><i class="bi bi-door-open" aria-hidden="true"></i><span><?= Lang::e('model.tool.door') ?></span></button>
+                <button type="button" class="bc-tool" data-mtool="window" aria-pressed="false" title="<?= Lang::e('model.tool.window.title') ?>"><i class="bi bi-window" aria-hidden="true"></i><span><?= Lang::e('model.tool.window') ?></span></button>
+                <button type="button" class="bc-tool" data-mtool="floor" aria-pressed="false" title="<?= Lang::e('model.tool.floor.title') ?>"><i class="bi bi-layers" aria-hidden="true"></i><span><?= Lang::e('model.tool.floor') ?></span></button>
+                <button type="button" class="bc-tool" data-mtool="ceiling" aria-pressed="false" title="<?= Lang::e('model.tool.ceiling.title') ?>"><i class="bi bi-layers-half" aria-hidden="true"></i><span><?= Lang::e('model.tool.ceiling') ?></span></button>
+                <button type="button" class="bc-tool" data-mtool="roof" aria-pressed="false" title="<?= Lang::e('model.tool.roof.title') ?>"><i class="bi bi-house" aria-hidden="true"></i><span><?= Lang::e('model.tool.roof') ?></span></button>
+                <button type="button" class="bc-tool" data-mtool="electrical" aria-pressed="false" title="<?= Lang::e('res.tool.electrical.title') ?>"><i class="bi bi-plug" aria-hidden="true"></i><span><?= Lang::e('res.tool.electrical') ?></span></button>
+                <?php /* The residential tools (0.5 part 4, track RC; res-ui.js through model-ui.js extend()). */ ?>
+                <details class="bc-mb-more" data-res-tools>
+                  <summary class="bc-tool" title="<?= Lang::e('res.tools.title') ?>"><i class="bi bi-tools" aria-hidden="true"></i><span><?= Lang::e('res.tools') ?></span></summary>
+                  <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('res.tools') ?>">
+                    <?php /* Grids and columns (0.6 DF.16, bim-draw): model-grids-ui.js through model-ui.js extend(). */ ?>
+                    <button type="button" class="bc-tool" data-mtool="grid" aria-pressed="false" title="<?= Lang::e('model.tool.grid.title') ?>"><i class="bi bi-hash" aria-hidden="true"></i><span><?= Lang::e('model.tool.grid') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="column" aria-pressed="false" title="<?= Lang::e('model.tool.column.title') ?>"><i class="bi bi-square-fill" aria-hidden="true"></i><span><?= Lang::e('model.tool.column') ?></span></button>
+                    <?php /* Floors of any shape and ramps (0.6 DF.18, bim-draw): model-floors-ui.js. */ ?>
+                    <button type="button" class="bc-tool" data-mtool="drawfloor" aria-pressed="false" title="<?= Lang::e('model.tool.drawfloor.title') ?>"><i class="bi bi-pentagon" aria-hidden="true"></i><span><?= Lang::e('model.tool.drawfloor') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="ramp" aria-pressed="false" title="<?= Lang::e('model.tool.ramp.title') ?>"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i><span><?= Lang::e('model.tool.ramp') ?></span></button>
+                    <?php /* Pipes, ducts and valves (0.6 DF.29, bim-draw): mep-ui.js. */ ?>
+                    <button type="button" class="bc-tool" data-mtool="pipe" aria-pressed="false" title="<?= Lang::e('mep.tool.pipe.title') ?>"><i class="bi bi-droplet" aria-hidden="true"></i><span><?= Lang::e('mep.tool.pipe') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="duct" aria-pressed="false" title="<?= Lang::e('mep.tool.duct.title') ?>"><i class="bi bi-wind" aria-hidden="true"></i><span><?= Lang::e('mep.tool.duct') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="valve" aria-pressed="false" title="<?= Lang::e('mep.tool.valve.title') ?>"><i class="bi bi-hourglass" aria-hidden="true"></i><span><?= Lang::e('mep.tool.valve') ?></span></button>
+                    <?php /* Equipment with ports and the Connections check (0.7 LC.9, mep-07): mep/equip-ui.js. */ ?>
+                    <button type="button" class="bc-tool" data-mtool="equip" aria-pressed="false" title="<?= Lang::e('mep.tool.equip.title') ?>"><i class="bi bi-fan" aria-hidden="true"></i><span><?= Lang::e('mep.tool.equip') ?></span></button>
+                    <button type="button" class="bc-tool" data-mep-check title="<?= Lang::e('mep.tool.check.title') ?>"><i class="bi bi-diagram-3" aria-hidden="true"></i><span><?= Lang::e('mep.tool.check') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="weld" aria-pressed="false" title="<?= Lang::e('mep.tool.weld.title') ?>"><i class="bi bi-lightning-charge" aria-hidden="true"></i><span><?= Lang::e('mep.tool.weld') ?></span></button>
+                    <button type="button" class="bc-tool" data-mep-ductcut title="<?= Lang::e('mep.tool.ductcut.title') ?>"><i class="bi bi-scissors" aria-hidden="true"></i><span><?= Lang::e('mep.tool.ductcut') ?></span></button>
+                    <?php /* The site and the building on it (0.6 DF.20, bim-draw): model-site-ui.js. */ ?>
+                    <button type="button" class="bc-tool" data-mtool="site" aria-pressed="false" title="<?= Lang::e('model.tool.site.title') ?>"><i class="bi bi-map" aria-hidden="true"></i><span><?= Lang::e('model.tool.site') ?></span></button>
+                    <?php /* Families (0.6 DC.114, bim-families_PART_2): family-ui.js — every family with its sizes, and placing one on a floor. */ ?>
+                    <button type="button" class="bc-tool" data-fam-list title="<?= Lang::e('fam.list.open.title') ?>"><i class="bi bi-collection" aria-hidden="true"></i><span><?= Lang::e('fam.list.open') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="family" aria-pressed="false" title="<?= Lang::e('fam.tool.title') ?>"><i class="bi bi-box" aria-hidden="true"></i><span><?= Lang::e('fam.tool') ?></span></button>
+                    <?php /* From a traced drawing (0.6 DF.23, bim-draw): model-trace-ui.js opens its dialog. */ ?>
+                    <button type="button" class="bc-tool" data-trace-open title="<?= Lang::e('model.trace.open.title') ?>"><i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i><span><?= Lang::e('model.trace.open') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="roofplane" aria-pressed="false" title="<?= Lang::e('res.tool.roofplane.title') ?>"><i class="bi bi-triangle" aria-hidden="true"></i><span><?= Lang::e('res.tool.roofplane') ?></span></button>
+                    <?php /* Dormers (0.6 round 2, bim-comforts_PART_2): comforts-ui.js through model-ui.js extend(). */ ?>
+                    <button type="button" class="bc-tool" data-mtool="dormer" aria-pressed="false" title="<?= Lang::e('comforts.tool.dormer.title') ?>"><i class="bi bi-house-up" aria-hidden="true"></i><span><?= Lang::e('comforts.tool.dormer') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="foundation" aria-pressed="false" title="<?= Lang::e('res.tool.foundation.title') ?>"><i class="bi bi-bounding-box" aria-hidden="true"></i><span><?= Lang::e('res.tool.foundation') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="countertop" aria-pressed="false" title="<?= Lang::e('res.tool.countertop.title') ?>"><i class="bi bi-square-half" aria-hidden="true"></i><span><?= Lang::e('res.tool.countertop') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="stair" aria-pressed="false" title="<?= Lang::e('res.tool.stair.title') ?>"><i class="bi bi-reception-4" aria-hidden="true"></i><span><?= Lang::e('res.tool.stair') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="railing" aria-pressed="false" title="<?= Lang::e('res.tool.railing.title') ?>"><i class="bi bi-distribute-horizontal" aria-hidden="true"></i><span><?= Lang::e('res.tool.railing') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="framing" aria-pressed="false" title="<?= Lang::e('res.tool.framing.title') ?>"><i class="bi bi-grid-3x3" aria-hidden="true"></i><span><?= Lang::e('res.tool.framing') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="terrain" aria-pressed="false" title="<?= Lang::e('res.tool.terrain.title') ?>"><i class="bi bi-image-alt" aria-hidden="true"></i><span><?= Lang::e('res.tool.terrain') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="pad" aria-pressed="false" title="<?= Lang::e('res.tool.pad.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('res.tool.pad') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="paving" aria-pressed="false" title="<?= Lang::e('res.tool.paving.title') ?>"><i class="bi bi-signpost-split" aria-hidden="true"></i><span><?= Lang::e('res.tool.paving') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="section" aria-pressed="false" title="<?= Lang::e('res.tool.section.title') ?>"><i class="bi bi-slash-square" aria-hidden="true"></i><span><?= Lang::e('res.tool.section') ?></span></button>
+                  </div>
+                </details>
               </div>
-            </details>
-            <?php /* Modify (0.6 DF.17, bim-draw): model-trim-ui.js through model-ui.js extend(). */ ?>
-            <details class="bc-mb-more" data-modify-tools>
-              <summary class="bc-tool" title="<?= Lang::e('model.tools.modify.title') ?>"><i class="bi bi-scissors" aria-hidden="true"></i><span><?= Lang::e('model.tools.modify') ?></span></summary>
-              <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('model.tools.modify') ?>">
-                <button type="button" class="bc-tool" data-mtool="trim" aria-pressed="false" title="<?= Lang::e('model.tool.trim.title') ?>"><i class="bi bi-arrows-collapse-vertical" aria-hidden="true"></i><span><?= Lang::e('model.tool.trim') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="corner" aria-pressed="false" title="<?= Lang::e('model.tool.corner.title') ?>"><i class="bi bi-bounding-box-circles" aria-hidden="true"></i><span><?= Lang::e('model.tool.corner') ?></span></button>
+            </div>
+            <div class="bc-tool-group" role="group" data-tb-key="Edit" aria-label="<?= Lang::e('model.bar.group.edit') ?>">
+              <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('model.bar.group.edit') ?></span>
+              <div class="bc-tool-row">
+                <?php /* Modify (0.6 DF.17, bim-draw): model-trim-ui.js through model-ui.js extend(). */ ?>
+                <details class="bc-mb-more" data-modify-tools>
+                  <summary class="bc-tool" title="<?= Lang::e('model.tools.modify.title') ?>"><i class="bi bi-scissors" aria-hidden="true"></i><span><?= Lang::e('model.tools.modify') ?></span></summary>
+                  <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('model.tools.modify') ?>">
+                    <button type="button" class="bc-tool" data-mtool="trim" aria-pressed="false" title="<?= Lang::e('model.tool.trim.title') ?>"><i class="bi bi-arrows-collapse-vertical" aria-hidden="true"></i><span><?= Lang::e('model.tool.trim') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="corner" aria-pressed="false" title="<?= Lang::e('model.tool.corner.title') ?>"><i class="bi bi-bounding-box-circles" aria-hidden="true"></i><span><?= Lang::e('model.tool.corner') ?></span></button>
+                  </div>
+                </details>
+                <?php /* Annotate (0.6 DC.117 (c)(d), bim-views_PART_2): a callout of this view (views-ui.js) and drafting drawn in it (drafting-ui.js). */ ?>
+                <details class="bc-mb-more" data-annot-tools>
+                  <summary class="bc-tool" title="<?= Lang::e('model.tools.annot.title') ?>"><i class="bi bi-pencil-square" aria-hidden="true"></i><span><?= Lang::e('model.tools.annot') ?></span></summary>
+                  <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('model.tools.annot') ?>">
+                    <button type="button" class="bc-tool" data-mtool="callout" aria-pressed="false" title="<?= Lang::e('model.tool.callout.title') ?>"><i class="bi bi-zoom-in" aria-hidden="true"></i><span><?= Lang::e('model.tool.callout') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="dline" aria-pressed="false" title="<?= Lang::e('model.tool.dline.title') ?>"><i class="bi bi-slash-lg" aria-hidden="true"></i><span><?= Lang::e('model.tool.dline') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="dpoly" aria-pressed="false" title="<?= Lang::e('model.tool.dpoly.title') ?>"><i class="bi bi-activity" aria-hidden="true"></i><span><?= Lang::e('model.tool.dpoly') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="drect" aria-pressed="false" title="<?= Lang::e('model.tool.drect.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('model.tool.drect') ?></span></button>
+                    <button type="button" class="bc-tool" data-mtool="dhatch" aria-pressed="false" title="<?= Lang::e('model.tool.dhatch.title') ?>"><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i><span><?= Lang::e('model.tool.dhatch') ?></span></button>
+                  </div>
+                </details>
+                <?php /* A point cloud's slice on the plan (0.6 DF.22, bim-draw): cloud-slice-ui.js shows this menu while a cloud is open. */ ?>
+                <details class="bc-mb-more" data-scan-tools hidden>
+                  <summary class="bc-tool" title="<?= Lang::e('model.scan.title') ?>"><i class="bi bi-cloud-haze2" aria-hidden="true"></i><span><?= Lang::e('model.scan') ?></span></summary>
+                  <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('model.scan') ?>">
+                    <button type="button" class="bc-tool" data-scan-slice aria-pressed="true"><span><?= Lang::e('model.scan.slice') ?></span></button>
+                    <label class="bc-mb-field"><span><?= Lang::e('model.scan.thick') ?></span> <input type="text" class="bc-input bc-num" data-scan-thick size="6"></label>
+                    <button type="button" class="bc-tool" data-scan-floor title="<?= Lang::e('model.scan.floor.title') ?>"><span><?= Lang::e('model.scan.floor') ?></span></button>
+                    <button type="button" class="bc-tool" data-scan-square title="<?= Lang::e('model.scan.square.title') ?>"><span><?= Lang::e('model.scan.square') ?></span></button>
+                    <button type="button" class="bc-tool" data-scan-reset><span><?= Lang::e('model.scan.resetbtn') ?></span></button>
+                  </div>
+                </details>
               </div>
-            </details>
-            <?php /* Annotate (0.6 DC.117 (c)(d), bim-views_PART_2): a callout of this view (views-ui.js) and drafting drawn in it (drafting-ui.js). */ ?>
-            <details class="bc-mb-more" data-annot-tools>
-              <summary class="bc-tool" title="<?= Lang::e('model.tools.annot.title') ?>"><i class="bi bi-pencil-square" aria-hidden="true"></i><span><?= Lang::e('model.tools.annot') ?></span></summary>
-              <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('model.tools.annot') ?>">
-                <button type="button" class="bc-tool" data-mtool="callout" aria-pressed="false" title="<?= Lang::e('model.tool.callout.title') ?>"><i class="bi bi-zoom-in" aria-hidden="true"></i><span><?= Lang::e('model.tool.callout') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="dline" aria-pressed="false" title="<?= Lang::e('model.tool.dline.title') ?>"><i class="bi bi-slash-lg" aria-hidden="true"></i><span><?= Lang::e('model.tool.dline') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="dpoly" aria-pressed="false" title="<?= Lang::e('model.tool.dpoly.title') ?>"><i class="bi bi-activity" aria-hidden="true"></i><span><?= Lang::e('model.tool.dpoly') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="drect" aria-pressed="false" title="<?= Lang::e('model.tool.drect.title') ?>"><i class="bi bi-square" aria-hidden="true"></i><span><?= Lang::e('model.tool.drect') ?></span></button>
-                <button type="button" class="bc-tool" data-mtool="dhatch" aria-pressed="false" title="<?= Lang::e('model.tool.dhatch.title') ?>"><i class="bi bi-grid-3x3-gap" aria-hidden="true"></i><span><?= Lang::e('model.tool.dhatch') ?></span></button>
-              </div>
-            </details>
-            <?php /* A point cloud's slice on the plan (0.6 DF.22, bim-draw): cloud-slice-ui.js shows this menu while a cloud is open. */ ?>
-            <details class="bc-mb-more" data-scan-tools hidden>
-              <summary class="bc-tool" title="<?= Lang::e('model.scan.title') ?>"><i class="bi bi-cloud-haze2" aria-hidden="true"></i><span><?= Lang::e('model.scan') ?></span></summary>
-              <div class="bc-mb-menu" role="group" aria-label="<?= Lang::e('model.scan') ?>">
-                <button type="button" class="bc-tool" data-scan-slice aria-pressed="true"><span><?= Lang::e('model.scan.slice') ?></span></button>
-                <label class="bc-mb-field"><span><?= Lang::e('model.scan.thick') ?></span> <input type="text" class="bc-input bc-num" data-scan-thick size="6"></label>
-                <button type="button" class="bc-tool" data-scan-floor title="<?= Lang::e('model.scan.floor.title') ?>"><span><?= Lang::e('model.scan.floor') ?></span></button>
-                <button type="button" class="bc-tool" data-scan-square title="<?= Lang::e('model.scan.square.title') ?>"><span><?= Lang::e('model.scan.square') ?></span></button>
-                <button type="button" class="bc-tool" data-scan-reset><span><?= Lang::e('model.scan.resetbtn') ?></span></button>
-              </div>
-            </details>
-          </span>
-          <span class="bc-mb-right">
-            <button type="button" class="bc-tool" data-model-dims aria-pressed="true" title="<?= Lang::e('model.dims.title') ?>"><i class="bi bi-arrows" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('model.dims') ?></span></button>
-            <button type="button" class="bc-tool" data-model-print title="<?= Lang::e('model.print.title') ?>"><i class="bi bi-printer" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('model.print') ?></span></button>
-            <button type="button" class="bc-tool" data-res-sheetsopen title="<?= Lang::e('res.sh.open.title') ?>"><i class="bi bi-files" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('res.sh.title') ?></span></button>
-            <button type="button" class="bc-tool" data-res-takeoff data-handoff-url="<?= e($__takeoffUrl) ?>" title="<?= Lang::e('res.to.title') ?>"><i class="bi bi-calculator" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('res.to.button') ?></span></button>
-            <button type="button" class="bc-tool" data-model-fit title="<?= Lang::e('model.fit.title') ?>"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i><span class="visually-hidden"><?= Lang::e('model.fit') ?></span></button>
-          </span>
+            </div>
+            <div class="bc-tool-group" role="group" data-tb-key="Library" aria-label="<?= Lang::e('model.bar.group.library') ?>">
+              <span class="bc-tool-label" aria-hidden="true"><?= Lang::e('model.bar.group.library') ?></span>
+              <div class="bc-tool-row" data-mb-library></div>
+            </div>
+          </div>
         </div>
         <div class="bc-modelbar-row" data-mopts="wall" hidden>
           <label><span class="visually-hidden"><?= Lang::e('model.wall.type') ?></span><select class="bc-mb-select" data-model-walltype aria-label="<?= Lang::e('model.wall.type') ?>"></select></label>
@@ -611,10 +684,20 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
           <label><span><?= Lang::e('mep.airflow') ?></span> <input type="text" class="bc-input bc-num" data-mep-flow size="5"> <span class="bc-sub" data-mep-flowunit></span></label>
           <label><span><?= Lang::e('mep.rate') ?></span> <input type="text" class="bc-input bc-num" data-mep-rate size="5"> <span class="bc-sub" data-mep-rateunit></span></label>
           <button type="button" class="btn-line btn-sm-cc" data-mep-sizeit title="<?= Lang::e('mep.sizeit.title') ?>"><?= Lang::e('mep.sizeit') ?></button>
+          <label><span><?= Lang::e('mep.dc.piece') ?></span> <input type="text" class="bc-input bc-num" data-mep-piece size="5"></label>
         </div>
         <div class="bc-modelbar-row" data-mopts="valve" hidden>
           <label><span class="visually-hidden"><?= Lang::e('mep.valve.kind') ?></span><select class="bc-mb-select" data-mep-valve aria-label="<?= Lang::e('mep.valve.kind') ?>"></select></label>
         </div>
+        <?php /* Equipment options (0.7 LC.9): mep/equip-ui.js fills the kind list and the kind's own size fields. */ ?>
+        <div class="bc-modelbar-row" data-mopts="equip" hidden>
+          <label><span class="visually-hidden"><?= Lang::e('mep.eq.kind') ?></span><select class="bc-mb-select" data-eq-kind aria-label="<?= Lang::e('mep.eq.kind') ?>"></select></label>
+          <span class="bc-eq-fields" data-eq-fields></span>
+          <label><span><?= Lang::e('mep.z.short') ?></span> <input type="text" class="bc-input bc-num" data-eq-z size="6" aria-label="<?= Lang::e('mep.z') ?>"></label>
+          <label><span><?= Lang::e('mep.eq.tag') ?></span> <input type="text" class="bc-input" data-eq-tag size="7"></label>
+        </div>
+        <?php /* The Connections check's list (0.7 LC.9): shown after Check connections, closed with its button. */ ?>
+        <div class="bc-modelbar-row bc-mep-issues-row" data-mep-issues hidden></div>
         <div class="bc-modelbar-row" data-mopts="site" hidden>
           <span class="bc-sub" data-site-area></span>
           <span><?= Lang::e('model.site.building') ?>:</span>
@@ -711,6 +794,8 @@ $__rvtPreview = $__rvtVer !== '' ? "/assets/vendor/$__rvtLib/$__rvtVer/rvt.js" :
       <div class="bc-dwg3d" data-dwg3d hidden><canvas data-dwg3d-canvas aria-label="<?= Lang::e('ui.dwg3d.canvas.label') ?>"></canvas></div>
       <p class="bc-coords" data-coords aria-hidden="true"></p>
       <div class="bc-equip" data-equip hidden></div>
+      <?php /* A view switch that takes a while (bimcraft.js working()): shown at once, visible after 0.4 s (bimcraft.css). */ ?>
+      <div class="bc-busy" data-dwg-busy role="status" hidden><span class="bc-busy-spin" aria-hidden="true"></span><span><?= Lang::e('dwg.busy') ?></span></div>
     </div>
 
     <div class="bc-card bc-folder" data-folder hidden></div>

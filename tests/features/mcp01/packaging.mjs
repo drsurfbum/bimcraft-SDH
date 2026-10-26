@@ -7,12 +7,12 @@ import assert from 'node:assert/strict';
 import {execFileSync,spawnSync} from 'node:child_process';
 import {buildMirror} from '../../../devshell/test.mjs';
 const out=path.resolve('.cc-test/mcp01-package');fs.mkdirSync(out,{recursive:true});buildMirror();
-execFileSync(process.execPath,['.cc-test/tools/mcp/pack.mjs','--out',path.join(out,'build'),'--tgz'],{stdio:'pipe',env:{...process.env,npm_config_cache:path.join(out,'npm-cache')}});
-const tgz=path.join(out,'drsurfbum-bimcraft-mcp-0.4.0-mcp01.1.tgz'),consumer=fs.mkdtempSync(path.join(os.tmpdir(),'mcp01-consumer-'));
+execFileSync(process.execPath,['.cc-test/tools/mcp/pack.mjs','--bimcraft-only','--out',path.join(out,'build'),'--tgz'],{stdio:'pipe',env:{...process.env,npm_config_cache:path.join(out,'npm-cache')}});
+const tgz=path.join(out,'drsurfbum-bimcraft-mcp-0.7.0-mcp01.1.tgz'),consumer=fs.mkdtempSync(path.join(os.tmpdir(),'mcp01-consumer-'));
 execFileSync('tar',['-xzf',tgz,'-C',consumer]);const packed=path.join(consumer,'package'),server=path.join(packed,'mcp/server.mjs');
 const env={...process.env,MCP01_SERVER:server,MCP01_OUT:path.join(out,'consumer')};delete env.CADCRAFT_APPS;delete env.NODE_PATH;
 execFileSync(process.execPath,['tests/features/mcp01/headless.mjs'],{env,stdio:'inherit'});
-const manifest=JSON.parse(fs.readFileSync(path.join(packed,'package.json')));assert.equal(manifest.name,'@drsurfbum/bimcraft-mcp');assert.equal(manifest.version,'0.4.0-mcp01.1');
+const manifest=JSON.parse(fs.readFileSync(path.join(packed,'package.json')));assert.equal(manifest.name,'@drsurfbum/bimcraft-mcp');assert.equal(manifest.version,'0.7.0-mcp01.1');
 const files=[];
 for(const name of ['agents.js','agent-history.js','material-wall-agent.js','model-ops.js','model-walls.js','wall-assemblies.js','project-materials.js','ifc-edit.js']) {
  const source=fs.readFileSync(path.join('app',name)),shipped=fs.readFileSync(path.join(packed,'cli/apps/bimcraft',name));assert.deepEqual(shipped,source);

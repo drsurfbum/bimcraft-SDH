@@ -16,7 +16,7 @@
  *   syncColumns(w, storey) → n remade (their level's height changed)
  *   Errors: model.err.col.size (under 50 mm), model.err.col.height (under 300 mm).
  */
-import { op } from './model-ops.js';
+import { reserveGuid, op } from './model-ops.js';
 import { readLevels, levelAbove } from './model-levels.js';
 import { ids, val } from './ifc-util.js';
 import { round } from './model-write.js';
@@ -98,7 +98,7 @@ export function placeColumns(spec) {
     if (!st) refuse('model.err.nolevel');
     const made = new Map(), out = [];
     s.points.forEach((p, i) => {
-      if (!guids[i]) guids[i] = val(w.guid());
+      reserveGuid(w, guids, i);
       const id = writeColumn(w, { ...s, id: null, guid: guids[i], storey: st, at: p });
       made.set(guids[i], id); out.push(id);
     });

@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { buildMirror } from '../../../devshell/test.mjs';
 import { stdio, initialized, tool } from './client.mjs';
 import { workflow, REQUIRED } from './workflow.mjs';
+import {compatibilityCalls} from './compatibility-calls.mjs';
 import { corruptFixtures } from './negative-fixtures.mjs';
 const out=path.resolve(process.env.MCP01_OUT || '.cc-test/mcp01-headless');fs.mkdirSync(out,{recursive:true});
 buildMirror();
@@ -14,7 +15,7 @@ const server=path.resolve(process.env.MCP01_SERVER || '.cc-test/tools/mcp/server
 const client=stdio(server,out),checks=[];
 const check=label=>{checks.push(label);console.log('PASS',label);};
 try {
- const init=await initialized(client);assert.equal(init.serverInfo.version,'0.4.0-mcp01.1');
+ const init=await initialized(client);assert.equal(init.serverInfo.version,'0.7.0-mcp01.1');
  const catalog=(await client.request('tools/list')).result.tools;
  for(const name of REQUIRED)assert.ok(catalog.some(t=>t.name===name),'missing '+name);
  assert.equal(catalog.find(t=>t.name==='walls_add').inputSchema.properties.type.enum,undefined);
@@ -25,6 +26,7 @@ try {
  const other=(await tool(client,'ifc_open',{path:originalFile})).doc;
  const separate=await tool(client,'walls_list',{doc:other});
  const call=(name,args={},fails=false)=>tool(client,name,{doc,...args},fails);
+ await compatibilityCalls(call,check);
  const result=await workflow(call,check);
  await tool(client,'walls_edit',{doc:other,documentId:result.documentId,expectedRevision:result.revision,walls:[separate.walls[0].guid],changes:{height:2900}},true);
  assert.deepEqual(await tool(client,'walls_list',{doc:other}),separate);assert.deepEqual(fs.readFileSync(originalFile),originalBytes);
@@ -41,6 +43,7 @@ try {
   await initialized(denied);const d=(await tool(denied,'ifc_open',{path:originalFile})).doc;
   const before=await tool(denied,'walls_list',{doc:d});
   await tool(denied,'material_edit',{doc:d,documentId:state.documentId,expectedRevision:state.revision,id:'material-studs',changes:{defaultThickness:300}},true);
+  await tool(denied,'element_set',{doc:d,guid:before.walls[0].guid,attribute:'Name',value:'denied'},true);
   await tool(denied,'ifc_save',{doc:d,path:path.join(out,'denied.ifc')},true);
   assert.deepEqual(await tool(denied,'walls_list',{doc:d}),before);assert.ok(!fs.existsSync(path.join(out,'denied.ifc')));
  } finally {await denied.close();}
@@ -53,6 +56,8 @@ try {
   const read=await tool(client,'assemblies_list',{doc:bad});assert.ok(read.diagnostics.length);
   const before=(await tool(client,'ifc_save',{doc:bad,path:file+'.before.ifc',overwrite:true}));
   await tool(client,'material_create',{doc:bad,documentId:read.documentId,expectedRevision:read.revision,id:'material-refused',name:'Refused',defaultThickness:3,color:'#123456',fill:'solid',fillColor:'#abcdef'},true);
+  const badWalls=await tool(client,'walls_list',{doc:bad});const wall=badWalls.walls[0];
+  for(const [name,args] of [['element_set',{guid:wall.guid,attribute:'Name',value:'no bypass'}],['wall_change',{guid:wall.guid,type:'int-2x4'}],['elements_delete',{guids:[wall.guid]}]])await tool(client,name,{doc:bad,...args},true);
   const after=await tool(client,'ifc_save',{doc:bad,path:file+'.after.ifc',overwrite:true});
   const data=p=>fs.readFileSync(p,'utf8').replace(/FILE_NAME\([^;]+;/,'HEADER_TIMESTAMP');
   assert.equal(data(before.path),data(after.path));await tool(client,'doc_close',{doc:bad});

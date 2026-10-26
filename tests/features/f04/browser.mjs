@@ -102,7 +102,7 @@ try{
  check('actual downloaded IFC reopens with fine detail, material edits and unchanged geometry',reopened.detail==='fine');
  await frame(page,{x0:4300,y0:-500,x1:6100,y1:700});await page.screenshot({path:path.join(out,'reopened.png')});
  const isolated=await context.newPage();await open(isolated,'http://127.0.0.1:8022',path.join(root,'fixtures/f04/layered-plans.ifc'));const clean=await snapshot(isolated);assert.deepEqual(clean.materials,initial.materials);check('second project retains original material styles and coarse detail',clean.detail==='coarse');await isolated.close();
- check('no unexpected browser errors',report.console.every(x=>x.type!=='pageerror'&&x.text.includes('/bootstrap-icons/current/bootstrap-icons.min.css')));
+ check('no unexpected browser errors',report.console.every(x=>x.type!=='pageerror'&&(x.text.includes('/bootstrap-icons/current/bootstrap-icons.min.css')||(x.type==='warning'&&x.text==='Failed to create WebGPU Context Provider'))));
  report.status='PASS';
 }catch(e){report.status='FAIL';report.error=e.stack||String(e);console.error(e);if(page){await page.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});fs.writeFileSync(path.join(out,'failure.html'),await page.content().catch(()=>''));}process.exitCode=1;}
 finally{saveReport();console.log(JSON.stringify(report,null,2));await browser?.close();await new Promise(r=>server?server.close(r):r());await new Promise(r=>baselineServer?baselineServer.close(r):r());}

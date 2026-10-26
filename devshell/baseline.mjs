@@ -38,6 +38,7 @@ export function runStages(plan, { cwd = ROOT, reportDir = path.join(ROOT, '.cc-t
     const result = spawnSync(process.execPath, stage.args, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, CC_DEVSHELL: '1', NODE_OPTIONS: [process.env.NODE_OPTIONS, '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON'].filter(Boolean).join(' ') } });
     fs.writeFileSync(path.join(reportDir, stage.name + '.log'), (result.stdout || '') + (result.stderr || ''));
     const row = assess(stage, result); results.push(row);
+    if (row.status !== 'PASS') for (const line of ((result.stdout || '') + (result.stderr || '')).split(/\r?\n/)) if (/^\s*FAIL\s/.test(line)) console.error(line);
     console.log(`${row.status} ${row.name}: ${row.passed} passed, ${row.failed} failed; ${row.skipped.length} skip/availability notices${row.error ? '; ' + row.error : ''}`);
     for (const skip of row.skipped) console.log(skip);
   }

@@ -2,12 +2,12 @@ name: F06 browser acceptance
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, integration/upstream-0.7-20261025]
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: f06-browser-${{ github.ref }}
+  group: f06-browser-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   browser:
@@ -47,4 +47,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: f06-browser
-          path: .cc-test/f06-browser/
+          path: |
+            .cc-test/f06-browser/report.json
