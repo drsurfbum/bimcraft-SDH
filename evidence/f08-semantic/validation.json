@@ -1,0 +1,21 @@
+{
+  "approvedMain": "21ff2842e1925f148e9b75c404476b59333f7475",
+  "reviewedF08": "82e680f389a11cc84e79f3fcca79581456e6e79c",
+  "merge": "45fe2b99f9c7f2d0b71819bb0d1e3aa7f5ef780f",
+  "initialImplementation": "b65ad325220cd62b96c7d58179d4a3b4eb3245c6",
+  "finalImplementationAndCodeCutoff": "9f9be939212be29fa2d3851fe2f44ac4eaff61a2",
+  "supersededInterimEvidence": "a6a525afc6ee1595e908b7a9e8332e61f524d042",
+  "focusedTests": 79,
+  "foundationF28Tests": 39,
+  "sourceGroups": 10,
+  "sourceCalls": 361,
+  "packageGroups": 10,
+  "packageCalls": 361,
+  "liveGroups": 11,
+  "liveCalls": 335,
+  "nativeProjectSwitch": true,
+  "nativeWholeProjectIfcClosure": true,
+  "ambiguousParticipatingNeighborRefused": true,
+  "F08-PM-01": "OPEN pending PM verification",
+  "finalHeadCI": "See PR #13 exact final evidence SHA and all eleven run links; interim results are not substituted."
+}

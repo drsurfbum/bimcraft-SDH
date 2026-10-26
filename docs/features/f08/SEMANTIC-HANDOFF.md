@@ -14,12 +14,20 @@ partial beyond the bounded straight-wall slice.
 | Normal two-parent merge of approved main | `45fe2b99f9c7f2d0b71819bb0d1e3aa7f5ef780f` |
 | Application/tools/protection implementation | `b65ad325220cd62b96c7d58179d4a3b4eb3245c6` |
 | Complete CSV and actual live schema checks | `4866e5c5c7af05c5dab7c7a7e9a0451e2cce18da` |
-| Complete code/test cutoff, including approved-main measurement pin | `2c1cb9e8df78d633874e88418d92acddb907ee11` |
+| Previous complete code/test cutoff | `2c1cb9e8df78d633874e88418d92acddb907ee11` |
+| Participating-neighbor identity refusal | `ae9e6394426a2330ef4134fe25981c268a3c740c` |
+| Final application implementation, including closed-owner progress | `9f9be939212be29fa2d3851fe2f44ac4eaff61a2` |
+| Complete final code/test cutoff | `9f9be939212be29fa2d3851fe2f44ac4eaff61a2` |
 
-The final delivery is the evidence-only commit introducing this handoff. PR #13's
+The final delivery is the latest evidence-only commit updating this handoff.
+Interim delivery `a6a525afc6ee1595e908b7a9e8332e61f524d042` is superseded by the
+participating-neighbor refusal and whole-project closure follow-ups. PR #13's
 execution record identifies its exact 40-character SHA and all final-head run URLs;
 implementation-head results are explicitly separate. No subsequent evidence-only
-commit should be made without rerunning every applicable workflow again.
+commit should be made without rerunning every applicable workflow again. The interim
+F03 run hit its existing 30-minute job limit after slow dependency setup; small and
+medium completed, large did not. Its canceled run/artifact remain visible; the new
+final evidence head runs the complete workload again, without reduced samples.
 
 Checkout: `/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-07-candidate`.
 Local branch remains `candidate/f08-07-final-published`; public PR branch remains
@@ -72,26 +80,33 @@ or legacy same-value explicit edits migrate in one undoable step.
 A native active-project switch during the real HTTP edit's awaited rebuild proves
 honest completed progress: `POST_COMMIT_INTERRUPTED`, `changed:true`, one completed
 original history step and original-document readback. Replacement IFC bytes and
-both history stacks remain unchanged; ordinary Undo on the original works. Unit
-checks additionally cover precommit switching and postcommit notification failure.
+both history stacks remain unchanged; ordinary Undo on the original works. A second
+native test replaces the entire project through the existing live-open entrypoint, closing the
+original IFC: the confirmed step still reports `changed:true`, captured commit
+readback is explicitly labeled, and the fresh replacement remains unedited with
+zero history entries. Undo availability is not invented for the closed IFC. Unit
+checks additionally cover precommit switching, ambiguous participating neighbors,
+postcommit notification failure, original IFC closure and unchanged-editor handle
+rebinding. Normal renderer reparsing is retained; it is not confused with an
+authorized new mutation or a replacement project readback.
 Headless binding rechecks that a handle still owns its session across awaits.
 Accepted MCP-01 person ownership, replay and native multi-step Undo switch tests
 are retained and independently repeated.
 
 ## Executed evidence and limits
 
-All application modules are byte-identical between the application implementation
-and complete code cutoff. Local semantic reports are pinned to `2c1cb9e` and are
+Final application module hashes are verified against the isolated package. Local
+semantic reports are pinned to their recorded code/test cutoff and are
 supplemented by every required final-delivery CI workflow, whose exact links and
 executed counts are in PR #13.
 
 | Check | Executed result |
 | --- | --- |
-| Combined F08/MCP focused tests | **76 passed**, zero failed/skipped: retained F08 20 + new semantic 14 + retained MCP-01 42 |
+| Combined F08/MCP focused tests | **79 passed**, zero failed/skipped: retained F08 20 + new semantic 17 + retained MCP-01 42 |
 | Retained foundation/F28 focused checks | **39 passed**, zero failed/skipped |
-| Source stdio MCP | **10 groups / 353 actual calls**; catalog 46 in exercised permission groups; all three schemas equal shared definitions plus doc |
-| Isolated packaged consumer | **10 groups / 353 calls**; catalog 46; fork name/version and nine application module hashes exact; deleting required module makes startup fail |
-| Live token-protected HTTP MCP | **10 groups / 327 calls**; catalog 32 in exercised permission groups; actual schemas equal shared definitions; native switch and six negative-record/geometry fixtures |
+| Source stdio MCP | **10 groups / 361 actual calls**; catalog 46 in exercised permission groups; all three schemas equal shared definitions plus doc |
+| Isolated packaged consumer | **10 groups / 361 calls**; catalog 46; fork name/version and nine application module hashes exact; deleting required module makes startup fail |
+| Live token-protected HTTP MCP | **11 groups / 335 calls**; catalog 32 in exercised permission groups; actual schemas equal shared definitions; native switch and seven negative-record/geometry fixtures |
 | Each semantic surface | Both physically joined ends × all allow/cap combinations, T/node retention, **24 ordinary Undo/Redo cycles**, genuine no-ops, invalid/foreign/stale/permission refusals, actual save/reopen |
 | Independent semantic saved IFC | Three actual saves × 18 walls, zero EXPRESS/schema findings; all physical profiles within **0.005 mm**, two unchanged dimension records, hosted openings/types retained |
 | Existing MCP-01 regressions | Source/package/live workflows and independent saved-file checks pass; native multi-step Undo/project-switch assertions repeat twice (six checks); alias-owner behavior retained |
@@ -140,7 +155,8 @@ The local legacy Undo byte mismatch was DATA-row ordering only: exact full STEP
 entities, IDs, values and multiplicity are compared after row-order normalization.
 Protection refusals still compare raw bytes unchanged. The initial schema-mirror
 race, overwrite-fixture setup error, new saved/matrix-bound mix-up, Python reader
-setup failures and all retries are retained in [attempts.json](../../../evidence/f08-semantic/attempts.json).
+setup failures, reproduced participating-neighbor bypass, lost closed-owner receipt
+and all retries are retained in [attempts.json](../../../evidence/f08-semantic/attempts.json).
 There is no broad console-warning suppression. Local Mac/Chromium 151 software-GPU
 results and pinned CI Linux/Playwright results remain distinct. PHP/optional-reader
 availability is not counted as passing execution.

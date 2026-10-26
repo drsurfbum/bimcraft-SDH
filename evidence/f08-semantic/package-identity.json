@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "head": "2c1cb9e8df78d633874e88418d92acddb907ee11",
+  "head": "9f9be939212be29fa2d3851fe2f44ac4eaff61a2",
   "package": "@drsurfbum/bimcraft-mcp",
   "version": "0.7.0-mcp01.1",
   "files": [
@@ -10,7 +10,7 @@
     },
     {
       "file": "wall-join-agent.js",
-      "sha256": "7c90ccd9fa4a21ff9d9fe1956a803b227adb607c1f97589edb09c2ff229f8079"
+      "sha256": "791d144f17fbfda40af4022f2d76b30ec9f5cb7385dab7bcd551c9e5f140c39c"
     },
     {
       "file": "agent-history.js",
@@ -41,6 +41,6 @@
       "sha256": "3f6d5edd4c0df75f6df01b9a0a0f08a4416a94deb82f211a165c9cf4c271a221"
     }
   ],
-  "archiveSha256": "278c4d70f60f324867136c57474262b64505ff93f4c1251c51667bccb4acd83b",
+  "archiveSha256": "67ab0a65b53e642c0dd806bfd8a52eba8da3317d5114c767f0e1399b860d5e3b",
   "missingModuleStartupRefused": true
 }

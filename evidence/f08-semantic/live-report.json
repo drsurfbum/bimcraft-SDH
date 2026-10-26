@@ -1,5 +1,5 @@
 {
-  "head": "2c1cb9e8df78d633874e88418d92acddb907ee11",
+  "head": "9f9be939212be29fa2d3851fe2f44ac4eaff61a2",
   "checks": [
     "real Streamable HTTP initialization/discovery through live host.control",
     "nonmutating semantic readback and complete-storey diagnostic scope",
@@ -10,25 +10,26 @@
     "identical projects/names in separate live editors, wrong token, busy and denied edit/save/export retain both projects",
     "actual live MCP save/download/reopen preserves profiles/records and refuses old instance binding",
     "native project switch during semantic edit reports completed original mutation; replacement bytes/both histories unchanged; original Undo works",
-    "actual live transport corrupt/duplicate/future/ambiguous/curved refusals preserve bytes and histories; legacy migration Undo restores every STEP entity (DATA row order normalized)"
+    "existing full-project live open closes original IFC yet preserves confirmed mutation progress; captured readback is labeled and replacement remains untouched",
+    "actual live transport corrupt/duplicate/future/ambiguous target and neighbor/curved refusals preserve bytes and histories; legacy migration Undo restores every STEP entity (DATA row order normalized)"
   ],
   "errors": [],
   "console": [
     {
       "type": "warning",
-      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+      "text": "[.WebGL-0x10c004e8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
     },
     {
       "type": "warning",
-      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+      "text": "[.WebGL-0x10c004e8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
     },
     {
       "type": "warning",
-      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+      "text": "[.WebGL-0x10c004e8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
     },
     {
       "type": "warning",
-      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+      "text": "[.WebGL-0x10c004e8e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
     },
     {
       "type": "warning",
@@ -39,7 +40,7 @@
   "ownership": {
     "status": "PASS",
     "receipt": {
-      "documentId": "bim-9b666be5-d0c6-431e-a996-97a795ef2078",
+      "documentId": "bim-d423bcb4-bab1-4286-a2e6-545f2328ee2f",
       "wall": "0F08W00000000000000014",
       "end": "a",
       "changed": true,
@@ -56,8 +57,9 @@
       ],
       "undo": {
         "owner": "assistant",
+        "available": false,
         "label": "Assistant: wall_join_end_set",
-        "documentId": "bim-9b666be5-d0c6-431e-a996-97a795ef2078",
+        "documentId": "bim-d423bcb4-bab1-4286-a2e6-545f2328ee2f",
         "revision": 1
       },
       "error": "Document changed during request."
@@ -71,7 +73,48 @@
     "mockedDispatcher": false,
     "mockedMutation": false
   },
+  "fileClose": {
+    "status": "PASS",
+    "receipt": {
+      "documentId": "bim-d423bcb4-bab1-4286-a2e6-545f2328ee2f",
+      "revision": 3,
+      "wall": "0F08W00000000000000014",
+      "end": "a",
+      "endId": "0F08W00000000000000014:a",
+      "changed": true,
+      "completedSteps": 1,
+      "complete": false,
+      "code": "POST_COMMIT_INTERRUPTED",
+      "affectedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "geometryChangedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "readback": {
+        "phase": "synchronous-commit",
+        "originalDocumentReadable": false
+      },
+      "undo": {
+        "owner": "assistant",
+        "available": false,
+        "label": "Assistant: wall_join_end_set",
+        "documentId": "bim-d423bcb4-bab1-4286-a2e6-545f2328ee2f",
+        "revision": 3
+      },
+      "error": "The active document changed or became busy after the original edit completed."
+    },
+    "proof": {
+      "existingLiveOpenInvoked": true,
+      "originalIfcClosed": true,
+      "replacementHistorySteps": 0
+    },
+    "mockedDispatcher": false,
+    "mockedMutation": false
+  },
   "catalogCount": 32,
-  "requests": 327,
+  "requests": 335,
   "status": "PASS"
 }

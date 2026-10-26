@@ -30,7 +30,9 @@ uses the existing operation without reusing an obsolete request binding. The
 headless closure also rechecks that its handle still owns the same session.
 
 Wall and storey selectors are explicit 22-character IFC GlobalIds. Duplicate wall
-GlobalIds are ambiguous, including a collision with another product. Selection,
+GlobalIds are ambiguous, including a collision with another product. Every wall
+in the participating storey must have unambiguous identity; a unique target does
+not authorize a first/last-match neighbor. This is rechecked at synchronous commit. Selection,
 names and STEP IDs never supply an implicit wall. Ends are literal `a` / `b`, with
 stable `endId = wall + ':' + end`, tied to the analytic axis. Axes are not reversed,
 split or replaced by these tools. Internal `node` and `tee` relations are read-only.
@@ -96,7 +98,7 @@ history step and empty affected lists. An absent or unversioned record with the
 same effective values is an **explicit migration**, not a no-op: it writes v1,
 may capture topology, and remains undoable. Read calls never perform this work.
 
-Successful results include the readback, `before` / `after` end values, `endId`,
+Successful results include synchronous commit-time readback (never a reread of a rebound IFC handle after awaited UI work), `before` / `after` end values, `endId`,
 `changed`, `completedSteps`, `complete` and an assistant `undo` receipt with the
 original editor's documentId/revision and actual history label. This is the
 accepted ordinary editor history, not a feature-local ownership token/journal.
@@ -114,6 +116,15 @@ native project switch returns `isError:true`, `code:'POST_COMMIT_INTERRUPTED'`,
 `changed:true`, `complete:false`, completed progress and readback from the original
 editor. It never claims rollback or `changed:false` after a confirmed mutation.
 The original editor retains its normal undo step; no foreign history is consumed.
+Normal rendering may reparse IFC behind the same editor. Commit-time results stay authoritative through that rebuild. If a whole-project replacement closes or rebinds the original IFC during notification,
+confirmed readback captured synchronously at commit is labeled with
+`readback.phase:'synchronous-commit'` and `originalDocumentReadable:false`.
+That flag means safe access through the request's current binding is unconfirmed;
+it is not a claim that every inactive editor's low-level allocation has been freed.
+Progress/revision uses accepted history state without reopening or retargeting the
+closed editor. The receipt marks Undo unavailable while original ownership is unconfirmed or closed. Unknown
+readback/affected data remains null if no confirmed capture is available; it is
+never replaced with pre-edit settings or an invented zero-change result.
 Ordinary MCP Undo/Redo, person ownership, awaited rebuild guards and interrupted
 history receipts use accepted MCP-01 behavior unchanged.
 

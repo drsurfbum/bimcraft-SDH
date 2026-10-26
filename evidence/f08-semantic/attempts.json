@@ -46,6 +46,31 @@
       "check": "local browser with PHP explicitly unavailable",
       "result": "14 functional checks pass; strict console gate FAIL",
       "reason": "24 locale/unit checks unavailable; Mac Chromium 151 SwiftShader ReadPixels warnings; no app exceptions; warnings not suppressed"
+    },
+    {
+      "check": "final participating-neighbor duplicate audit on interim a6a525a",
+      "result": "unique target accepted one edit despite ambiguous neighbor ID",
+      "fix": "ae9e639 checks every participating storey wall identity before reads/commit; seventh negative fixture passes through source/package/live; specific ambiguity refusal with unchanged IFC"
+    },
+    {
+      "check": "closed-owner receipt audit",
+      "result": "one confirmed mutation lost structured progress when original IFC closed",
+      "fix": "6d75937 and a1da34e preserve synchronous commit readback plus original history receipts; no post-await read through a rebound model handle; 9f9be93 also detects closure before editor pointer changes"
+    },
+    {
+      "check": "new native full-project replacement harness",
+      "result": "file-input attempt waited for existing unsaved-edit handling; later proof accidentally reread the rebound handle",
+      "fix": "existing live-open entrypoint exercises true project replacement; proof captures original API/handle at open entry, confirms closure and zero replacement history; all retries retained privately"
+    },
+    {
+      "check": "new handle-rebinding unit fixture first run",
+      "result": "fixture reader retained its closed original numeric handle",
+      "fix": "read replacement through actual editor/model handle; precommit refusal and postcommit original snapshot assertions pass"
+    },
+    {
+      "check": "interim a6a525a F03 run 40406146086",
+      "result": "cancelled at 30.3-minute job limit after small and medium; large incomplete",
+      "evidence": "artifact 12692752035 retained; no workload reduction or passing claim; corrected final evidence head reruns full workload"
     }
   ]
 }
