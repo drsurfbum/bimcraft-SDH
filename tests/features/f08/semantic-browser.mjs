@@ -48,7 +48,12 @@ try{
  report.ownership=await liveOwnership(page,call,info.file,info.a,settle,check);
  for(const n of info.negatives){
   await open(n.file);const s=await call('model_describe'),before=await fingerprint(page);
-  const read=await call('wall_joins_get',{documentId:s.documentId,wall:n.wall},n.kind==='duplicate-id');
+  const read=await call('wall_joins_get',{documentId:s.documentId,wall:n.wall},['duplicate-id','duplicate-neighbor'].includes(n.kind));
+  if(n.kind==='duplicate-neighbor'){
+   assert.match(JSON.stringify(read),/Ambiguous participating wall GlobalId/);
+   const diagnostic=await call('wall_join_diagnostics',{documentId:s.documentId,walls:[n.wall]},true);
+   assert.match(JSON.stringify(diagnostic),/Ambiguous participating wall GlobalId/);
+  }
   if(n.kind==='legacy'){
    assert.equal(read.record.classification,'legacy');fs.writeFileSync(path.join(out,'legacy-before-private.ifc'),Buffer.from(await page.evaluate(()=>Array.from(bimcraftLive.editor.api.file(bimcraftLive.editor.mid).save({timeStamp:'2026-10-26T12:00:00'})))));await call('wall_join_end_set',{documentId:s.documentId,expectedRevision:s.revision,wall:n.wall,end:'a',patch:{allow:true}});
    const now=await call('model_describe');await call('undo',{documentId:now.documentId,expectedRevision:now.revision,steps:1});
@@ -58,12 +63,12 @@ try{
    const canonical=buffer=>buffer.toString().replace(/DATA;\n([\s\S]*?)ENDSEC;/,(_,data)=>'DATA;\n'+data.trim().split('\n').sort((a,b)=>Number(a.match(/^#(\d+)/)?.[1]||0)-Number(b.match(/^#(\d+)/)?.[1]||0)).join('\n')+'\nENDSEC;');
    assert.equal(canonical(fs.readFileSync(path.join(out,'legacy-after-private.ifc'))),canonical(fs.readFileSync(path.join(out,'legacy-before-private.ifc'))));
   }else{
-   if(!['duplicate-id','curve'].includes(n.kind))assert.equal(read.record.classification,n.kind);
+   if(!['duplicate-id','duplicate-neighbor','curve'].includes(n.kind))assert.equal(read.record.classification,n.kind);
    await call('wall_join_end_set',{documentId:s.documentId,expectedRevision:s.revision,wall:n.wall,end:'a',patch:{allow:false}},true);
    assert.deepEqual(await fingerprint(page),before);
   }
  }
- check('actual live transport corrupt/duplicate/future/ambiguous/curved refusals preserve bytes and histories; legacy migration Undo restores every STEP entity (DATA row order normalized)');
+ check('actual live transport corrupt/duplicate/future/ambiguous target and neighbor/curved refusals preserve bytes and histories; legacy migration Undo restores every STEP entity (DATA row order normalized)');
  fs.writeFileSync(path.join(out,'expected.json'),JSON.stringify(result));fs.writeFileSync(path.join(out,'trace-private.json'),JSON.stringify(trace));
  assert.deepEqual(report.errors,[]);report.catalogCount=catalog.length;report.requests=trace.length;report.status='PASS';
  // Console warnings remain verbatim evidence. The retained F08 browser workflow owns its separate strict console gate.

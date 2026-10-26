@@ -12,10 +12,18 @@ const guid = { type: 'string', pattern: '^[0-3][0-9A-Za-z_$]{21}$' };
 const writer = ed => new ModelWriter(ed.W, ed.api, ed.mid);
 const fail = (code, message) => { throw Object.assign(new Error(message), { joinCode: code }); };
 function uniqueWall(w, guid) {
-  const matches = ids(w.api, w.mid, 'IFCPRODUCT', true).filter(id => val(w.api.GetLine(w.mid, id, false)?.GlobalId) === guid);
-  if (matches.length > 1) fail('AMBIGUOUS_ID', 'Ambiguous wall GlobalId.');
-  const wall = readWalls(w).find(x => x.guid === guid);
-  if (matches.length !== 1 || !wall) fail('WALL_NOT_FOUND', 'No authored wall with this GlobalId.');
+  const counts = new Map();
+  for (const id of ids(w.api, w.mid, 'IFCPRODUCT', true)) {
+    const key = val(w.api.GetLine(w.mid, id, false)?.GlobalId);
+    if (key) counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  if ((counts.get(guid) || 0) > 1) fail('AMBIGUOUS_ID', 'Ambiguous wall GlobalId.');
+  const walls = readWalls(w), wall = walls.find(x => x.guid === guid);
+  if (counts.get(guid) !== 1 || !wall) fail('WALL_NOT_FOUND', 'No authored wall with this GlobalId.');
+  // Join calculation/regeneration consumes the complete participating storey, not just the target.
+  // A unique target does not authorize resolving an ambiguous neighbor by first/last match.
+  if (walls.some(x => x.storey === wall.storey && counts.get(x.guid) !== 1))
+    fail('AMBIGUOUS_ID', 'Ambiguous participating wall GlobalId. Inspect the complete storey.');
   return wall;
 }
 function record(w, wall) {
@@ -93,6 +101,7 @@ export function wallJoinTools(env) {
         let committed = false, error = null;
         try {
           await env.apply('wall_join_end_set', current => {
+            uniqueWall(writer(current), a.wall);
             const result = operation(current);
             committed = true; return result;
           });

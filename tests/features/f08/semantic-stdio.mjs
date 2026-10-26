@@ -32,19 +32,24 @@ try{
  check('actual saved IFC semantic/profile reopen; identical-project separate editor unchanged; old instance token rejected');
  for(const n of info.negatives){
   const handle=(await invoke('ifc_open',{path:n.file})).doc,state=await invoke('model_describe',{doc:handle});
-  const read=await invoke('wall_joins_get',{doc:handle,documentId:state.documentId,wall:n.wall},n.kind==='duplicate-id');
+  const read=await invoke('wall_joins_get',{doc:handle,documentId:state.documentId,wall:n.wall},['duplicate-id','duplicate-neighbor'].includes(n.kind));
+  if(n.kind==='duplicate-neighbor'){
+   assert.match(JSON.stringify(read),/Ambiguous participating wall GlobalId/);
+   const diagnostic=await invoke('wall_join_diagnostics',{doc:handle,documentId:state.documentId,walls:[n.wall]},true);
+   assert.match(JSON.stringify(diagnostic),/Ambiguous participating wall GlobalId/);
+  }
   if(n.kind==='legacy'){
    assert.equal(read.record.classification,'legacy');
    await invoke('wall_join_end_set',{doc:handle,documentId:state.documentId,expectedRevision:state.revision,wall:n.wall,end:'a',patch:{allow:true}});
    await invoke('undo',{doc:handle,steps:1});
   }else{
-   if(!['duplicate-id','curve'].includes(n.kind)){assert.equal(read.record.classification,n.kind);assert.equal(read.record.effective,null);}
+   if(!['duplicate-id','duplicate-neighbor','curve'].includes(n.kind)){assert.equal(read.record.classification,n.kind);assert.equal(read.record.effective,null);}
    await invoke('wall_join_end_set',{doc:handle,documentId:state.documentId,expectedRevision:state.revision,wall:n.wall,end:'a',patch:{allow:false}},true);
   }
   const after=path.join(out,'negative-'+n.kind+'-saved.ifc');await invoke('ifc_save',{doc:handle,path:after,overwrite:true});assert.equal(normalized(after),normalized(n.file));
   await invoke('doc_close',{doc:handle});await invoke('wall_joins_get',{doc:handle,documentId:state.documentId,wall:n.wall},true);
  }
- check('six malformed/unsupported/duplicate/legacy/curve fixtures, closed documents; no partial IFC writes and undoable explicit migration');
+ check('seven malformed/unsupported/duplicate-target/duplicate-neighbor/legacy/curve fixtures, closed documents; no partial IFC writes and undoable explicit migration');
  const occupied=path.join(out,'preexisting.ifc');fs.copyFileSync(info.file,occupied);await invoke('ifc_save',{doc,path:occupied},true);
  await invoke('ifc_save',{doc,path:path.resolve(out,'..','forbidden.ifc'),overwrite:true},true);check('existing overwrite and allowed-root save boundaries retained');
  const readonly=stdio(server,out,'read');try{

@@ -104,3 +104,12 @@ test('ownership checks refuse precommit switches and report actual postcommit no
     else { assert.equal(r.structuredContent.changed, true); assert.equal(r.structuredContent.completedSteps, 1); assert.equal(r.structuredContent.code, 'POST_COMMIT_INTERRUPTED'); assert.equal(r.structuredContent.documentId, binding(m).documentId); }
   }
 });
+
+test('a unique target refuses ambiguous participating neighbor identities without changing bytes or either history', async () => {
+ const m=await model(), targetWall=target(m);m.change(changeWall(targetWall.guid,{joinSettings:targetWall.joinSettings}));
+ m.w().run(w=>{const walls=readWalls(w),neighbor=walls.find(x=>x.guid==='0F08W00000000000000015'),other=walls.find(x=>x.guid!==targetWall.guid&&x.guid!==neighbor.guid),line=w.touch(other.id);line.GlobalId=w.T('IFCGLOBALLYUNIQUEID',neighbor.guid);w.write(line);return{};});
+ const before=fingerprint(m),d=dispatcher(m),args=patch(m);
+ for(const [name,call]of [['wall_joins_get',{documentId:args.documentId,wall:args.wall}],['wall_join_diagnostics',{documentId:args.documentId,walls:[args.wall]}],['wall_join_end_set',args]]){
+  const r=await d.call(name,call);assert.equal(r.isError,true);assert.match(JSON.stringify(r),/Ambiguous participating wall GlobalId/);assert.deepEqual(fingerprint(m),before);
+ }
+});

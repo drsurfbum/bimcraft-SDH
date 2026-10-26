@@ -16,12 +16,13 @@ export async function semanticFixtures(out) {
  m.w().run(w=>{const ps=w.defNamed(a.id,JOIN_PSET).line,id=w.upsertPset(a.id,'OrdinaryJoinAlias',[['Harmless','IFCLABEL','ok']]),alias=w.touch(id);alias.HasProperties.push(ps.HasProperties[0]);w.write(alias);return{};});
  const file=path.join(out,'original.ifc');fs.writeFileSync(file,m.ed.save());
  const negatives=[];
- for(const kind of ['corrupt','unsupported','duplicate','duplicate-id','legacy','curve']) {
+ for(const kind of ['corrupt','unsupported','duplicate','duplicate-id','duplicate-neighbor','legacy','curve']) {
   const n=await model(fs.readFileSync(file)),wall=readWalls(n.w()).find(w=>w.guid===a.guid);
   n.w().run(w=>{
    const ps=w.defNamed(wall.id,JOIN_PSET).line,prop=w.api.GetLine(w.mid,ps.HasProperties[0].value,false);
    if(kind==='duplicate') {const id=w.upsertPset(wall.id,'DuplicateJoin',[['Settings','IFCTEXT',JSON.stringify(wall.joinSettings)]]),set=w.touch(id);set.Name=w.T('IFCLABEL',JOIN_PSET);w.write(set);}
    else if(kind==='duplicate-id'){const other=readWalls(w).find(x=>x.guid!==wall.guid),line=w.touch(other.id);line.GlobalId=w.T('IFCGLOBALLYUNIQUEID',wall.guid);w.write(line);}
+   else if(kind==='duplicate-neighbor'){const neighbor=readWalls(w).find(x=>x.guid==='0F08W00000000000000015'),other=readWalls(w).find(x=>x.guid!==wall.guid&&x.guid!==neighbor.guid),line=w.touch(other.id);line.GlobalId=w.T('IFCGLOBALLYUNIQUEID',neighbor.guid);w.write(line);}
    else if(kind==='curve')w.upsertPset(wall.id,'CadCraft_Wall',[['Bulge','IFCREAL',.25]]);
    else {const q=w.touch(prop.expressID),settings={...wall.joinSettings};if(kind==='legacy')delete settings.version;else settings.version=99;q.NominalValue=w.T('IFCTEXT',kind==='corrupt'?'{broken':JSON.stringify(settings));w.write(q);}
    return{};
