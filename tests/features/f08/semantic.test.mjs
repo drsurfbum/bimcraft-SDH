@@ -116,15 +116,17 @@ test('a unique target refuses ambiguous participating neighbor identities withou
 });
 
 test('closing the original IFC during postcommit notification retains confirmed progress and labels captured readback', async () => {
- const m=await model(),other=await model(),a=patch(m),untouched=fingerprint(other);let active=m.ed;
- const d=dispatcher(m,{ed:()=>active,apply:async(label,op)=>{
-  const result=m.ed.modelChange(op,{label:'Assistant: '+label});await Promise.resolve();
-  m.ed.api.CloseModel(m.ed.mid);active=other.ed;return result;
- }});
- const r=await d.call('wall_join_end_set',a);assert.equal(r.isError,true);
- const s=r.structuredContent;assert.equal(s.changed,true);assert.equal(s.completedSteps,1);assert.equal(s.documentId,a.documentId);assert.equal(s.code,'POST_COMMIT_INTERRUPTED');
- assert.equal(s.readback.originalDocumentReadable,false);assert.equal(s.readback.phase,'synchronous-commit');assert.equal(s.after.allow,false);assert.equal(s.undo.available,false);
- assert.ok(s.affectedWalls.includes(a.wall));assert.deepEqual(fingerprint(other),untouched);
+ for(const switchEditor of [false,true]){
+  const m=await model(),other=await model(),a=patch(m),untouched=fingerprint(other);let active=m.ed;
+  const d=dispatcher(m,{ed:()=>active,apply:async(label,op)=>{
+   const result=m.ed.modelChange(op,{label:'Assistant: '+label});await Promise.resolve();
+   m.ed.api.CloseModel(m.ed.mid);if(switchEditor)active=other.ed;return result;
+  }});
+  const r=await d.call('wall_join_end_set',a);assert.equal(r.isError,true);
+  const s=r.structuredContent;assert.equal(s.changed,true);assert.equal(s.completedSteps,1);assert.equal(s.documentId,a.documentId);assert.equal(s.code,'POST_COMMIT_INTERRUPTED');
+  assert.equal(s.readback.originalDocumentReadable,false);assert.equal(s.readback.phase,'synchronous-commit');assert.equal(s.after.allow,false);assert.equal(s.undo.available,false);
+  assert.ok(s.affectedWalls.includes(a.wall));assert.deepEqual(fingerprint(other),untouched);
+ }
 });
 
 test('IFC handle rebinding behind an unchanged editor cannot retarget precommit or postcommit join work', async () => {

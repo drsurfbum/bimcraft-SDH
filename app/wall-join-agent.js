@@ -114,7 +114,7 @@ export function wallJoinTools(env) {
             try { committedAfter = readback(current, a.wall); committedProfiles = physical(current); } catch { /* report unavailable readback honestly below */ }
             return result;
           });
-          if (env.ed() !== ed || env.busy?.()) error = 'The active document changed or became busy after the original edit completed.';
+          if (env.ed() !== ed || env.busy?.() || !ed.api.IsModelOpen(ed.mid)) error = 'The active document changed or became busy after the original edit completed.';
         } catch (e) { if (!committed) throw e; error = e.message || String(e); }
         // Never reread an editor's rebound model handle after an awaited UI notification.
         // A normal renderer rebuild reparses IFC too; the confirmed synchronous readback
