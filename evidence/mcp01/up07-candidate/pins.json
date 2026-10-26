@@ -1,0 +1,12 @@
+{
+  "source": "21fa4897d6bdf130cce12b55bd73278958528918",
+  "sourceTree": "20bdff930c09eaac59fed4d1ef4cc9045464063f",
+  "appTree": "b504381c9ce806c01e99fbf210210eb4e0764ed3",
+  "appSameAsMerge": true,
+  "merge": "e84023e53c98352a07603ccfb36a3e09fac8e8c8",
+  "mergeParents": "9224167fe3e2e856c57679065b545d834f52ade1 82da107dfd760199bc943249590812978c1a6082",
+  "ownerHead": "9224167fe3e2e856c57679065b545d834f52ade1",
+  "ownerTrackedState": "clean",
+  "allPinsAreAncestors": true,
+  "bundleSha256": "58bb12fad9e6a426f7ae37235e5291014ddaf3c77a8b47cb7c4e519f71c338c5"
+}

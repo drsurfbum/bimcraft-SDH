@@ -1,0 +1,85 @@
+{
+  "checks": [
+    "actual Streamable HTTP initialize/list/call to real browser host.control registration",
+    "0.7 generic property/protected/binding/invalid-batch refusals and authored wall_change use the shared engine",
+    "retained opening edits and ordinary product movement/deletion succeed through real calls and Undo restores the fixture",
+    "discovery includes authored assemblies and exact instance values",
+    "duplicate has distinct stable identity through Undo/Redo",
+    "material and recipe create/edit preserve explicit layers, cavity ventilation and zero membranes",
+    "assignment is instance-specific; shared edits keep core anchors, wall lengths and openings",
+    "material defaults never resize existing layers; exact defaults survive Undo/Redo",
+    "all six location lines × both exterior sides and level/fixed instance heights",
+    "21 invalid/stale/foreign/schema/core/material failures leave no partial semantic edits",
+    "six display-unit modes leave exact machine-readable mm values unchanged",
+    "live undo refuses a person-owned history step",
+    "live busy drawing and denied edit/save permissions refuse without partial changes",
+    "dimension references/values and separately open original remain unchanged",
+    "actual browser download reopens exactly and old document tokens are refused",
+    "live HTTP same-project two-step Undo and subsequent Redo preserve normal history",
+    "live HTTP project switch after one Undo leaves replacement IFC bytes and history unchanged; partial progress is explicit",
+    "live normal Redo still works on the original project after the interrupted request"
+  ],
+  "errors": [],
+  "head": "21fa4897d6bdf130cce12b55bd73278958528918",
+  "platform": "darwin",
+  "node": "v26.9.0",
+  "skips": [],
+  "browser": "151.0.7922.34",
+  "historyRegression": {
+    "transport": "existing token-protected Streamable HTTP → browser host.control",
+    "switch": "native active-model radio after the first rebuild settles, before the pending request continues",
+    "mockedDispatcher": false,
+    "mockedHistoryMutation": false,
+    "requestedDocument": "bim-624c9820-e83d-48d9-830a-8bd41279dded",
+    "status": "PASS",
+    "normalSameProject": {
+      "documentId": "bim-624c9820-e83d-48d9-830a-8bd41279dded",
+      "revision": 4,
+      "projectId": "0F04000000000000000000",
+      "units": "mm",
+      "mcp01Version": "1.0.0",
+      "undone": [
+        "Assistant: material_edit",
+        "Assistant: material_edit"
+      ],
+      "requestedSteps": 2,
+      "completedSteps": 2,
+      "complete": true
+    },
+    "switchResult": {
+      "documentId": "bim-624c9820-e83d-48d9-830a-8bd41279dded",
+      "revision": 7,
+      "projectId": "0F04000000000000000000",
+      "units": "mm",
+      "mcp01Version": "1.0.0",
+      "undone": [
+        "Assistant: material_edit"
+      ],
+      "requestedSteps": 2,
+      "completedSteps": 1,
+      "complete": false,
+      "stopped": {
+        "code": "document_changed",
+        "message": "The active document changed. Further history steps were refused."
+      },
+      "error": "The active document changed. Further history steps were refused.",
+      "isError": true
+    },
+    "proof": {
+      "switch": {
+        "armed": false,
+        "switched": true,
+        "observedSteps": 1,
+        "uiIdle": true
+      },
+      "AChanges": 1,
+      "BChanges": 1,
+      "BBytesUnchanged": true,
+      "BHistoryUnchanged": true,
+      "replacementIsActive": true
+    },
+    "errors": []
+  },
+  "status": "PASS",
+  "catalogCount": 29
+}

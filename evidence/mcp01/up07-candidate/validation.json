@@ -1,0 +1,54 @@
+{
+  "source": "21fa4897d6bdf130cce12b55bd73278958528918",
+  "status": "LOCAL_PASS_CI_REQUIRED_ON_DELIVERY",
+  "recordedUtc": "2026-10-26T16:40:47.402648+00:00",
+  "contractHistoryCompatibility": {
+    "tests": 42,
+    "passed": 42,
+    "skipped": 0
+  },
+  "retainedFoundationFocused": {
+    "tests": 38,
+    "passed": 38,
+    "skipped": 0
+  },
+  "baselineDirect": {
+    "passed": 709,
+    "failed": 0,
+    "availabilityNotices": 4,
+    "fullOfflineEntry": "UNAVAILABLE missing pinned cpython-wasi/3.14.7/LICENSE; full gate retained in CI"
+  },
+  "sourceStdioChecks": 13,
+  "packagingChecks": 4,
+  "liveBrowserChecks": 18,
+  "historyRepeats": {
+    "correctedControl": 2,
+    "candidate": 2,
+    "checksPerRepeat": 3
+  },
+  "localMatrix": "Required standalone and residential comparisons pass with zero missing assertions. After installing the matching pinned pdfjs-dist reader in both controls and using the available local runtime listener, plans executes 41 passes and ops 166 passes on both controls. draw06/families/mep remain CONTROL_FAILURE for absent sibling source, not passes. Matrix matches retained foundation CI optional-reader availability; required saved-file IFC checks use the separately installed independent reader.",
+  "historicalSourceCiFailure": {
+    "head": "e84023e53c98352a07603ccfb36a3e09fac8e8c8",
+    "run": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40354373209",
+    "failedAssertion": "native-switch partial refusal",
+    "actual": "Both steps completed on A because direct observer missed idle; no B mutation",
+    "correction": "observe the actual final DOM boundary again in its next queued microtask after guard promise continuation; all original isolation/no-error assertions retained"
+  },
+  "finalCi": "All ten workflow types must run on the commit containing this evidence. Exact delivery SHA and final-head links are recorded in PR #16 after publication. Earlier heads are not final-head substitutes.",
+  "open": [
+    "PERF-F04-01",
+    "PERF-F05-01",
+    "TEST-F28-01",
+    "MCP01-PM-01",
+    "UP07-MEP-01",
+    "broader semantic MCP catch-up"
+  ],
+  "payloadPolicy": "Only explicit metadata/catalog/PNG reports copied. IFC, expected snapshots, raw transcripts, recovery bundles, package archives and test controls remain local/ephemeral.",
+  "retainedIndependentChecks": {
+    "f02": "PASS independent precision IFC readback",
+    "f04": "PASS actual saved IFC and vector-PDF scripts",
+    "f05": "PASS actual saved IFC and vector-PDF scripts",
+    "f06": "PASS actual saved IFC, CSV and vector-PDF script",
+    "reader": "IfcOpenShell 0.9.0; pypdf; Poppler; local runtime"
+  }
+}

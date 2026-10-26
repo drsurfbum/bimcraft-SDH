@@ -1,0 +1,2622 @@
+[
+  {
+    "name": "files_list",
+    "title": "List files",
+    "description": "Files in a folder the assistant may use, newest first (up to 2000). Hidden files and links are skipped. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "folder": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "A folder inside the allowed ones; default the first allowed folder."
+        },
+        "extensions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 12
+          },
+          "maxItems": 20,
+          "description": "e.g. [\"dwg\", \"dxf\"]"
+        },
+        "recursive": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List files",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "drawing_open",
+    "title": "Open a drawing",
+    "description": "Open a DWG or DXF drawing with CadCraft. Returns a handle (d1, …) for the other drawing tools and a short summary. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Open a drawing",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "drawing_new",
+    "title": "Start a new drawing",
+    "description": "A new, empty drawing in memory (save it with drawing_save and a path). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 120,
+          "default": "Drawing1"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Start a new drawing",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "drawing_describe",
+    "title": "Describe a drawing",
+    "description": "Units and length format, extents, the layer table (state and object counts), blocks and their uses, objects by type, sheets with their viewports, views, notes from reading the file. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Describe a drawing",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "objects_list",
+    "title": "List objects",
+    "description": "Objects in an open drawing, filtered and paged: each with its id, type, layer, colour, geometry, length/area where it has one, and a one-line description. Coordinates are drawing units. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "line",
+            "circle",
+            "arc",
+            "poly",
+            "ellipse",
+            "text",
+            "point",
+            "insert",
+            "hatch",
+            "dim",
+            "viewport",
+            "mleader",
+            "spline",
+            "face3d",
+            "image",
+            "wipeout"
+          ]
+        },
+        "layer": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "block": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "References of this block only."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Texts (and attribute values) containing this."
+        },
+        "within": {
+          "type": "object",
+          "properties": {
+            "minX": {
+              "type": "number"
+            },
+            "minY": {
+              "type": "number"
+            },
+            "maxX": {
+              "type": "number"
+            },
+            "maxY": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "minX",
+            "minY",
+            "maxX",
+            "maxY"
+          ],
+          "additionalProperties": false,
+          "description": "Only objects entirely inside this box."
+        },
+        "space": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "\"model\" (default) or a sheet name."
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 100
+        },
+        "countOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only the total, by type and by layer (no objects)."
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List objects",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "object_get",
+    "title": "Get one object",
+    "description": "One object in full (every field, block attributes and the block definition of a reference). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "doc",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Get one object",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "drawing_check",
+    "title": "Check against standards",
+    "description": "Check a drawing against layer and drafting rules: layers.allowed (names or /regex/), layers.required, layers.noObjectsOn, objects.colorByLayer / linetypeByLayer / lineweightByLayer, objects.textHeights, objects.textStyles, blocks.noUnused, units.lunits / units.insunits. Returns each finding with the ids it concerns. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "rules": {
+          "type": "object",
+          "properties": {
+            "layers": {
+              "type": "object",
+              "properties": {
+                "allowed": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 500
+                },
+                "required": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 500
+                },
+                "noObjectsOn": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 50
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "objects": {
+              "type": "object",
+              "properties": {
+                "colorByLayer": {
+                  "type": "boolean"
+                },
+                "linetypeByLayer": {
+                  "type": "boolean"
+                },
+                "lineweightByLayer": {
+                  "type": "boolean"
+                },
+                "textHeights": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "maxItems": 50
+                },
+                "textStyles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 50
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "blocks": {
+              "type": "object",
+              "properties": {
+                "noUnused": {
+                  "type": "boolean"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "units": {
+              "type": "object",
+              "properties": {
+                "lunits": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "insunits": {
+                  "type": "string",
+                  "maxLength": 40
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "doc",
+        "rules"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Check against standards",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "command_run",
+    "title": "Run a CadCraft command",
+    "description": "Type at CadCraft's command line: one string, or a list where each item answers the next prompt (\"\" = Enter). Items may also be {pick: [x, y]}, {window: [x1, y1, x2, y2], crossing}, {entity: id} or {escape: true}. Example: [\"LINE\", \"0,0\", \"@100,0\", \"@0,50\", \"\"]. A command still waiting at the end is ended with Esc unless keepOpen. One string is read as typed at the command line: each line and each space ends an answer, as Space does there (two spaces = an empty answer; a text prompt takes the rest of the line), e.g. \"LINE 0,0 @100,0 @0,50 \" (the last space ends LINE). A list gives one answer per item instead. The whole call is one undo step labelled \"Assistant: …\". Commands that need a dialog on screen are refused. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "input": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 100000
+            },
+            {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "pick": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      "shift": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "pick"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "window": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 4,
+                        "maxItems": 4
+                      },
+                      "crossing": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "window"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "entity": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "at": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      "shift": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "entity"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "escape": {
+                        "type": "boolean",
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "escape"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 5000
+            }
+          ]
+        },
+        "select": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "maxItems": 100000,
+          "description": "Object ids selected before the command (noun-verb)."
+        },
+        "openFiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "minItems": 1,
+          "maxItems": 20,
+          "description": "Files (inside the allowed folders) that answer the file questions the commands ask, in order: INSERT F, XATTACH, ASBUILT's point file."
+        },
+        "keepOpen": {
+          "type": "boolean",
+          "default": false,
+          "description": "Leave a command that still waits after the last answer open (the result says what it waits for); the next command_run with continue: true answers it. Each call is still one undo step."
+        },
+        "continue": {
+          "type": "boolean",
+          "default": false,
+          "description": "Answer the command a keepOpen call left waiting, instead of starting at the command prompt."
+        }
+      },
+      "required": [
+        "doc",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Run a CadCraft command",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "script_run",
+    "title": "Run a script",
+    "description": "On a drawing: run a script as one undo step, language \"scr\" (command-line lines, as a .scr file) or \"lisp\" (AutoLISP-style, run by CadCraft's own interpreter; (command …) drives CadCraft's commands). On a part (part_open): a CraftScript (\"craft\", the default there), Lua or Python script, sealed (no files, no network), with `part` = the built solid and param()/params() its parameters; it prints and displays, the part does not change. Lua and Python need their runtimes beside these tools (the repository), CraftScript runs everywhere. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "script": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000000
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "scr",
+            "lisp",
+            "craft",
+            "lua",
+            "python"
+          ]
+        },
+        "budget": {
+          "type": "number",
+          "minimum": 1000,
+          "maximum": 100000000000,
+          "default": 2000000000
+        }
+      },
+      "required": [
+        "doc",
+        "script"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Run a script",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "block_insert",
+    "title": "Insert a block",
+    "description": "Unavailable in this standalone BimCraft distribution: the CadCraft application modules are not installed. No drawing is changed. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Insert a block",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "undo",
+    "title": "Undo",
+    "description": "Undo the assistant's last steps on a drawing, an IFC model, a civil site, a part or a takeoff (only steps labelled \"Assistant:\" unless any is true). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 1
+        },
+        "any": {
+          "type": "boolean",
+          "default": false
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Undo",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "drawing_save",
+    "title": "Save a drawing",
+    "description": "Write the drawing: to its own file (default) or to a new .dwg/.dxf path. format dwg | dxf2000 | dxf (R12); DWG version 2000, 2004, 2007, 2010, 2013 or 2018 (default 2018). (Permission: save.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "dwg",
+            "dxf2000",
+            "dxf"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "enum": [
+            "2000",
+            "2004",
+            "2007",
+            "2010",
+            "2013",
+            "2018"
+          ]
+        },
+        "overwrite": {
+          "type": "boolean",
+          "default": false,
+          "description": "Replace a file that already exists (and was not opened or written in this session)."
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Save a drawing",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "doc_close",
+    "title": "Close a file",
+    "description": "Forget an open drawing, model or takeoff (unsaved changes are dropped). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Close a file",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ifc_open",
+    "title": "Open an IFC model",
+    "description": "Open an IFC model (IFC2X3, IFC4, IFC4X3) for questions: schema, project, storeys, element classes. Geometry is not built. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Open an IFC model",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ifc_query",
+    "title": "Find IFC elements",
+    "description": "Elements of an open IFC model by class (subclasses included, e.g. IfcWall finds IfcWallStandardCase), storey name, name (contains) and a property (its set optional; equals or contains; type properties count). Paged. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "class": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9]{3,80}$"
+        },
+        "storey": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "property": {
+          "type": "object",
+          "properties": {
+            "set": {
+              "type": "string",
+              "maxLength": 255
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "equals": {
+              "type": [
+                "string",
+                "number",
+                "boolean"
+              ]
+            },
+            "contains": {
+              "type": "string",
+              "maxLength": 255
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 100
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Find IFC elements",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ifc_properties",
+    "title": "IFC element properties",
+    "description": "Attributes, property sets and quantities of one element (by its line id from ifc_query), and its type's property sets. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "doc",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "IFC element properties",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ifc_new",
+    "title": "Start a new building",
+    "description": "A new IFC4 building in memory, as BimCraft's File › New building makes it: a site, a building and levels (default 2 levels, 3000 mm apart). Draw in it with walls_add and the other BimCraft tools, then save it with ifc_save and a path. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "default": "Building"
+        },
+        "levels": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 2
+        },
+        "height": {
+          "type": "number",
+          "minimum": 1000,
+          "maximum": 20000,
+          "default": 3000
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Start a new building",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "materials_list",
+    "title": "Inspect project materials",
+    "description": "Stable material IDs, exact defaults in mm, version diagnostics. Reads never migrate or write records. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Inspect project materials",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assemblies_list",
+    "title": "Inspect wall assemblies",
+    "description": "Built-in and authored wall keys, stored type GlobalIds, exact exterior-to-interior recipes and core flags in mm. Invalid records are diagnostics, never selectable fallbacks. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Inspect wall assemblies",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "material_create",
+    "title": "material_create",
+    "description": "Create a project material; retain unused definitions. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "defaultThickness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2000,
+          "description": "mm. A library default; never resizes existing recipe layers."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "fill": {
+          "type": "string",
+          "enum": [
+            "none",
+            "solid",
+            "diagonal",
+            "crosshatch"
+          ]
+        },
+        "fillColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "doc",
+        "documentId",
+        "expectedRevision",
+        "id",
+        "name",
+        "defaultThickness",
+        "color",
+        "fill",
+        "fillColor"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "material_create",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "material_edit",
+    "title": "material_edit",
+    "description": "Edit an explicitly identified project material; defaults do not change instance layer widths. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "category": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "defaultThickness": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2000,
+              "description": "mm. A library default; never resizes existing recipe layers."
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "fill": {
+              "type": "string",
+              "enum": [
+                "none",
+                "solid",
+                "diagonal",
+                "crosshatch"
+              ]
+            },
+            "fillColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "notes": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "doc",
+        "documentId",
+        "expectedRevision",
+        "id",
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "material_edit",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assembly_create",
+    "title": "assembly_create",
+    "description": "Create an unused authored assembly. Layers have explicit material IDs and mm widths. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "exterior": {
+          "type": "boolean"
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mat": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "t": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2000,
+                "description": "Explicit mm; zero only for material membranes."
+              },
+              "function": {
+                "type": "string",
+                "enum": [
+                  "finish",
+                  "substrate",
+                  "structure",
+                  "insulation",
+                  "membrane"
+                ]
+              },
+              "core": {
+                "type": "boolean"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "material",
+                  "cavity"
+                ]
+              },
+              "materialId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 809
+              },
+              "ventilation": {
+                "type": "string",
+                "enum": [
+                  "unspecified",
+                  "unventilated",
+                  "ventilated"
+                ]
+              }
+            },
+            "required": [
+              "mat",
+              "t",
+              "function",
+              "core",
+              "kind",
+              "materialId"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "description": "Ordered exterior to interior. One contiguous physical core."
+        }
+      },
+      "required": [
+        "doc",
+        "documentId",
+        "expectedRevision",
+        "key",
+        "name",
+        "exterior",
+        "layers"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "assembly_create",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assembly_edit",
+    "title": "assembly_edit",
+    "description": "Edit an authored assembly in place; ALL instances of that type follow, preserving their location anchors. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+        },
+        "typeGuid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exterior": {
+              "type": "boolean"
+            },
+            "layers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "mat": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "t": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2000,
+                    "description": "Explicit mm; zero only for material membranes."
+                  },
+                  "function": {
+                    "type": "string",
+                    "enum": [
+                      "finish",
+                      "substrate",
+                      "structure",
+                      "insulation",
+                      "membrane"
+                    ]
+                  },
+                  "core": {
+                    "type": "boolean"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "material",
+                      "cavity"
+                    ]
+                  },
+                  "materialId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 809
+                  },
+                  "ventilation": {
+                    "type": "string",
+                    "enum": [
+                      "unspecified",
+                      "unventilated",
+                      "ventilated"
+                    ]
+                  }
+                },
+                "required": [
+                  "mat",
+                  "t",
+                  "function",
+                  "core",
+                  "kind",
+                  "materialId"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 32,
+              "description": "Ordered exterior to interior. One contiguous physical core."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "doc",
+        "documentId",
+        "expectedRevision",
+        "key",
+        "typeGuid",
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "assembly_edit",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assembly_duplicate",
+    "title": "assembly_duplicate",
+    "description": "Copy a discovered built-in or authored assembly to a new key and GlobalId. No instance is assigned implicitly. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "sourceGuid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "doc",
+        "documentId",
+        "expectedRevision",
+        "sourceKey",
+        "key",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "assembly_duplicate",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "walls_edit",
+    "title": "walls_edit",
+    "description": "Change only walls identified by GlobalId, including authored type assignment, six location lines, exterior side and existing height/top settings. No join/end or reference-dimension editing. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "walls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+            },
+            "locationLine": {
+              "type": "string",
+              "enum": [
+                "center",
+                "exterior",
+                "interior",
+                "coreCenter",
+                "coreExterior",
+                "coreInterior"
+              ]
+            },
+            "exteriorSide": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ]
+            },
+            "height": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 100000
+            },
+            "topLevel": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Exact storey GlobalId. Mutually exclusive with height."
+            },
+            "baseOffset": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "topOffset": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "doc",
+        "documentId",
+        "expectedRevision",
+        "walls",
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "walls_edit",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "model_describe",
+    "title": "Describe the model",
+    "description": "The open BimCraft model in millimetres: its levels (name, GlobalId, elevation, height), walls by type, doors, windows, rooms with their areas, floors drawn by outline, ramps, grid line tags, columns and the site; also the wall, door and window types walls_add and opening_add take. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Describe the model",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "walls_list",
+    "title": "List walls",
+    "description": "The walls on a level that BimCraft's Draw tools can change: GlobalId, start and end (mm, in the level's plan), type, thickness, height, length, and the doors and windows in each. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List walls",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "walls_add",
+    "title": "Add walls",
+    "description": "Walls along points (mm, in the level's plan) on a level, joined to each other and to the walls there; rooms, floors and roofs follow as with the Wall tool. closed: true runs the last wall back to the first point. Type: one of model_describe's wall types (default ext-2x6). Height: mm, or leave it out to run up to the level above (the level's height on the top level). One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -10000000,
+              "maximum": 10000000
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 2,
+          "maxItems": 500
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+        },
+        "locationLine": {
+          "type": "string",
+          "enum": [
+            "center",
+            "exterior",
+            "interior",
+            "coreCenter",
+            "coreExterior",
+            "coreInterior"
+          ]
+        },
+        "exteriorSide": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 100000
+        },
+        "topLevel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Exact storey GlobalId. Mutually exclusive with height."
+        },
+        "baseOffset": {
+          "type": "number",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "topOffset": {
+          "type": "number",
+          "minimum": -100000,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "doc",
+        "points"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add walls",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "opening_add",
+    "title": "Add a door or window",
+    "description": "A door or window in a wall (its GlobalId from walls_list or walls_add): type from model_describe (default a single door / a fixed window), offset = mm from the wall's start to the opening's near edge (default: the middle), width and height in mm (default: the type's), sill for windows. Refused if it does not fit. One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wall": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "door",
+            "window"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "door-single",
+            "door-double",
+            "door-sliding",
+            "door-pocket",
+            "door-garage",
+            "door-bifold",
+            "door-french",
+            "door-barn",
+            "door-entry-sidelites",
+            "win-fixed",
+            "win-single-hung",
+            "win-double-hung",
+            "win-casement",
+            "win-slider",
+            "win-awning",
+            "win-picture",
+            "win-basement-egress",
+            "win-transom"
+          ]
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0
+        },
+        "width": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 20000
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 20000
+        },
+        "sill": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20000
+        }
+      },
+      "required": [
+        "doc",
+        "wall",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add a door or window",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "floor_add",
+    "title": "Add a floor",
+    "description": "A floor or slab of any outline (mm, in the level's plan; at least three corners, not crossing itself) on a level: kind concrete | wood, use floor | slab, thickness in mm (default the kind's), offset = its top above the level (mm). One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -10000000,
+              "maximum": 10000000
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 3,
+          "maxItems": 500
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "concrete",
+            "wood"
+          ]
+        },
+        "use": {
+          "type": "string",
+          "enum": [
+            "floor",
+            "slab"
+          ]
+        },
+        "thickness": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 3000
+        },
+        "offset": {
+          "type": "number",
+          "minimum": -10000,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "doc",
+        "points"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add a floor",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "levels_add",
+    "title": "Add levels",
+    "description": "Levels at these heights above the lowest level (mm); a height a level already has is skipped. Names follow the model's (\"Level 3\"). One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elevations": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -100000,
+            "maximum": 1000000
+          },
+          "minItems": 1,
+          "maxItems": 200
+        }
+      },
+      "required": [
+        "doc",
+        "elevations"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add levels",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "grid_add",
+    "title": "Add grid lines",
+    "description": "Grid lines laid out as Build › Grid does: numbered lines (u: count and spacing in mm, a number or one per bay) and lettered lines (v), from an origin (mm, in the level's plan), turned by angle (degrees), each running extend mm past the last crossing. Added to the model's grid (one per building). One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "origin": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -10000000,
+            "maximum": 10000000
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "angle": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "u": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "spacing": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 100
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  "maxItems": 100
+                }
+              ]
+            }
+          },
+          "required": [
+            "count"
+          ],
+          "additionalProperties": false
+        },
+        "v": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "spacing": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 100
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  "maxItems": 100
+                }
+              ]
+            }
+          },
+          "required": [
+            "count"
+          ],
+          "additionalProperties": false
+        },
+        "extend": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20000
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add grid lines",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "element_set",
+    "title": "Set a name or property",
+    "description": "Change one element (by GlobalId): an attribute (Name, Description, ObjectType, Tag), or one property value by its name (and set name, when two sets have it). The value keeps the property's IFC type (numbers stay numbers). A value the element shares with others is copied for it first; a property of the element's type changes every element of that type and needs type: true. One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "attribute": {
+          "type": "string",
+          "enum": [
+            "Name",
+            "Description",
+            "ObjectType",
+            "Tag"
+          ]
+        },
+        "set": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "property": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "type": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "doc",
+        "guid",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Set a name or property",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "elements_delete",
+    "title": "Delete elements",
+    "description": "Delete elements by GlobalId, as one undo step. Walls, doors, windows and floors drawn with BimCraft's tools go through the Draw module (walls close up, rooms and joins follow); any other element goes with its parts and openings. Levels, the building and the site are not deleted. Drawn and other elements go in separate calls. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        }
+      },
+      "required": [
+        "doc",
+        "guids"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Delete elements",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "elements_move",
+    "title": "Move elements",
+    "description": "Move elements (by GlobalId) by [dx, dy, dz] millimetres in the model's axes (x east, y north, z up on an unturned model), as one undo step; what is hosted on them or placed relative to them moves along. A wall drawn with BimCraft's tools moves with wall_change (its ends), a door or window along its wall with opening_change. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "by": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -10000000,
+            "maximum": 10000000
+          },
+          "minItems": 2,
+          "maxItems": 3
+        }
+      },
+      "required": [
+        "doc",
+        "guids",
+        "by"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Move elements",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "wall_change",
+    "title": "Change a wall",
+    "description": "Change a wall drawn with BimCraft's tools (GlobalId from walls_list): its start a and end b (mm, in its level's plan) and/or its type. Joined walls, rooms and its doors and windows follow; a door that no longer fits refuses the change. One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "a": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -10000000,
+            "maximum": 10000000
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "b": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -10000000,
+            "maximum": 10000000
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+        }
+      },
+      "required": [
+        "doc",
+        "guid"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Change a wall",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "opening_change",
+    "title": "Change a door or window",
+    "description": "Change a door or window (GlobalId): offset = mm from its wall's start to its near edge, width, height, sill (windows), type (of the same kind), or wall = another wall's GlobalId to move it there. Refused if it does not fit. One undo step. Works on an IFC model opened with ifc_open or ifc_new (doc). (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0
+        },
+        "width": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 20000
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 20000
+        },
+        "sill": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20000
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "door-single",
+            "door-double",
+            "door-sliding",
+            "door-pocket",
+            "door-garage",
+            "door-bifold",
+            "door-french",
+            "door-barn",
+            "door-entry-sidelites",
+            "win-fixed",
+            "win-single-hung",
+            "win-double-hung",
+            "win-casement",
+            "win-slider",
+            "win-awning",
+            "win-picture",
+            "win-basement-egress",
+            "win-transom"
+          ]
+        },
+        "wall": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "doc",
+        "guid"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Change a door or window",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "redo",
+    "title": "Redo an IFC edit",
+    "description": "Redo an Assistant-owned IFC model step; a person step requires any: true. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "any": {
+          "type": "boolean",
+          "default": false
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Redo an IFC edit",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "ifc_save",
+    "title": "Save an IFC model",
+    "description": "Write an IFC model with every change: to its own file (default) or a new .ifc path. (Permission: save.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+        },
+        "overwrite": {
+          "type": "boolean",
+          "default": false,
+          "description": "Replace a file that already exists (and was not opened or written in this session)."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Save an IFC model",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "takeoff_open",
+    "title": "Open a takeoff",
+    "description": "Open a TakeoffCraft project (.takeoff.json: items, marks, the PDFs or drawings it was measured on and their scales), or start a new takeoff on a DWG / DXF drawing (its sheets: Model, then each layout, scaled from the drawing's units and viewports as TakeoffCraft does). `drawings`: the .dwg / .dxf files a saved takeoff was made on (matched by their SHA-256), for the cad_* tools. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+        },
+        "drawings": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "minItems": 1,
+          "maxItems": 20
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Open a takeoff",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "takeoff_quantities",
+    "title": "Takeoff quantities",
+    "description": "Quantities per item (in its unit) or per sheet. Marks on sheets with no scale are listed as unscaled, never counted as zero. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        },
+        "by": {
+          "type": "string",
+          "enum": [
+            "item",
+            "sheet"
+          ],
+          "default": "item"
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Takeoff quantities",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "takeoff_estimate",
+    "title": "Takeoff estimate",
+    "description": "The priced estimate as TakeoffCraft computes it: a row per item and per assembly component (quantity, waste, material and labor), totals in cents and as text; incomplete when a formula fails or marks are unscaled. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "pattern": "^d[0-9]{1,6}$",
+          "description": "A handle from drawing_open, ifc_open, takeoff_open, site_open or part_open."
+        }
+      },
+      "required": [
+        "doc"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Takeoff estimate",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "markups_list",
+    "title": "List PDF markups",
+    "description": "The sheets of a PDF and its markups as MarkupCraft reads them (type, sheet, text, comment, status, author, dates, punch item, replies), filtered and paged. Annotations from other programs that MarkupCraft cannot edit are marked readOnly. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+        },
+        "sheet": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Open",
+            "Accepted",
+            "Rejected",
+            "Completed"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "author": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000,
+          "default": 200
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List PDF markups",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  }
+]
