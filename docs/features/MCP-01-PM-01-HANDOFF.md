@@ -1,5 +1,7 @@
 # MCP01-PM-01 — live history document binding correction
 
+Current post-0.7 compatibility candidate: [mcp01-up07/HANDOFF.md](mcp01-up07/HANDOFF.md). This earlier record and its counts remain historical.
+
 Status: implementation and regression evidence submitted for **PM re-review**. This handoff does not close the PM finding or authorize ready/merge. Draft PR: [#16](https://github.com/drsurfbum/bimcraft-SDH/pull/16). Approved baseline remains `1afe80e78a42aa27ee9af5d1ac937cd38cd1b711`; reviewed delivery is `64000d39e6a194e83053a84c90c95d349125ef6c`. Work remains in `bimcraft-mcp-01`, branch `feature/mcp-material-wall-parity`, with repository-local DrSurfBum identity. No rebase, force-push, persistent client setup or other feature checkout change.
 
 ## Root cause and correction

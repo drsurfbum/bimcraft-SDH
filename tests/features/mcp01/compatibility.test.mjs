@@ -58,3 +58,14 @@ test('every malformed material/assembly/wall fixture also refuses all generic mu
   for(const [name,args] of cases){assert.equal((await d.call(name,{...state(m),...args})).isError,true,path.basename(file)+' '+name);assert.deepEqual(view(m),before);}
  }}finally{fs.rmSync(out,{recursive:true,force:true});}
 });
+test('retained generic movement changes actual placement, deletion/Undo restore it, and opening edits remain journaled',async()=>{
+ const m=await model(fixture),d=dispatcher(m);
+ const value=async(name,args)=>{const r=await d.call(name,{...state(m),...args});assert.ok(!r.isError,JSON.stringify(r));return r.structuredContent;};
+ const floor=(await value('floor_add',{points:[[100000,100000],[102000,100000],[102000,102000],[100000,102000]]})).floor;
+ const position=()=>{const w=m.w(),id=w.byGuid(floor),lp=w.api.GetLine(w.mid,id,false).ObjectPlacement.value;return [...w.api.GetWorldTransformMatrix(w.mid,lp)].slice(12,15);};
+ const before=position();await value('elements_move',{guids:[floor],by:[123.123456,456.123456,0]});const moved=position();
+ for(const [i,delta] of [123.123456,456.123456,0].entries())assert.ok(Math.abs(moved[i]-before[i]-delta)<.005);
+ m.ed.undo();assert.deepEqual(position(),before);await value('elements_delete',{guids:[floor]});assert.equal(m.w().byGuid(floor),null);m.ed.undo();assert.deepEqual(position(),before);
+ const walls=readWalls(m.w()),opening=(await d.call('walls_list',{})).structuredContent.walls.flatMap(w=>w.openings).find(o=>o.kind==='door');
+ await value('opening_change',{guid:opening.guid,width:opening.width-1});m.ed.undo();assert.deepEqual(readWalls(m.w()),walls);
+});

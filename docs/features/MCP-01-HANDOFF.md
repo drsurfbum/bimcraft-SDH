@@ -1,5 +1,7 @@
 # MCP-01 — Materials, assemblies and wall editing
 
+Current post-0.7 compatibility candidate: [mcp01-up07/HANDOFF.md](mcp01-up07/HANDOFF.md). This earlier record and its counts remain historical.
+
 PM found a live multi-step Undo document-switch defect in the original delivery despite its passing checks. The correction, new history/browser regressions and current re-review status are documented in [MCP-01-PM-01-HANDOFF.md](MCP-01-PM-01-HANDOFF.md). Counts and source revisions below describe the original implementation evidence; the new correction preserves that history and adds separate evidence.
 
 Owner: this MCP-01 implementation chat. Checkout: `bimcraft-mcp-01`; branch: `feature/mcp-material-wall-parity`. Canonical repository: `drsurfbum/bimcraft-SDH`. Exact starting main: `1afe80e78a42aa27ee9af5d1ac937cd38cd1b711` (tree `93258f6217a6025c5e6e30a552461e8cbb9e3de1`). The prior approved fork main and upstream target are verified ancestors. Repository-local identity: DrSurfBum / `80549907+drsurfbum@users.noreply.github.com`. No global identity changes.

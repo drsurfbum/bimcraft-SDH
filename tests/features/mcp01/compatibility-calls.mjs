@@ -20,4 +20,16 @@ export async function compatibilityCalls(call,check) {
  await call('wall_change',{...bind(),guid:w.guid,type:w.type});s=await call('model_describe');await call('undo',bind());
  assert.deepEqual((await call('walls_list')).walls,before);
  check('0.7 generic property/protected/binding/invalid-batch refusals and authored wall_change use the shared engine');
+ s=await call('model_describe');
+ const opening=before.flatMap(w=>w.openings).find(o=>o.kind==='door');assert.ok(opening);
+ await call('opening_change',{...bind(),guid:opening.guid,width:opening.width-1});s=await call('model_describe');
+ assert.equal((await call('walls_list')).walls.flatMap(w=>w.openings).find(o=>o.guid===opening.guid).width,opening.width-1);
+ await call('undo',bind());s=await call('model_describe');assert.deepEqual((await call('walls_list')).walls,before);
+ const floor=(await call('floor_add',{...bind(),points:[[100000,100000],[102000,100000],[102000,102000],[100000,102000]]})).floor;assert.ok(floor);
+ s=await call('model_describe');assert.equal((await call('elements_move',{...bind(),guids:[floor],by:[123.123456,456.123456,0]})).moved,1);
+ s=await call('model_describe');await call('undo',bind());s=await call('model_describe');
+ assert.equal((await call('elements_delete',{...bind(),guids:[floor]})).deleted,1);
+ s=await call('model_describe');await call('undo',bind());s=await call('model_describe');await call('undo',bind());
+ assert.deepEqual((await call('walls_list')).walls,before);assert.equal((await call('model_describe')).floorsByOutline,s.floorsByOutline-1);
+ check('retained opening edits and ordinary product movement/deletion succeed through real calls and Undo restores the fixture');
 }
