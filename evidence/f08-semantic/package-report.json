@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "head": "2c1cb9e8df78d633874e88418d92acddb907ee11",
+  "transport": "isolated packaged stdio",
+  "catalogCount": 46,
+  "checks": [
+    "actual source/package stdio discovery contains all three strict schemas",
+    "nonmutating semantic readback and complete-storey diagnostic scope",
+    "internal T host relation survives an edit to the other stable end",
+    "both physically joined analytic ends \u00d7 all allow/cap combinations; 24 real Undo/Redo cycles; genuine no-ops",
+    "invalid patches, relation injection, duplicate scope, stale revisions and foreign IDs refuse without readback changes",
+    "specific protected-record refusals for real direct and correctly resolved alias properties; Redo and Undo remain usable",
+    "actual saved IFC semantic/profile reopen; identical-project separate editor unchanged; old instance token rejected",
+    "six malformed/unsupported/duplicate/legacy/curve fixtures, closed documents; no partial IFC writes and undoable explicit migration",
+    "existing overwrite and allowed-root save boundaries retained",
+    "read-only process permits inspection and refuses edits/save/export"
+  ],
+  "requestCount": 353
+}

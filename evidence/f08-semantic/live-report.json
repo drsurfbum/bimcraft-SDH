@@ -1,0 +1,77 @@
+{
+  "head": "2c1cb9e8df78d633874e88418d92acddb907ee11",
+  "checks": [
+    "real Streamable HTTP initialization/discovery through live host.control",
+    "nonmutating semantic readback and complete-storey diagnostic scope",
+    "internal T host relation survives an edit to the other stable end",
+    "both physically joined analytic ends \u00d7 all allow/cap combinations; 24 real Undo/Redo cycles; genuine no-ops",
+    "invalid patches, relation injection, duplicate scope, stale revisions and foreign IDs refuse without readback changes",
+    "specific protected-record refusals for real direct and correctly resolved alias properties; Redo and Undo remain usable",
+    "identical projects/names in separate live editors, wrong token, busy and denied edit/save/export retain both projects",
+    "actual live MCP save/download/reopen preserves profiles/records and refuses old instance binding",
+    "native project switch during semantic edit reports completed original mutation; replacement bytes/both histories unchanged; original Undo works",
+    "actual live transport corrupt/duplicate/future/ambiguous/curved refusals preserve bytes and histories; legacy migration Undo restores every STEP entity (DATA row order normalized)"
+  ],
+  "errors": [],
+  "console": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c004dc800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    },
+    {
+      "type": "warning",
+      "text": "No available adapters."
+    }
+  ],
+  "browser": "151.0.7922.34",
+  "ownership": {
+    "status": "PASS",
+    "receipt": {
+      "documentId": "bim-9b666be5-d0c6-431e-a996-97a795ef2078",
+      "wall": "0F08W00000000000000014",
+      "end": "a",
+      "changed": true,
+      "completedSteps": 1,
+      "complete": false,
+      "code": "POST_COMMIT_INTERRUPTED",
+      "affectedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "geometryChangedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "undo": {
+        "owner": "assistant",
+        "label": "Assistant: wall_join_end_set",
+        "documentId": "bim-9b666be5-d0c6-431e-a996-97a795ef2078",
+        "revision": 1
+      },
+      "error": "Document changed during request."
+    },
+    "proof": {
+      "switched": true,
+      "replacementActive": true,
+      "bytesUnchanged": true,
+      "historyUnchanged": true
+    },
+    "mockedDispatcher": false,
+    "mockedMutation": false
+  },
+  "catalogCount": 32,
+  "requests": 327,
+  "status": "PASS"
+}

@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "head": "2c1cb9e8df78d633874e88418d92acddb907ee11",
+  "schemaExpressFindings": 0,
+  "walls": 18,
+  "physicalVertices": 147,
+  "maxProfileToleranceMm": 0.005,
+  "overlapAreaMm2": 5.351539079774059e-05,
+  "overlapBoundMm2": 0.05,
+  "dimensionRecordsUnchanged": 2,
+  "openingsAndTypes": true,
+  "ifcopenshell": "0.9.0"
+}

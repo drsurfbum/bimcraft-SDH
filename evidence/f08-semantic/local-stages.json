@@ -1,0 +1,38 @@
+[
+  {
+    "name": "focused",
+    "status": 0
+  },
+  {
+    "name": "f08-performance",
+    "status": 0
+  },
+  {
+    "name": "semantic-source",
+    "status": 0
+  },
+  {
+    "name": "semantic-source-independent",
+    "status": 0
+  },
+  {
+    "name": "semantic-package",
+    "status": 0
+  },
+  {
+    "name": "semantic-package-independent",
+    "status": 0
+  },
+  {
+    "name": "semantic-browser",
+    "status": 0
+  },
+  {
+    "name": "semantic-browser-independent",
+    "status": 0
+  },
+  {
+    "name": "f08-exports-independent",
+    "status": 0
+  }
+]

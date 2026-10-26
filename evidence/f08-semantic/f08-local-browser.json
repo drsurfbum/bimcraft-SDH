@@ -1,0 +1,58 @@
+{
+  "head": "4866e5c5c7af05c5dab7c7a7e9a0451e2cce18da",
+  "base": "82da107dfd760199bc943249590812978c1a6082",
+  "featureCutoff": "f929205133316b29a4551083792d5712d5ffcabd",
+  "originalEvidenceBase": "3e42c21e33e642d1e07bea2fc3356344f91db00e",
+  "environment": {
+    "cpu": "Apple M5 Pro",
+    "platform": "darwin",
+    "node": "v26.9.0"
+  },
+  "checks": [
+    "fixture opens in established default with complete core/height data",
+    "per-end controls are visible on a real selected straight wall",
+    "disallow changes the selected physical and drawing join",
+    "shared imperial finish edit preserves core line, persistent core dimension, hosted opening and identities",
+    "UI Undo Redo restores shared finish and end settings",
+    "reenabling the start restores eligible core-first cleanup",
+    "actual downloaded IFC reopens with per-end settings, neighbors, dimensions and openings",
+    "real UI exports current assembly CSV and vector plan PDF",
+    "separately opened original is unchanged in an independent browser context",
+    "upper-level through drawing retains authoritative F08 core/end outlines",
+    "upper-level cut does not inherit a lower opening cut outside its height",
+    "multi-level wall end changes on its own level survive three UI Undo Redo cycles",
+    "actual multi-level download reopens with offsets, joins, dimensions and opening identities",
+    "no application exceptions"
+  ],
+  "errors": [],
+  "console": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c004d8000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c004d8000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c004d8000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x11c004d8000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    }
+  ],
+  "openFollowups": [
+    "PERF-F04-01",
+    "PERF-F05-01",
+    "TEST-F28-01"
+  ],
+  "browser": "151.0.7922.34",
+  "availabilityNotices": [
+    "24 real PHP locale/unit checks unavailable locally; required CI path unchanged."
+  ],
+  "status": "FAIL",
+  "error": "AssertionError [ERR_ASSERTION]: no unexpected warning/error console entries\n    at check (file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/reviews/F08-SEMANTIC-2026-10-26/private/browser-php-unavailable.mjs:15:33)\n    at file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/reviews/F08-SEMANTIC-2026-10-26/private/browser-php-unavailable.mjs:123:62",
+  "notice": "Local functional subset only; PHP 24 checks unavailable; unchanged strict console gate FAIL retained."
+}
