@@ -10,7 +10,7 @@ import {start} from '../../../devshell/serve.mjs';
 const out=path.resolve('.cc-test/f08/browser');fs.mkdirSync(out,{recursive:true});
 const {chromium}=await import(pathToFileURL(path.resolve('.cc-test/f08-deps/node_modules/playwright/index.mjs')));
 const strings=JSON.parse(fs.readFileSync('app/lang/en.json'));
-const report={head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),base:'82da107dfd760199bc943249590812978c1a6082',featureCutoff:'f929205133316b29a4551083792d5712d5ffcabd',originalEvidenceBase:'3e42c21e33e642d1e07bea2fc3356344f91db00e',environment:{cpu:os.cpus()[0].model,platform:os.platform(),node:process.version},checks:[],errors:[],console:[],openFollowups:['PERF-F04-01','PERF-F05-01','TEST-F28-01']};
+const report={head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),base:'21ff2842e1925f148e9b75c404476b59333f7475',featureCutoff:'82e680f389a11cc84e79f3fcca79581456e6e79c',originalEvidenceBase:'3e42c21e33e642d1e07bea2fc3356344f91db00e',environment:{cpu:os.cpus()[0].model,platform:os.platform(),node:process.version},checks:[],errors:[],console:[],openFollowups:['PERF-F04-01','PERF-F05-01','TEST-F28-01']};
 let server,browser,page;const contexts=[];
 const check=(s,v=true)=>{assert.ok(v,s);report.checks.push(s);console.log('PASS',s);};
 async function context(){
