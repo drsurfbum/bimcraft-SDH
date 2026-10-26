@@ -73,7 +73,8 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     // A replay closes/reopens the same editor's model. Keep that owner's descriptors while it is busy;
     // an empty transient list would make the shared host discard all open drawing tabs.
     if (c.busy || A.S.busy || A.S.reloading || editor.mid == null || !A.S.data) return sourceCache;
-    sourceCache = [...views.workspaceSources().map(v => ({ ...v, icon: isPlanView(v) ? 'bi-square' : 'bi-file-earmark' })), threeView()];
+    // Unresolvable callouts remain diagnosed/editable in the native Missing views group, not drawable tabs.
+    sourceCache = [...views.workspaceSources().filter(v => !v.missing).map(v => ({ ...v, icon: isPlanView(v) ? 'bi-square' : 'bi-file-earmark' })), threeView()];
     return sourceCache;
   }
   const docs = mountDocumentation({ root, A, views, stage, current, status });
@@ -86,30 +87,23 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
   }
   function go(id, how) {
     const v = viewOf(id); if (!v || !current().editor || snapshot().busy) return;
-    if (how === 'open' || !['plan', '3d'].includes(v.kind)) {   // Doc's: a tab per opened view, each plan keeps its camera
-      rememberCamera(); lastView = id; browserView = v; propertyMode = 'view';
-      A.setTool('select');
+    rememberCamera(); lastView = id; browserView = v; propertyMode = 'view';
+    A.setTool('select');
+    if (how === 'open' || v.kind !== '3d') {
       if (isDocumentView(v)) A.host.select([]);
       A.activateWorkspaceView(isPlanView(v) ? v.levelId : null, cameras.get(v.id), v.rootKind || v.kind, v.kind === 'callout' ? v.ref : null);
-      docs.render(v);
-      views.render();
-    } else {   // a tab for every view: the Draw bar's own level and plan / 3D buttons
-      if (v.kind === '3d') { needDraw(); root.querySelector('[data-model-layout="3d"]')?.click(); }
-      else {
-        needDraw();
-        const sel = root.querySelector('[data-model-level]');
-        if (sel && sel.value !== String(v.levelId)) { sel.value = String(v.levelId); sel.dispatchEvent(new Event('change', { bubbles: true })); }
-        if (A.S.layout === '3d') root.querySelector('[data-model-layout="plan"]')?.click();
-      }
+      docs.render(v); views.render();
+    } else {
+      // The all-view host keeps upstream's native Draw-on 3D layout.
+      needDraw(); root.querySelector('[data-model-layout="3d"]')?.click(); docs.hide();
     }
     soon();
   }
   function currentAll() {
     if (!current().editor) return null;
-    if (lastView && isDocumentView(viewOf(lastView))) return lastView;
+    if (lastView && isDocumentView(viewOf(lastView)) && !A.S.on) return lastView;
     if (!drawOn() || A.S.layout === '3d') return '3d:default';
-    const l = (A.S.data?.levels || []).find((x) => x.id === A.S.level);
-    return l ? 'plan:' + l.guid : '3d:default';
+    return views.viewKey() || '3d:default';
   }
   function snapshot() {
     const c = current(), view = engine?.view() || null;
@@ -321,20 +315,20 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     viewPropsTarget = s.document && v ? { document: s.document, id: v.id } : null;
     const dl = node('dl', { className: 'ws-view-dl' });
     const row = (label, value) => dl.append(node('dt', {}, label), node('dd', {}, value));
-    if (!s.document) { viewProps.replaceChildren(node('p', { className: 'ws-note' }, 'Open an existing IFC. Live geometry, names and values come from that file.'), ctx.tool('open', 'properties')); return; }
-    if (!v) { viewProps.replaceChildren(node('p', { className: 'ws-note' }, 'Open a drawing from Project Browser. The IFC remains open.')); return; }
+    if (!s.document) { viewProps.replaceChildren(node('p', { className: 'ws-note' }, T('ws.vp.open')), ctx.tool('open', 'properties')); return; }
+    if (!v) { viewProps.replaceChildren(node('p', { className: 'ws-note' }, T('ws.vp.pick'))); return; }
     row(T('ws.vp.name'), v.name); row(T('ws.vp.type'), ({plan:T('ws.vp.plan'),rcp:T('workspace.rcp'),callout:T('workspace.callout'),section:T('workspace.section'),elevation:T('workspace.elevation'),sheet:T('workspace.sheet'),schedule:T('workspace.schedule'), '3d':T('ws.vp.3d')})[v.kind]);
     row(T('workspace.sourceid'), v.ref || v.id);
-    row('Document', s.name);
+    row(T('ws.vp.document'), s.name);
     if (isPlanView(v) || ['section', 'elevation'].includes(v.kind)) {
       const isActive = engine?.view()?.id === v.id;
       const ds = settingsSelect('detail'), sc = settingsSelect('scale');
       syncSelect(ds, setting?.detail || 'coarse'); syncSelect(sc, setting?.scale || 0);
-      row(T('ws.scale.view'), isActive ? sc : '1 : ' + (setting?.scale || 'Fit')); row(T('ws.detail.level'), isActive ? ds : setting?.detail || 'coarse'); row(T('ws.tool.range'), isActive ? ctx.tool('range', 'properties', true) : T('ws.vp.openit'));
+      row(T('ws.scale.view'), isActive ? sc : '1 : ' + (setting?.scale || T('ws.vp.fit'))); row(T('ws.detail.level'), isActive ? ds : T('ws.detail.' + (setting?.detail || 'coarse'))); row(T('ws.tool.range'), isActive ? ctx.tool('range', 'properties', true) : T('ws.vp.openit'));
       if (isPlanView(v)) {
       row(T('ws.vp.cut'), fmtLen(setting?.cut ?? 1200, A.units()));
-      row('Top', setting?.top ? fmtLen(setting.top, A.units()) : T('ws.vp.top.auto'));
-      row('Bottom', fmtLen(setting?.bottom ?? 0, A.units())); row(T('ws.vp.depth'), fmtLen(setting?.depth ?? 50, A.units()));
+      row(T('ws.vp.top'), setting?.top ? fmtLen(setting.top, A.units()) : T('ws.vp.top.auto'));
+      row(T('ws.vp.bottom'), fmtLen(setting?.bottom ?? 0, A.units())); row(T('ws.vp.depth'), fmtLen(setting?.depth ?? 50, A.units()));
       if (setting?.template) row(T('ws.vp.template'), setting.template);
       } else { row(T('workspace.crop'), setting?.crop?.join(', ') || T('workspace.none')); if (setting?.issue) row(T('workspace.recordissue'), setting.issue); row(T('workspace.graphics'), ctx.tool('viewsettings', 'properties', true)); }
     } else { row(T('ws.tool.range'), T('workspace.notapplicable')); if (v.kind === 'sheet') row(T('workspace.placement'), ctx.tool('editsheet', 'properties', true)); if (v.kind === 'schedule') row(T('workspace.export'), ctx.tool('csv', 'properties', true)); }
