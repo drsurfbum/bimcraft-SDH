@@ -1,3 +1,5 @@
+> MCP-01 was subsequently merged as PR #16 into main `21ff284`. Integrated validation is running. [Adoption status](MCP-01-INTEGRATED.md). This completed candidate review below is historical.
+
 # MCP-01 PR #16 — PM re-review, October 26, 2026
 
 **Verdict: ready to merge for the bounded materials, assemblies and wall-instance MCP slice. No blocking findings remain in this review. MCP01-PM-01 is CLOSED at reviewed delivery `35e3fb5a86949a66a7eab138f7bb5bf13a52fd2c`.** This is a merge recommendation; PR remains draft/unmerged and main remains `82da107dfd760199bc943249590812978c1a6082`. No user-only test is required to establish closure of the automated defect.

@@ -1,3 +1,5 @@
+> Current status: MCP-01 is merged at `21ff284`; integrated checks are running. F28-C passed bounded desktop UI compatibility review but remains draft/unmerged with documentation MCP and published new-main reconciliation gates. F08 remains separate. [MCP adoption](MCP-01-INTEGRATED.md) · [Current C review](F28-C-0.7-PM-REVIEW.md). The earlier snapshot below is historical.
+
 > Subsequent PM review: MCP-01 delivery 35e3fb5 is ready for bounded merge, and MCP01-PM-01 is CLOSED at that pin. [Completed review](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/MCP-01-REVIEW.md). The earlier status snapshot below is historical; F28-C/F08 remain separate.
 
 # Post-0.7 feature progress — October 26, 2026
