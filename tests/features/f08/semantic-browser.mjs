@@ -10,6 +10,7 @@ import {initialized,tool} from '../mcp01/client.mjs';
 import {semanticFixtures} from './semantic-fixtures.mjs';
 import {semanticWorkflow,REQUIRED} from './semantic-workflow.mjs';
 import {liveOwnership} from './semantic-live-ownership.mjs';
+import {modelTools} from '../../../app/agents.js';
 const out=path.resolve('.cc-test/f08-semantic-browser');fs.mkdirSync(out,{recursive:true});const info=await semanticFixtures(out);
 const {chromium}=await import(pathToFileURL(path.resolve(process.env.F08_PLAYWRIGHT||'.cc-test/f08-deps/node_modules/playwright/index.mjs')));
 const report={head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),checks:[],errors:[],console:[]};
@@ -25,7 +26,7 @@ try{
  live=createLiveServer({port:0,forward:(message,session)=>page.evaluate(async({message,sid})=>{const {getHost}=await import('/assets/apps/bimcraft/dev/host.js');return getHost({app:'bimcraft'}).control.handle(message,sid);},{message,sid:session.id})});
  const connection=await live.start();let sid=null,seq=0;const trace=[];
  const client={async request(method,params={}){const r=await fetch(connection.url,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+connection.token,...(sid?{'Mcp-Session-Id':sid}:{})},body:JSON.stringify({jsonrpc:'2.0',id:++seq,method,params})});assert.equal(r.status,200);sid=r.headers.get('mcp-session-id')||sid;return r.json();}};
- await initialized(client);const catalog=(await client.request('tools/list')).result.tools;for(const name of REQUIRED)assert.ok(catalog.some(t=>t.name===name),name);
+ await initialized(client);const catalog=(await client.request('tools/list')).result.tools;for(const name of REQUIRED){const actual=catalog.find(t=>t.name===name);assert.ok(actual,name);assert.deepEqual(actual.inputSchema,modelTools({ed:()=>null}).find(t=>t.name===name).inputSchema);}
  fs.writeFileSync(path.join(out,'catalog.json'),JSON.stringify(catalog,null,2));check('real Streamable HTTP initialization/discovery through live host.control');
  const call=async(name,args={},fails=false)=>{const result=await tool(client,name,args,fails);await settle();trace.push({name,args,result});return result;};
  const fingerprint=async p=>p.evaluate(async()=>{const e=bimcraftLive.editor,b=e.api.file(e.mid).save({timeStamp:'2026-10-26T12:00:00'}),h=await crypto.subtle.digest('SHA-256',b);return{sha256:[...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join(''),changes:e.changes.map(c=>[c.kind,c.label]),undone:e.undone.map(c=>[c.kind,c.label])};});

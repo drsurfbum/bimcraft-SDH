@@ -127,6 +127,33 @@ if (browser/'saved.ifc').exists():
   for l,r in zip(ty['layers'],layer_rows):
    near(l['t'],float(r['nominal_thickness_mm']));assert r['core']==str(l['core']).lower()
    if l['kind']=='cavity':assert r['cavity_ventilation']=='ventilated'
+ # Check every CSV cell against records in the actual downloaded IFC, including
+ # summaries, identities, localized usage, material names, empty fields and order.
+ saved=ifcopenshell.open(str(browser/'saved.ifc'))
+ strings=json.loads(Path('app/lang/en.json').read_text())
+ library=json.loads(element.get_psets(saved.by_type('IfcProject')[0])['CadCraft_MaterialLibrary']['Library'])
+ materials={m['id']:m for m in library['materials']}
+ recipes=[]
+ for ty in saved.by_type('IfcWallType'):
+  ps=element.get_psets(ty).get('CadCraft_WallType',{})
+  if 'Recipe' in ps:recipes.append((json.loads(ps['Recipe']),ty.GlobalId))
+ used={element.get_psets(w).get('CadCraft_Wall',{}).get('TypeKey') for w in saved.by_type('IfcWall')}
+ headers=['record_kind','type_key','type_guid','assembly_name','usage','layer_exterior_to_interior','material_id','material_name','function','core','nominal_thickness_mm','cavity_ventilation','membrane','total_thickness_mm','core_thickness_mm','status','raw_record']
+ with (browser/'assemblies.csv').open(encoding='utf-8-sig',newline='') as stream:assert csv.DictReader(stream).fieldnames==headers
+ complete=[]
+ for recipe,guid in sorted(recipes,key=lambda item:item[0]['key']):
+  prefix=[recipe['key'],guid,recipe['name'],strings['asched.used' if recipe['key'] in used else 'asched.unused']]
+  for i,layer in enumerate(recipe['layers']):
+   cavity=layer['kind']=='cavity'
+   complete.append(['layer',*prefix,str(i+1),'' if cavity else layer['materialId'],strings['asched.cavity'] if cavity else materials[layer['materialId']]['name'],layer['function'],str(layer['core']).lower(),layer['t'],layer['ventilation'] if cavity else '',str(layer['function']=='membrane').lower(),'','','ok',''])
+  complete.append(['assembly-summary',*prefix,'','','','','','','','',sum(l['t'] for l in recipe['layers']),sum(l['t'] for l in recipe['layers'] if l['core']),'ok',''])
+ assert len(rows)==len(complete)
+ for row,wanted in zip(rows,complete):
+  assert len(wanted)==len(headers)
+  for column,value in zip(headers,wanted):
+   if isinstance(value,(int,float)):assert abs(float(row[column])-value)<1e-10,(column,row[column],value)
+   else:assert row[column]==value,(column,row[column],value)
+ reports.append({'completeCsvComparedToActualIfc':True,'csvRows':len(rows),'columns':len(headers),'checkedCells':len(rows)*len(headers)})
  # Enlarged detail: compare actual PDF fill path geometry to shared world polygons
  # at an independently calculated paper transform (A3, ratio 10, declared crop).
  reader=PdfReader(browser/'detail.pdf');assert len(reader.pages)==1
