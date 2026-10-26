@@ -825,11 +825,11 @@ export async function draw06Mode({ APP, ROOT, WebIFC, IfcModel, quiet, args = []
     const d = createDispatcher({ server: { name: 'bimcraft', title: 'BimCraft', version: 'test' }, allowed: () => allowed });
     for (const def of AG.modelTools({ ed: () => ed, apply: async (label, op) => ed.modelChange(op, { label: 'Assistant: ' + label }) })) d.tool(def);
     const call = async (name, a = {}) => { const r = await d.call(name, a); return { r, v: r.structuredContent, text: r.content?.[0]?.text || '' }; };
-    ok(d.list().map((x) => x.name).join() === 'model_describe,walls_list', 'read only: model_describe, walls_list listed (finding elements stays bim-agent.js\'s elements_find)');
+    ok(d.list().map((x) => x.name).sort().join() === 'assemblies_list,materials_list,model_describe,walls_list', 'read only: exact MCP-01 material/assembly/model/wall union (finding elements stays bim-agent.js\'s elements_find)');
     let x = await call('walls_add', { points: [[0, 0], [6000, 0]] });
     ok(x.r.isError && /edit permission/.test(x.text) && ed.changes.length === 0, 'walls_add refused without edit; nothing changes');
     allowed = ['read', 'edit'];
-    ok(d.list().length === 12, 'with edit: 12 tools (0.7 AS.5: + element_set, elements_delete, elements_move, wall_change, opening_change)');
+    ok(d.list().map(x => x.name).sort().join() === ['model_describe','walls_list','walls_add','opening_add','floor_add','levels_add','grid_add','element_set','elements_delete','elements_move','wall_change','opening_change','materials_list','assemblies_list','material_create','material_edit','assembly_create','assembly_edit','assembly_duplicate','walls_edit'].sort().join(), 'with edit: exact 20-tool 0.7 plus MCP-01 union, including every retained generic route');
     x = await call('model_describe');
     ok(x.v.units === 'mm' && x.v.levels.length === 2 && x.v.levels[0].name === 'Level 1' && x.v.walls.count === 0 && x.v.types.walls.includes('ext-2x6') && x.v.types.doors.includes('door-single'), 'model_describe: two levels, no walls, the types the edit tools take');
     x = await call('walls_add', { points: [[0, 0], [6000, 0], [6000, 4000], [0, 4000]], closed: true, type: 'ext-2x6' });

@@ -1,0 +1,21 @@
+{
+  "aliasSchemaFindings": 0,
+  "status": "PASS",
+  "reader": "IfcOpenShell 0.9.0",
+  "file": "saved.ifc",
+  "schemaFindings": 0,
+  "walls": 23,
+  "authoredTypes": 4,
+  "materials": 15,
+  "preservedDimensions": 2,
+  "checks": [
+    "EXPRESS validation",
+    "unique GlobalIds",
+    "exact wall/type/material properties",
+    "independent placement and Body extrusion geometry",
+    "actual door/window products",
+    "cavity/ventilation/membrane IFC layers",
+    "unused definitions",
+    "unchanged original dimension specifications and points"
+  ]
+}

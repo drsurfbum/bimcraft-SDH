@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "transport": "real HTTP to live host.control",
+  "resolvedAlias": true,
+  "protectedOwnerRefusal": true,
+  "bytesAndBothHistoryStacksUnchanged": true,
+  "errors": []
+}

@@ -1,0 +1,132 @@
+{
+  "head": "31f7e9167f16f084bc1311a17271921a3c674bc4",
+  "runs": [
+    {
+      "checks": [
+        "live HTTP same-project two-step Undo and subsequent Redo preserve normal history",
+        "live HTTP project switch after one Undo leaves replacement IFC bytes and history unchanged; partial progress is explicit",
+        "live normal Redo still works on the original project after the interrupted request"
+      ],
+      "result": {
+        "transport": "existing token-protected Streamable HTTP → browser host.control",
+        "switch": "native active-model radio after the first rebuild settles, before the pending request continues",
+        "mockedDispatcher": false,
+        "mockedHistoryMutation": false,
+        "requestedDocument": "bim-586cb356-6edc-4ac8-9505-fac6f780bc39",
+        "status": "PASS",
+        "normalSameProject": {
+          "documentId": "bim-586cb356-6edc-4ac8-9505-fac6f780bc39",
+          "revision": 4,
+          "projectId": "0F04000000000000000000",
+          "units": "mm",
+          "mcp01Version": "1.0.0",
+          "undone": [
+            "Assistant: material_edit",
+            "Assistant: material_edit"
+          ],
+          "requestedSteps": 2,
+          "completedSteps": 2,
+          "complete": true
+        },
+        "switchResult": {
+          "documentId": "bim-586cb356-6edc-4ac8-9505-fac6f780bc39",
+          "revision": 7,
+          "projectId": "0F04000000000000000000",
+          "units": "mm",
+          "mcp01Version": "1.0.0",
+          "undone": [
+            "Assistant: material_edit"
+          ],
+          "requestedSteps": 2,
+          "completedSteps": 1,
+          "complete": false,
+          "stopped": {
+            "code": "document_changed",
+            "message": "The active document changed. Further history steps were refused."
+          },
+          "error": "The active document changed. Further history steps were refused.",
+          "isError": true
+        },
+        "proof": {
+          "switch": {
+            "armed": false,
+            "switched": true,
+            "observedSteps": 1,
+            "uiIdle": true
+          },
+          "AChanges": 1,
+          "BChanges": 1,
+          "BBytesUnchanged": true,
+          "BHistoryUnchanged": true,
+          "replacementIsActive": true
+        },
+        "errors": []
+      }
+    },
+    {
+      "checks": [
+        "live HTTP same-project two-step Undo and subsequent Redo preserve normal history",
+        "live HTTP project switch after one Undo leaves replacement IFC bytes and history unchanged; partial progress is explicit",
+        "live normal Redo still works on the original project after the interrupted request"
+      ],
+      "result": {
+        "transport": "existing token-protected Streamable HTTP → browser host.control",
+        "switch": "native active-model radio after the first rebuild settles, before the pending request continues",
+        "mockedDispatcher": false,
+        "mockedHistoryMutation": false,
+        "requestedDocument": "bim-9f93fe51-63e4-4b61-8402-5d9d9bc02269",
+        "status": "PASS",
+        "normalSameProject": {
+          "documentId": "bim-9f93fe51-63e4-4b61-8402-5d9d9bc02269",
+          "revision": 4,
+          "projectId": "0F04000000000000000000",
+          "units": "mm",
+          "mcp01Version": "1.0.0",
+          "undone": [
+            "Assistant: material_edit",
+            "Assistant: material_edit"
+          ],
+          "requestedSteps": 2,
+          "completedSteps": 2,
+          "complete": true
+        },
+        "switchResult": {
+          "documentId": "bim-9f93fe51-63e4-4b61-8402-5d9d9bc02269",
+          "revision": 7,
+          "projectId": "0F04000000000000000000",
+          "units": "mm",
+          "mcp01Version": "1.0.0",
+          "undone": [
+            "Assistant: material_edit"
+          ],
+          "requestedSteps": 2,
+          "completedSteps": 1,
+          "complete": false,
+          "stopped": {
+            "code": "document_changed",
+            "message": "The active document changed. Further history steps were refused."
+          },
+          "error": "The active document changed. Further history steps were refused.",
+          "isError": true
+        },
+        "proof": {
+          "switch": {
+            "armed": false,
+            "switched": true,
+            "observedSteps": 1,
+            "uiIdle": true
+          },
+          "AChanges": 1,
+          "BChanges": 1,
+          "BBytesUnchanged": true,
+          "BHistoryUnchanged": true,
+          "replacementIsActive": true
+        },
+        "errors": []
+      }
+    }
+  ],
+  "errors": [],
+  "browser": "151.0.7922.34",
+  "status": "PASS"
+}

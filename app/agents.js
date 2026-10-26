@@ -41,7 +41,7 @@ import { snapshotModel, drawWalls, placeOpening, loopsOf, op, changeWall, change
 import { readDerived } from './model-slabs.js';
 import { EDITABLE_ATTRS } from './ifc-edit.js';
 import { ids as idsOf } from './ifc-util.js';
-import { WALL_TYPES, readWalls } from './model-walls.js';
+import { WALL_TYPES, readWalls, wallTypes } from './model-walls.js';
 import { DOOR_TYPES, WINDOW_TYPES } from './model-openings.js';
 import { placeDrawnFloor, readDrawnFloors, polyProblem } from './model-floors.js';
 import { addLevels, readSite } from './model-site.js';
@@ -51,6 +51,10 @@ import { readRamps } from './model-ramps.js';
 import { ModelWriter } from './model-write.js';
 import { val } from './ifc-util.js';
 import { t } from './i18n.js';
+import { materialWallTools, documentState, bindDocument, exactWalls, BINDING, WALL_SETTINGS, requireType, requireWalls, assertLibrary, validateTop } from './material-wall-agent.js';
+import { placementPath, placementReference } from './wall-placement.js';
+import { liveHistory } from './agent-history.js';
+export { BINDING, bindDocument, documentState } from './material-wall-agent.js';
 
 const LIMIT = 1000;
 const r1 = (v) => (Number.isFinite(v) ? Math.round(v * 10) / 10 : null);
@@ -76,7 +80,7 @@ export function levelRef(ed, ref) {
 /** The model laid out (model_describe's body). */
 export function describeModel(ed) {
   const w = writer(ed), snap = snapshotModel(ed);
-  const levels = snap.levels.map((l) => ({ name: l.name, guid: l.guid, elevation: r1(l.elevation), height: r1(l.height) }));
+  const levels = snap.levels.map((l) => ({ name: l.name, guid: l.guid, elevation: l.elevation, height: l.height }));
   const byType = {};
   for (const x of snap.walls) byType[x.typeKey || 'other'] = (byType[x.typeKey || 'other'] || 0) + 1;
   const rooms = [];
@@ -88,11 +92,11 @@ export function describeModel(ed) {
   try { floors = readDrawnFloors(w).length; } catch (e) { /* none */ }
   try { const s = readSite(w); site = s ? { outline: s.points.length >= 3, area: s.points.length >= 3 ? r1(area(s.points) / 1e6) : null } : null; } catch (e) { /* none */ }
   return {
-    units: 'mm', schema: snap.v4 ? 'IFC4' : 'IFC2X3', levels,
+    ...documentState(ed), units: 'mm', schema: snap.v4 ? 'IFC4' : 'IFC2X3', levels,
     walls: { count: snap.walls.length, byType },
     doors: snap.openings.filter((o) => o.kind === 'door').length, windows: snap.openings.filter((o) => o.kind === 'window').length,
     rooms, floorsByOutline: floors, ramps, grids, columns, site,
-    types: { walls: WALL_TYPES.map((x) => x.key), doors: DOOR_TYPES.map((x) => x.key), windows: WINDOW_TYPES.map((x) => x.key) },
+    types: { walls: wallTypes(w).map((x) => x.key), doors: DOOR_TYPES.map((x) => x.key), windows: WINDOW_TYPES.map((x) => x.key) },
   };
 }
 
@@ -157,43 +161,93 @@ const movePlacements = (list, d) => op((w) => {
   return { id: moved[0] ?? null, ids: moved };
 });
 
+// One request guard for every model edit, including upstream generic routes. Domain ops remain replayable.
+const editing = new WeakSet();
 export function modelTools(env) {
+  return modelDefinitions(env).map(def => def.group !== 'edit' ? def : ({ ...def,
+    inputSchema: { ...def.inputSchema, properties: { ...BINDING, ...def.inputSchema.properties } },
+    run: async args => {
+      const original = env.ed();
+      if (!original) throw new Error('No IFC model is open in BimCraft.');
+      if (editing.has(original) || env.busy?.()) throw new Error('Document is busy.');
+      const state = bindDocument(original, args);
+      assertLibrary(writer(original));
+      const verify = current => {
+        if (current !== original || env.ed() !== original) throw new Error('Document changed before commit.');
+        if (env.busy?.()) throw new Error('Document is busy.');
+        bindDocument(original, { documentId: state.documentId, expectedRevision: state.revision });
+        assertLibrary(writer(original));
+      };
+      editing.add(original);
+      let first = true;
+      try {
+        const scoped = { ...env,
+          ed: () => { if (env.ed() !== original) throw new Error('Document changed during request.'); return original; },
+          apply: (label, operation) => env.apply(label, current => {
+            // The saved op is replayed by Undo/Redo; request binding applies to its first commit only.
+            if (first) { verify(current); first = false; }
+            return operation(current);
+          }),
+        };
+        return await modelDefinitions(scoped).find(t => t.name === def.name).run(args);
+      } finally { editing.delete(original); }
+    },
+  }));
+}
+function modelDefinitions(env) {
   const E = () => { const ed = env.ed(); if (!ed) throw new Error('No IFC model is open in BimCraft.'); return ed; };
   /** One undo step; a model op's refusal comes back as its sentence (nothing changed). */
   const edit = async (label, op) => { try { return await env.apply(label, op); } catch (e) { throw new Error(said(e)); } };
   const guidsOf = (r) => [...(r?.made?.keys?.() || [])];
   return [
+    ...materialWallTools(env),
     {
       name: 'model_describe', group: 'read', title: 'Describe the model',
       description: 'The open BimCraft model in millimetres: its levels (name, GlobalId, elevation, height), walls by type, doors, windows, rooms with their areas, floors drawn by outline, ramps, grid line tags, columns and the site; also the wall, door and window types walls_add and opening_add take.',
-      run: () => describeModel(E()),
+      inputSchema: obj({documentId:BINDING.documentId}),
+      run: a => { const ed=E(); bindDocument(ed,a); return describeModel(ed); },
     },
     {
       name: 'walls_list', group: 'read', title: 'List walls',
       description: 'The walls on a level that BimCraft\'s Draw tools can change: GlobalId, start and end (mm, in the level\'s plan), type, thickness, height, length, and the doors and windows in each.',
-      inputSchema: obj({ level: LEVEL }),
+      inputSchema: obj({ level: LEVEL, documentId: BINDING.documentId }),
       run: (a) => {
-        const ed = E(), l = levelRef(ed, a.level), snap = snapshotModel(ed);
-        const walls = snap.walls.filter((x) => x.storey === l.id);
-        return { level: l.name, walls: walls.slice(0, LIMIT).map((x) => ({ guid: x.guid, a: x.a.map(r1), b: x.b.map(r1), type: x.typeKey, thickness: r1(x.t), height: r1(x.height), length: r1(x.len),
-          openings: snap.openings.filter((o) => o.wall === x.id).map((o) => ({ guid: o.guid, kind: o.kind, type: o.typeKey, offset: r1(o.offset), width: r1(o.width), height: r1(o.height) })) })) };
+        const ed = E(); bindDocument(ed, a); const l = levelRef(ed, a.level);
+        return { ...documentState(ed), level: l.name, walls: exactWalls(ed, l.id) };
       },
     },
     {
       name: 'walls_add', group: 'edit', title: 'Add walls',
       description: 'Walls along points (mm, in the level\'s plan) on a level, joined to each other and to the walls there; rooms, floors and roofs follow as with the Wall tool. closed: true runs the last wall back to the first point. Type: one of model_describe\'s wall types (default ext-2x6). Height: mm, or leave it out to run up to the level above (the level\'s height on the top level). One undo step.',
-      inputSchema: obj({ level: LEVEL, points: { type: 'array', items: XY, minItems: 2, maxItems: 500 }, closed: { type: 'boolean' }, type: { type: 'string', enum: WALL_TYPES.map((x) => x.key) }, height: { type: 'number', minimum: 100, maximum: 100000 } }, ['points']),
+      inputSchema: obj({ ...BINDING, level: LEVEL, points: { type: 'array', items: XY, minItems: 2, maxItems: 500 }, closed: { type: 'boolean' }, ...WALL_SETTINGS }, ['points']),
       run: async (a) => {
-        const ed = E(), l = levelRef(ed, a.level), L = snapshotModel(ed).levels, above = L[L.findIndex((x) => x.id === l.id) + 1];
+        const ed = E(); bindDocument(ed, a);
+        const w = writer(ed), l = levelRef(ed, a.level), L = snapshotModel(ed).levels, above = L[L.findIndex((x) => x.id === l.id) + 1];
+        const type = requireType(w, a.type || WALL_TYPES[0].key);
+        if (type.custom || ['locationLine', 'exteriorSide', 'baseOffset', 'topLevel', 'topOffset'].some(k => a[k] !== undefined)) {
+          if (!a.documentId || a.expectedRevision === undefined) throw new Error('Authored types and instance settings require documentId and expectedRevision from model_describe.');
+        }
+        const side = a.exteriorSide || 'left', ref = placementReference(a.locationLine || 'center', type, side);
         const pts = a.closed && a.points.length >= 3 ? [...a.points, a.points[0]] : a.points;
-        const segs = [];
-        for (let i = 0; i + 1 < pts.length; i++) if (Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]) >= 1) segs.push({ a: pts[i], b: pts[i + 1] });
-        if (!segs.length) throw new Error('The points make no wall (each wall needs two points at least 1 mm apart).');
-        const top = a.height ? { height: a.height } : above ? { topLevel: above.guid } : { height: l.height };
-        const r = await edit('add ' + segs.length + (segs.length > 1 ? ' walls' : ' wall'), drawWalls({ storey: l.guid, segs, typeKey: a.type || WALL_TYPES[0].key, ...top }));
-        return { level: l.name, walls: guidsOf(r) };
+        if (pts.some((p, i) => i && Math.hypot(p[0] - pts[i-1][0], p[1] - pts[i-1][1]) < 1)) throw new Error('Every segment must be at least 1 mm; no partial chain was added.');
+        const path = placementPath(pts, type, ref.justification, side);
+        const segs = path.map(s => ({ ...s, justification: ref.justification }));
+        if (!segs.length) throw new Error('The points make no wall.');
+        const top = a.height !== undefined ? { height: a.height } : a.topLevel ? { topLevel: a.topLevel } : above ? { topLevel: above.guid } : { height: l.height };
+        validateTop(w, a);
+        const settings = { ...top, baseOffset: a.baseOffset || 0, topOffset: a.topOffset || 0 };
+        validateTop(w, settings, [{ storey: l.id, topLevel: '', baseOffset: 0, topOffset: 0 }]);
+        let first = true;
+        const run = drawWalls({ storey: l.guid, segs, typeKey: type.key, extSide: side, ...settings });
+        const r = await edit('add ' + segs.length + (segs.length > 1 ? ' walls' : ' wall'), current => {
+          if (current !== ed) throw new Error('Document changed before commit.');
+          if (first) { bindDocument(current, a); first = false; }
+          return run(current);
+        });
+        return { ...documentState(ed), level: l.name, walls: guidsOf(r), values: exactWalls(ed, l.id) };
       },
     },
+
     {
       name: 'opening_add', group: 'edit', title: 'Add a door or window',
       description: 'A door or window in a wall (its GlobalId from walls_list or walls_add): type from model_describe (default a single door / a fixed window), offset = mm from the wall\'s start to the opening\'s near edge (default: the middle), width and height in mm (default: the type\'s), sill for windows. Refused if it does not fit. One undo step.',
@@ -309,12 +363,14 @@ export function modelTools(env) {
     {
       name: 'wall_change', group: 'edit', title: 'Change a wall',
       description: 'Change a wall drawn with BimCraft\'s tools (GlobalId from walls_list): its start a and end b (mm, in its level\'s plan) and/or its type. Joined walls, rooms and its doors and windows follow; a door that no longer fits refuses the change. One undo step.',
-      inputSchema: obj({ guid: { type: 'string', minLength: 1, maxLength: 64 }, a: XY, b: XY, type: { type: 'string', enum: WALL_TYPES.map((x) => x.key) } }, ['guid']),
+      inputSchema: obj({ guid: { type: 'string', minLength: 1, maxLength: 64 }, a: XY, b: XY, type: WALL_SETTINGS.type }, ['guid']),
       run: async (a) => {
         if (!a.a && !a.b && !a.type) throw new Error('Say what changes: a, b or type.');
+        const ed=E(), w=writer(ed); requireWalls(w,[a.guid]);
+        if (a.type) { const type=requireType(w,a.type); if(type.custom && (!a.documentId || a.expectedRevision===undefined)) throw new Error('Authored types require documentId and expectedRevision.'); }
         await edit('change a wall', changeWall(a.guid, { ...(a.a ? { a: a.a } : {}), ...(a.b ? { b: a.b } : {}), ...(a.type ? { typeKey: a.type } : {}) }));
         const x = snapshotModel(E()).walls.find((y) => y.guid === a.guid);
-        return x ? { guid: a.guid, a: x.a.map(r1), b: x.b.map(r1), type: x.typeKey, length: r1(x.len) } : { guid: a.guid };
+        return { ...documentState(ed), wall: exactWalls(ed).find(w=>w.guid===a.guid), guid:a.guid, ...(x ? {a:x.a,b:x.b,type:x.typeKey,length:x.len} : {}) };
       },
     },
     {
@@ -337,14 +393,23 @@ export function installAgents(modelUi, app) {
   const C = app.control || getHost({ app: 'bimcraft' }).control;
   const A = modelUi.extend({ tools: [] });
   const ed = () => A.ed();
-  const settle = async (ms = 60000) => { const t0 = Date.now(); while ((A.S.busy || A.S.reloading || A.S.queue?.length) && Date.now() - t0 < ms) await new Promise((r) => setTimeout(r, 50)); };
+  const busy = () => app.busy?.() || (A.S.chain?.points?.length ? 'drawing walls' : null) || (A.S.busy || A.S.reloading || A.S.queue?.length ? 'rebuilding the model' : null);
+  const settle = async (ms = 60000, verify = null) => {
+    const check = verify || (() => {}), t0 = Date.now(); check();
+    while (A.S.busy || A.S.reloading || A.S.queue?.length) {
+      if (Date.now() - t0 >= ms) { if (verify) throw new Error('Timed out waiting for the model to settle.'); break; }
+      await new Promise(r => setTimeout(r, 50)); check();
+    }
+    check();
+  };
+  const history = liveHistory({ ed, busy: () => editing.has(ed()) ? 'another model edit' : busy(), settle, undo: hooks => app.undo(hooks), redo: hooks => app.redo(hooks) });
   /** One undo step through the Draw module (the plan and the 3D view follow), labelled as the assistant's. */
   const apply = async (label, op) => {
-    const why = app.busy?.() || (A.S.chain?.points?.length ? 'drawing walls' : null);
+    const why = busy();
     if (why) throw new Error('The person is ' + why + ': try again when they finish.');
-    await settle();
+    const original = ed();
     let res = null, err = null;
-    const run = (editor) => { try { res = op(editor); return res; } catch (e) { err = e; throw e; } };
+    const run = (editor) => { try { if (editor !== original) throw new Error('Document changed before commit.'); res = op(editor); return res; } catch (e) { err = e; throw e; } };
     A.commit(run, { label: 'Assistant: ' + label, verb: '' });
     if (err) throw err;
     await settle();
@@ -380,22 +445,11 @@ export function installAgents(modelUi, app) {
     {
       name: 'undo', group: 'edit', title: 'Undo',
       description: 'Undo the assistant\'s last steps (labelled "Assistant: …"); steps the person made are only undone with any: true.',
-      inputSchema: obj({ steps: { type: 'integer', minimum: 1, maximum: 50 }, any: { type: 'boolean' } }),
-      run: async (a) => {
-        const undone = [];
-        for (let i = 0; i < (a.steps || 1); i++) {
-          const e = ed(), top = e?.changes[e.changes.length - 1];
-          if (!top) break;
-          const label = top.label || top.kind;
-          if (!a.any && !String(label).startsWith('Assistant: ')) { if (!undone.length) throw new Error('The last step is the person\'s ("' + label + '"): pass any: true to undo it.'); break; }
-          await settle();
-          await app.undo();
-          await settle();
-          undone.push(label);
-        }
-        return { undone };
-      },
+      inputSchema: obj({ steps: { type: 'integer', minimum: 1, maximum: 50 }, any: { type: 'boolean' }, ...BINDING }),
+      run: a => history('undo', a),
     },
+    { name: 'redo', group: 'edit', title: 'Redo', description: 'Redo an Assistant-owned model step. Person steps require any: true.', inputSchema: obj({ any: { type: 'boolean' }, ...BINDING }), run: a => history('redo', a) },
+    { name: 'model_save', group: 'save', title: 'Save the model', description: 'BimCraft\'s own Save as IFC: a new file with every change (desktop: the save dialog; browser: a download). The original file is never changed.', inputSchema: obj(BINDING), run: async a => { if (busy()) throw new Error('Document is busy.'); if (!ed()) throw new Error('No IFC model.'); bindDocument(ed(), a); return { saved: await app.save(), ...info(), ...documentState(ed()) }; } },
     { name: 'usd_export', group: 'export', title: 'Export USD', description: 'The open models as OpenUSD (storeys, disciplines and elements as prims, with their IFC data and colours), .usda (default), .usdc or .usdz, as Export › USD writes it. With a path (Studio) it is written there, else it downloads. Needs the 3D view of an IFC model.',
       inputSchema: obj({ format: { type: 'string', enum: ['usda', 'usdc', 'usdz'] }, path: { type: 'string', minLength: 1, maxLength: 4096, description: 'Studio: a file inside the folders the person allowed (Settings › Assistants › Folders); without it the file downloads.' }, overwrite: { type: 'boolean', default: false } }),
       run: async (a) => {
@@ -408,11 +462,10 @@ export function installAgents(modelUi, app) {
         app.download(new Blob([bytes], { type: r.type }), r.base + '.' + fmt, r.type);
         return { format: fmt, bytes: bytes.length, report: r.report, downloaded: r.base + '.' + fmt };
       } },
-    { name: 'model_save', group: 'save', title: 'Save the model', description: 'BimCraft\'s own Save as IFC: a new file with every change (desktop: the save dialog; browser: a download). The original file is never changed.', run: async () => ({ saved: await app.save(), ...info() }) },
   ];
   // after an edit outside the Draw module (element_set): the Properties panel shows the new value
   const refresh = () => { try { app.select([...(app.selection() || [])]); } catch (e) { /* nothing selected */ } };
-  for (const def of [...live.slice(0, 1), ...modelTools({ ed, apply, refresh, busy: () => app.busy?.() || null }), ...live.slice(1)]) C.tool(def);
+  for (const def of [...live.slice(0, 1), ...modelTools({ ed, apply, refresh, busy }), ...live.slice(1)]) C.tool(def);
   // 0.7 AS.6 (assistants-gaps): the Render dialog's pictures and queue, through the page's own Render hooks (window only)
   if (app.render) for (const d of renderTools(C, app.render, { toolResult })) C.tool(d);
   return C;
