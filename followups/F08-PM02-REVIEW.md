@@ -1,4 +1,4 @@
-> Subsequent adoption: PR #13 is merged into main `0329eec`. Fresh local validation passes; all eleven exact-main workflow types are running or awaiting final verification. F28-C remains separate. [Integrated status](F08-INTEGRATED.md). The review/snapshots below are historical.
+> Current adoption status: PR #13 is merged and validated on main `0329eec`. All eleven exact-main workflow types pass; fresh local baseline is 729/0 with four availability notices and 120 focused tests pass. F08-PM-01/02 stay CLOSED. Full F08 remains partial and F28-C stays separate. [Integrated adoption record](F08-INTEGRATED.md). Earlier review/snapshots below are historical.
 
 # F08 PR #13 — PM receipt correction review, October 26, 2026
 

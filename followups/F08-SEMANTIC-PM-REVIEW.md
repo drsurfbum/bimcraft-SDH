@@ -1,3 +1,5 @@
+> Current adoption status: PR #13 is merged and validated on main `0329eec`. All eleven exact-main workflow types pass; fresh local baseline is 729/0 with four availability notices and 120 focused tests pass. F08-PM-01/02 stay CLOSED. Full F08 remains partial and F28-C stays separate. [Integrated adoption record](F08-INTEGRATED.md). Earlier review/snapshots below are historical.
+
 > Latest PM verification: delivery `b3e768e` closes F08-PM-02. F08-PM-01 stays CLOSED. The bounded F08-A slice is ready for an authorized merge on approved main `21ff284`; PR #13 stays draft/unmerged. All eleven exact-head workflow types pass; 81 + 39 focused tests and native interleaving checks pass. Full F08 remains partial. [Correction review](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/F08-PM02-REVIEW.md). Earlier findings below are historical.
 
 # F08 PR #13 — PM semantic re-review, October 26, 2026
