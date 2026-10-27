@@ -8,7 +8,7 @@ You are the project manager for my residential BIM fork. I will start separate f
 
 The outcome is a lightweight, very responsive residential BIM tool with high geometric precision, useful Properties and assembly editing, reliable construction documents/detailing, flexible roof tools and a Fusion-like parametric component workflow. We are extending the existing BimCraft codebase. A full Rust rewrite is not assumed; profiling and a bounded experiment should determine whether Rust belongs in any part of it.
 
-Repository: https://github.com/achartt/bimcraft-SDH
+Repository: https://github.com/drsurfbum/bimcraft-SDH
 Development checkout: `/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-dev`
 Prototype branch: `feature/wall-assemblies-dimensions`
 Feature baseline: `bb2b8d2`
