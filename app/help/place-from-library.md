@@ -15,6 +15,7 @@ Put a library item into an IFC model: a sink, a work table, a chair. BimCraft wr
 1. Open an IFC model.
 2. Click the {{ui:Library}} tab beside {{ui:Properties}} on the right, or {{ui:Library}} in the toolbar above the model.
 3. Pick a source:
+   - **Built-in symbols**: generic plumbing plan symbols included with BimCraft under Apache-2.0, available offline. Check their dimensions before construction. For electrical plan symbols and IFC electrical devices, use **Build › Electrical**.
    - **LibraryCraft**: the CadCraft library on this site. Public items need no sign-in.
    - **This file**: the blocks of an open DWG or DXF drawing. A dynamic block with visibility states is offered once per state, named "Sink: Double bowl", each drawn with only that state's objects.
    - **Files…**: a DWG, DXF, IFC, glTF/GLB, OBJ, RFA or CSV file on your computer. It is read in this tab; nothing is uploaded.
@@ -50,6 +51,7 @@ Each move is one undo step and travels in Studio Live. The item keeps its item n
 
 ## Good to know
 
+- Some items come in several sizes or options: the card then has a **Variant** choice, and the one you pick is the one placed. See [Place and swap a library item that has variants](topic:library-variants).
 - An item with no 3D body (a 2D symbol) is placed with a stand-in box; you give its height when asked.
 - More of the same: pick a placed item and use {{ui:Copy}} and {{ui:Paste}}, or {{key:Mod+D}}. See [Copy, paste and duplicate library items](topic:copy-paste).
 - To start every placement with wall snap on, turn on **Start with wall snap on** in [BimCraft settings](topic:settings).

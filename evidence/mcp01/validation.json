@@ -1,0 +1,55 @@
+{
+  "status": "PASS local source validation; draft pending final-delivery CI",
+  "base": "1afe80e78a42aa27ee9af5d1ac937cd38cd1b711",
+  "sourceCommit": "83a61859e8b734139498cbb041b31dbb12e0a963",
+  "applicationTree": "df002f550cf3d6c596d33adf765acf4a1b604983",
+  "branch": "feature/mcp-material-wall-parity",
+  "checkout": "bimcraft-mcp-01",
+  "owner": "MCP-01 implementation chat",
+  "gitIdentity": {
+    "name": "DrSurfBum",
+    "email": "80549907+drsurfbum@users.noreply.github.com",
+    "scope": "repository-local"
+  },
+  "excludedFeatureHeads": [
+    "f956fac00adf1d4d51ddc2e4253fe215a2c50acd",
+    "6aad54dafb65909f6f2585c36e8c419cbbaad4ae"
+  ],
+  "local": {
+    "baselineStandaloneBeforeReaderSetup": 683,
+    "baselineWithReaders": 707,
+    "mcp01ContractTests": 13,
+    "mcp01MandatorySkips": 0,
+    "f28Tests": 10,
+    "f03Tests": 4,
+    "legacyFilesPassed": 7,
+    "genericElementAgentChecks": 22,
+    "stdioWorkflowChecks": 11,
+    "liveWorkflowChecks": 13,
+    "packageChecks": 4,
+    "catalogs": {
+      "live": 24,
+      "headless": 37
+    },
+    "negativeSharedCases": 21,
+    "negativePersistedFixtures": 8,
+    "independentSchemaFindings": {
+      "headless": 0,
+      "packed": 0,
+      "live": 0
+    }
+  },
+  "unavailable": {
+    "draw06": "ERR_MODULE_NOT_FOUND: .cc-test/public_html/assets/apps/civilcraft/dev/landxml.js (standalone sibling dependency remains absent); not counted as passed",
+    "optionalSiblings": "library/CivilCraft/CadCraft/TakeoffCraft source integrations: see baseline availability notices"
+  },
+  "open": [
+    "PERF-F04-01",
+    "PERF-F05-01",
+    "TEST-F28-01",
+    "broader semantic MCP catch-up"
+  ],
+  "connection": "ephemeral test clients connected; persistent user client not configured",
+  "publication": "No IFC/model/expected-model JSON/archive upload or package publication. Reports and schemas only. CI separately retains allowlisted browser screenshots/reports.",
+  "finalDelivery": "The subsequent evidence commit contains this source report; CI reports and PR identify its exact SHA."
+}

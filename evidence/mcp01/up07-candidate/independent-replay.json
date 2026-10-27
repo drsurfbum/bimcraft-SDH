@@ -1,0 +1,273 @@
+{
+  "status": "PASS",
+  "reader": "IfcOpenShell 0.9.0",
+  "expressRules": true,
+  "files": [
+    {
+      "file": "new-initial.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-redo-1.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-redo-2.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-redo-3.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-initial.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-redo-1.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-redo-2.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-redo-3.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 181,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-assigned-initial.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-assigned-redo-1.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-assigned-redo-2.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-assigned-redo-3.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "new-assigned-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-assigned-initial.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-assigned-redo-1.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-assigned-redo-2.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-assigned-redo-3.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "duplicate-assigned-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 182,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "edit-existing-initial.ifc",
+      "schema": "IFC4",
+      "roots": 179,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "edit-existing-redo-1.ifc",
+      "schema": "IFC4",
+      "roots": 179,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "edit-existing-redo-2.ifc",
+      "schema": "IFC4",
+      "roots": 179,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "edit-existing-redo-3.ifc",
+      "schema": "IFC4",
+      "roots": 179,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "edit-existing-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 179,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-columns-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 26,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-levels-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 15,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-split-levels-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 15,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-tracing-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 78,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-trace-pages-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 81,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-drafting-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 13,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-floor-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 18,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-floor-opening-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 22,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-ramp-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 22,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-family-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 18,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "audit-run-reopened.ifc",
+      "schema": "IFC4",
+      "roots": 34,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "bimcraft-res-devices.ifc",
+      "schema": "IFC4",
+      "roots": 158,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    },
+    {
+      "file": "bimcraft-res-electrical.ifc",
+      "schema": "IFC4",
+      "roots": 74,
+      "schemaFindings": 0,
+      "duplicateGlobalIds": 0
+    }
+  ]
+}

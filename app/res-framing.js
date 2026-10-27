@@ -47,11 +47,23 @@ const SIZES = ['2x4', '2x6', '2x8', '2x10', '2x12'];
 export const HEADER_TABLE = [[3 * FT, '2x6'], [4 * FT, '2x8'], [6 * FT, '2x10'], [8 * FT, '2x12']];
 /** Floor joists, max span (mm) at 16" and 24" on centre — labelled defaults (40 psf live, No. 2 spruce-pine-fir). */
 export const JOIST_TABLE = { 406.4: [['2x6', 9.75 * FT], ['2x8', 12.8 * FT], ['2x10', 16.4 * FT], ['2x12', 19.9 * FT]], 609.6: [['2x6', 8.5 * FT], ['2x8', 11.25 * FT], ['2x10', 14.3 * FT], ['2x12', 17.4 * FT]] };
+// TJ-4000 (July 2025), p. 7: L/480, 40 psf live + 10 psf dead, glue-nailed subfloor. Clear spans, 16/24 in. o.c.
+const TJI_SPANS = [
+  ['9½', 241.3, '110', [15, 6], [13, 7]], ['9½', 241.3, '210', [16, 3], [14, 3]], ['9½', 241.3, '230', [16, 8], [14, 8]],
+  ['11⅞', 301.625, '110', [18, 5], [15, 9]], ['11⅞', 301.625, '210', [19, 3], [16, 11]], ['11⅞', 301.625, '230', [19, 10], [17, 5]], ['11⅞', 301.625, '360', [20, 11], [18, 4]], ['11⅞', 301.625, '560', [23, 8], [20, 9]],
+  ['14', 355.6, '110', [20, 11], [17, 2]], ['14', 355.6, '210', [21, 10], [18, 10]], ['14', 355.6, '230', [22, 6], [19, 9]], ['14', 355.6, '360', [23, 8], [20, 9]], ['14', 355.6, '560', [26, 10], [23, 6]],
+  ['16', 406.4, '110', [22, 6], [18, 1]], ['16', 406.4, '210', [24, 3], [19, 11]], ['16', 406.4, '230', [24, 10], [21, 1]], ['16', 406.4, '360', [26, 3], [21, 5]], ['16', 406.4, '560', [29, 8], [25, 2]],
+];
+export function tjiFor(span, spacing) {
+  const col = Math.abs(spacing - 609.6) < 50 ? 4 : 3;
+  const row = TJI_SPANS.find((r) => span <= (r[col][0] * 12 + r[col][1]) * IN + 1e-6);
+  return row ? { size: `TJI ${row[2]} ${row[0]}`, depth: row[1], series: row[2] } : null;   // i18n-ignore: product size designations, written as the IFC 'Size' label (data, not words)
+}
 /** Rafters, max horizontal span — labelled defaults (30 psf snow). */
 export const RAFTER_TABLE = { 406.4: [['2x6', 13.5 * FT], ['2x8', 17 * FT], ['2x10', 21 * FT], ['2x12', 25 * FT]], 609.6: [['2x6', 11 * FT], ['2x8', 14 * FT], ['2x10', 17 * FT], ['2x12', 20.5 * FT]] };
 /** Ceiling joists, max span — labelled defaults (attic without storage). */
 export const CEILING_TABLE = { 406.4: [['2x4', 10 * FT], ['2x6', 15.5 * FT], ['2x8', 20.5 * FT], ['2x10', 26 * FT]], 609.6: [['2x4', 8.5 * FT], ['2x6', 13.5 * FT], ['2x8', 17.75 * FT], ['2x10', 22.75 * FT]] };
-export const FRAME_DEFAULTS = { spacing: 16 * IN, corners: 'three-stud', blocking: true, roofMode: 'stick' };
+export const FRAME_DEFAULTS = { spacing: 16 * IN, corners: 'three-stud', blocking: true, roofMode: 'stick', floorMode: 'lumber', floorDir: 'auto' };
 const tableFor = (T, sp) => T[Math.abs(sp - 609.6) < 50 ? 609.6 : 406.4];
 /** The smallest size in a span table that reaches `span` (else the largest, flagged). */
 export function sizeFor(table, span) {
@@ -249,7 +261,7 @@ function insetPoly(P, dd) {
 export function frameFloor(poly, ctx) {
   const sp = ctx.spacing || FRAME_DEFAULTS.spacing, pieces = [], notes = [];
   // the joists run the short way of the floor's bounding box in its longest edge's frame
-  let ax = ctx.dir;
+  let ax = ctx.dir || (ctx.floorDir === 'x' ? [1, 0] : ctx.floorDir === 'y' ? [0, 1] : null);
   if (!ax) {
     let best = null;
     for (let i = 0; i < poly.length; i++) { const a = poly[i], b = poly[(i + 1) % poly.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (!best || L > best.L) best = { L, u: [(b[0] - a[0]) / L, (b[1] - a[1]) / L] }; }
@@ -267,11 +279,14 @@ export function frameFloor(poly, ctx) {
   let span = 0;
   const segsAt = (c) => clipLine([across[0] * c, across[1] * c], ax, inner);
   for (const c of lines) for (const [t0, t1] of segsAt(c)) span = Math.max(span, t1 - t0);
-  const pick = sizeFor(tableFor(JOIST_TABLE, sp), span);
+  const engineered = ctx.floorMode === 'tji';
+  const pick = engineered ? tjiFor(span, sp) : sizeFor(tableFor(JOIST_TABLE, sp), span);
+  if (!pick) return { pieces: [], error: 'res.err.tji.span' };
   if (pick.over) notes.push('joist');
-  const L = LUMBER[pick.size], D = L.d, top = (ctx.top ?? 0) - 0.75 * IN;
+  if (engineered) notes.push('tji');
+  const L = LUMBER[pick.size], D = engineered ? pick.depth : L.d, width = engineered ? 1.75 * IN : L.t, top = (ctx.top ?? 0) - 0.75 * IN;
   const P = (c, s) => [across[0] * c + ax[0] * s, across[1] * c + ax[1] * s];
-  const joist = (role, c, s0, s1, sz = pick.size) => { if (s1 - s0 > 1) pieces.push({ role, size: sz, line: [[...P(c, s0), top - D / 2], [...P(c, s1), top - D / 2]], depth: D, width: L.t, length: s1 - s0, flat: true }); };
+  const joist = (role, c, s0, s1, sz = pick.size) => { if (s1 - s0 > 1) pieces.push({ role, size: sz, line: [[...P(c, s0), top - D / 2], [...P(c, s1), top - D / 2]], depth: D, width, length: s1 - s0, flat: true, tji: engineered }); };
   for (const c of lines) {
     for (const [t0, t1] of segsAt(c)) {
       // cut round openings (tail joists), the trimmer lines skip them
@@ -286,14 +301,14 @@ export function frameFloor(poly, ctx) {
     for (const c of [o.c0 - 0.75 * IN, o.c0 - 2.25 * IN, o.c1 + 0.75 * IN, o.c1 + 2.25 * IN]) for (const [t0, t1] of segsAt(c)) joist('trimmer', c, t0, t1);
     for (const s of [o.s0 - 0.75 * IN, o.s0 - 2.25 * IN, o.s1 + 0.75 * IN, o.s1 + 2.25 * IN]) {
       const a = P(o.c0 - 3 * IN, s), b = P(o.c1 + 3 * IN, s);
-      pieces.push({ role: 'header.floor', size: pick.size, line: [[...a, top - D / 2], [...b, top - D / 2]], depth: D, width: L.t, length: Math.hypot(b[0] - a[0], b[1] - a[1]), flat: true });
+      pieces.push({ role: 'header.floor', size: pick.size, line: [[...a, top - D / 2], [...b, top - D / 2]], depth: D, width, length: Math.hypot(b[0] - a[0], b[1] - a[1]), flat: true, tji: engineered });
     }
   }
   // rims: along each edge, 3/4" in
   const rim = insetPoly(poly, 0.75 * IN);
   for (let i = 0; i < rim.length; i++) {
     const a = rim[i], b = rim[(i + 1) % rim.length];
-    pieces.push({ role: 'rim', size: pick.size, line: [[...a, top - D / 2], [...b, top - D / 2]], depth: D, width: L.t, length: Math.hypot(b[0] - a[0], b[1] - a[1]), flat: true });
+    pieces.push({ role: 'rim', size: engineered ? `Rim ${pick.size}` : pick.size, line: [[...a, top - D / 2], [...b, top - D / 2]], depth: D, width, length: Math.hypot(b[0] - a[0], b[1] - a[1]), flat: true });   // i18n-ignore: product size designations, written as the IFC 'Size' label (data, not words)
   }
   return { pieces, size: pick.size, span, notes, dir: ax };
 }
@@ -407,7 +422,10 @@ function pieceItem(w, pc, P, D) {
   const zb = pc.flat ? A[2] - vd / 2 : A[2];   // rafters, hips, valleys and ridges stand on the roof's underside; flat pieces are centred on their line
   const frame = w.axisFrame([A[0] - z[0] * pc.width / 2, A[1] - z[1] * pc.width / 2, zb], x, z);
   const dl = [d[0] / L, d[1] / L, d[2] / L], ex = [dl[0] * z[0] + dl[1] * z[1], dl[2], dl[0] * x[0] + dl[1] * x[1]];
-  return w.extrudeAt(w.profile([[0, 0], [pc.width, 0], [pc.width, vd], [0, vd]]), frame, L, ex);
+  // shortcut: schematic I section; manufacturer-specific flange/web dimensions require a product catalog.
+  const f = Math.min(1.25 * IN, vd / 4), web = Math.min(0.375 * IN, pc.width / 4), mid = pc.width / 2;
+  const profile = pc.tji ? [[0, 0], [pc.width, 0], [pc.width, f], [mid + web / 2, f], [mid + web / 2, vd - f], [pc.width, vd - f], [pc.width, vd], [0, vd], [0, vd - f], [mid - web / 2, vd - f], [mid - web / 2, f], [0, f]] : [[0, 0], [pc.width, 0], [pc.width, vd], [0, vd]];
+  return w.extrudeAt(w.profile(profile), frame, L, ex);
 }
 function simplify(p) { return p.filter((q, i) => i < 2 || i === p.length - 1 || Math.abs((p[i + 1][1] - q[1]) * (q[0] - p[i - 1][0]) - (q[1] - p[i - 1][1]) * (p[i + 1][0] - q[0])) > 1e-3); }
 
@@ -421,7 +439,7 @@ export function readFraming(w) {
     if (!ps) continue;
     const l = w.api.GetLine(w.mid, id, false);
     out.push({ id, guid: val(l.GlobalId), storey: so.get(id) ?? null, host: ps.Host || '', kind: ps.Kind || 'wall', spacing: Number(ps.Spacing) * w.unitMm || FRAME_DEFAULTS.spacing, corners: ps.Corners === 'california' ? 'california' : 'three-stud',
-      blocking: !(ps.Blocking === false || /^(\.?F\.?|false)$/i.test(String(ps.Blocking ?? ''))), roofMode: ps.RoofMode === 'truss' ? 'truss' : 'stick', key: ps.ShapeKey || '', parts: partsOf(w, id) });
+      blocking: !(ps.Blocking === false || /^(\.?F\.?|false)$/i.test(String(ps.Blocking ?? ''))), roofMode: ps.RoofMode === 'truss' ? 'truss' : 'stick', floorMode: ps.FloorMode === 'tji' ? 'tji' : 'lumber', floorDir: ['x', 'y'].includes(ps.FloorDir) ? ps.FloorDir : 'auto', key: ps.ShapeKey || '', parts: partsOf(w, id) });
   }
   return out;
 }
@@ -451,7 +469,7 @@ function hostOf(w, guid, cache) {
 }
 /** The pieces a framing would have now, and its shape key. */
 function piecesFor(w, fr, h, cache) {
-  const opts = { spacing: fr.spacing, corners: fr.corners, blocking: fr.blocking };
+  const opts = { spacing: fr.spacing, corners: fr.corners, blocking: fr.blocking, floorMode: fr.floorMode, floorDir: fr.floorDir };
   if (h.kind === 'wall') {
     const walls = cache.walls.filter((x) => x.storey === h.storey);
     const ops = (cache.openings || (cache.openings = readOpenings(w, null, cache.walls))).filter((o) => o.wallGuid === h.host.guid);
@@ -560,7 +578,7 @@ export function frameHosts(spec) {
       const h = hostOf(w, g, cache);
       if (!h || h.storey === null) continue;
       const old = have.find((x) => x.host === g);
-      const fr = old ? { ...old, spacing: s.spacing, corners: s.corners, blocking: s.blocking, roofMode: s.roofMode, key: '' } : null;
+      const fr = old ? { ...old, spacing: s.spacing, corners: s.corners, blocking: s.blocking, roofMode: s.roofMode, floorMode: s.floorMode, floorDir: s.floorDir, key: '' } : null;
       let id = old?.id;
       if (!old) {
         if (!s.guids[g]) s.guids[g] = val(w.guid());
@@ -571,8 +589,8 @@ export function frameHosts(spec) {
         w.contain(id, h.storey);
         made.set(s.guids[g], id);
       }
-      w.upsertPset(id, FRAME_PSET, [['Host', 'IFCIDENTIFIER', g], ['Kind', 'IFCLABEL', h.kind], ['Spacing', 'IFCPOSITIVELENGTHMEASURE', round(w.u(s.spacing))], ['Corners', 'IFCLABEL', s.corners], ['Blocking', 'IFCBOOLEAN', !!s.blocking], ['RoofMode', 'IFCLABEL', s.roofMode], ['ShapeKey', 'IFCIDENTIFIER', '']]);
-      const r = writeFraming(w, fr || { id, guid: s.guids[g], storey: h.storey, host: g, kind: h.kind, spacing: s.spacing, corners: s.corners, blocking: s.blocking, roofMode: s.roofMode, key: '', parts: [] }, cache);
+      w.upsertPset(id, FRAME_PSET, [['Host', 'IFCIDENTIFIER', g], ['Kind', 'IFCLABEL', h.kind], ['Spacing', 'IFCPOSITIVELENGTHMEASURE', round(w.u(s.spacing))], ['Corners', 'IFCLABEL', s.corners], ['Blocking', 'IFCBOOLEAN', !!s.blocking], ['RoofMode', 'IFCLABEL', s.roofMode], ['FloorMode', 'IFCLABEL', s.floorMode], ['FloorDir', 'IFCLABEL', s.floorDir], ['ShapeKey', 'IFCIDENTIFIER', '']]);
+      const r = writeFraming(w, fr || { id, guid: s.guids[g], storey: h.storey, host: g, kind: h.kind, spacing: s.spacing, corners: s.corners, blocking: s.blocking, roofMode: s.roofMode, floorMode: s.floorMode, floorDir: s.floorDir, key: '', parts: [] }, cache);
       if (r.error && s.hosts.length === 1) fail(r.error);
       if (r.written) n++;
       idsOut.push(id);
@@ -590,7 +608,9 @@ export function changeFraming(guid, ch) {
     if (ch.corners) nx.corners = ch.corners;
     if (typeof ch.blocking === 'boolean') nx.blocking = ch.blocking;
     if (ch.roofMode) nx.roofMode = ch.roofMode;
-    w.upsertPset(fr.id, FRAME_PSET, [['Spacing', 'IFCPOSITIVELENGTHMEASURE', round(w.u(nx.spacing))], ['Corners', 'IFCLABEL', nx.corners], ['Blocking', 'IFCBOOLEAN', !!nx.blocking], ['RoofMode', 'IFCLABEL', nx.roofMode]]);
+    if (['tji', 'lumber'].includes(ch.floorMode)) nx.floorMode = ch.floorMode;
+    if (['auto', 'x', 'y'].includes(ch.floorDir)) nx.floorDir = ch.floorDir;
+    w.upsertPset(fr.id, FRAME_PSET, [['Spacing', 'IFCPOSITIVELENGTHMEASURE', round(w.u(nx.spacing))], ['Corners', 'IFCLABEL', nx.corners], ['Blocking', 'IFCBOOLEAN', !!nx.blocking], ['RoofMode', 'IFCLABEL', nx.roofMode], ['FloorMode', 'IFCLABEL', nx.floorMode], ['FloorDir', 'IFCLABEL', nx.floorDir]]);
     const r = writeFraming(w, nx, {});
     if (r.error) fail(r.error);
     return { id: fr.id, ids: [fr.id] };
@@ -642,7 +662,7 @@ export function lumberList(w, { guids = null, metric = false } = {}) {
       const ps = w.readPset(pid, LUMBER_PSET);
       if (!ps) continue;
       const len = Number(ps.Length) * w.unitMm, sz = String(ps.Size || '');
-      const base = sz.split(' ')[0], plies = Number((sz.match(/× (\d+)/) || [])[1] || 1);
+      const base = sz.replace(/ × \d+$/, ''), plies = Number((sz.match(/× (\d+)/) || [])[1] || 1);
       const stock = metric ? Math.max(2400, Math.ceil(len / 600) * 600) : Math.max(8 * FT, Math.ceil(len / (2 * FT)) * 2 * FT);
       const k = base + '|' + stock;
       const row = map.get(k) || { size: base, label: metric ? (LUMBER[base]?.metric || base) : base, stock, count: 0, bf: 0 };

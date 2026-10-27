@@ -1,0 +1,80 @@
+name: MCP-01 semantic materials and walls
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: mcp01-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: devshell/vendor
+          key: vendor-${{ hashFiles('devshell/vendor.json') }}
+      - run: npm run fetch-vendor
+      - name: Required independent reader and pinned browser
+        run: |
+          npm install --prefix .cc-test/mcp01-deps --no-package-lock playwright@1.56.1
+          .cc-test/mcp01-deps/node_modules/.bin/playwright install --with-deps chromium
+          python -m venv .cc-test/mcp01-reader
+          .cc-test/mcp01-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
+      - name: Required registration, schema, precision and ownership tests (no optional imports)
+        run: npm run test:mcp01
+      - name: Required foundation and feature capability union (no silent registration loss)
+        run: |
+          git worktree add --detach .cc-test/mcp01-control-feature 9224167fe3e2e856c57679065b545d834f52ade1
+          git worktree add --detach .cc-test/mcp01-control-foundation 82da107dfd760199bc943249590812978c1a6082
+          node tests/features/mcp01/inventory.mjs --root .cc-test/mcp01-control-feature --out .cc-test/mcp01-compat/inventory-feature.json
+          node tests/features/mcp01/inventory.mjs --root .cc-test/mcp01-control-foundation --out .cc-test/mcp01-compat/inventory-foundation.json
+          node tests/features/mcp01/inventory.mjs --out .cc-test/mcp01-compat/inventory-candidate.json
+          node tests/features/mcp01/compare-inventory.mjs
+      - name: Retained DF.25 operation and exact catalog assertions without unrelated sibling sections
+        run: node .cc-test/bin/test-bimcraft.mjs --draw06 --only df25
+      - name: Actual stdio MCP and independent saved IFC
+        run: |
+          node tests/features/mcp01/headless.mjs
+          .cc-test/mcp01-reader/bin/python -I tests/features/mcp01/independent.py .cc-test/mcp01-headless
+      - name: Packed fork isolated consumer and independent saved IFC
+        run: |
+          node tests/features/mcp01/packaging.mjs
+          .cc-test/mcp01-reader/bin/python -I tests/features/mcp01/independent.py .cc-test/mcp01-package/consumer
+      - name: Actual HTTP MCP to live browser and downloaded IFC
+        run: |
+          node tests/features/mcp01/browser.mjs
+          .cc-test/mcp01-reader/bin/python -I tests/features/mcp01/independent.py .cc-test/mcp01-browser
+          node tests/features/mcp01/history-controls.mjs
+      - name: Retain reports and browser evidence only (no model payloads)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp01-evidence
+          path: |
+            .cc-test/mcp01-history-controls/report.json
+            .cc-test/mcp01-compat/*.json
+            .cc-test/mcp01-headless/report.json
+            .cc-test/mcp01-headless/catalog.json
+            .cc-test/mcp01-headless/independent.json
+            .cc-test/mcp01-package/report.json
+            .cc-test/mcp01-package/consumer/report.json
+            .cc-test/mcp01-package/consumer/independent.json
+            .cc-test/mcp01-browser/report.json
+            .cc-test/mcp01-browser/catalog.json
+            .cc-test/mcp01-browser/independent.json
+            .cc-test/mcp01-browser/history-regression.json
+            .cc-test/mcp01-browser/alias-regression.json
+            .cc-test/mcp01-browser/*.png

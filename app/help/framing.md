@@ -13,7 +13,7 @@ Frame the building from what you drew. BimCraft lays out the studs, plates and h
 ## Frame it
 
 1. On a level, open {{ui:Build}} and choose {{ui:Framing}}.
-2. Choose the **spacing** (16" or 24" on center; 400 or 600 mm), the **corners** (three-stud or California), **Rafters** or **Trusses** for roofs, and whether walls get a row of **blocking** at mid-height.
+2. Choose the **spacing** (16" or 24" on center; 400 or 600 mm), the **corners** (three-stud or California), **Rafters** or **Trusses** for roofs, and whether walls get a row of **blocking** at mid-height. For floors choose **Sawn lumber** or **TJI (preliminary)** and set the joist direction to automatic, plan X or plan Y.
 3. Click **Frame every wall**, or click one wall, a floor, or a roof (on the level the roof sits on) to frame just that.
 
 Turn **Show framing** off to hide every framing piece, like a layer; **See through** hides the walls, floors and roofs that are framed so you can look at the framing alone.
@@ -21,12 +21,12 @@ Turn **Show framing** off to hide every framing piece, like a layer; **See throu
 ## What you get
 
 - **Walls**: a bottom plate (cut at doors), a double top plate, studs on the layout from the wall's start, king and jack studs and a header at every door and window, cripples above headers and below windows, a rough sill under windows, corners where walls meet (the wall that runs through takes the corner studs), two backer studs where another wall tees in, and blocking between studs.
-- **Floors**: joists across the short way of the floor, rim joists around the edge, and doubled trimmers and headers around a stairwell, with the joists through it cut short (tail joists).
+- **Floors**: joists across the short way of the floor by default, or along your chosen plan axis; rim joists around the edge, and doubled trimmers and headers around a stairwell, with the joists through it cut short (tail joists). TJI mode chooses the smallest listed series and depth that reaches the measured clear span at the chosen spacing.
 - **Roofs**: common rafters square to each eave, jack rafters where hips and valleys cut them, hip and valley rafters, ridge boards, ceiling joists on the plates and collar ties — or simple trusses at the spacing, one piece each.
 
 ## Change it
 
-Pick any framing piece in the 3D view or the model tree. **Properties** shows its framing: change the spacing, the corners, the blocking or the roof framing. Moving walls, doors and windows, or changing the floor or the roof, makes the framing again by itself.
+Pick any framing piece in the 3D view or the model tree. **Properties** shows its framing: change the spacing, floor joist type and direction, the corners, the blocking or the roof framing. Moving walls, doors and windows, or changing the floor or the roof, makes the framing again by itself.
 
 To keep a piece you placed on purpose when the framing is made again, pick it and choose **Keep this piece when the framing is made again**. A kept piece stays where it is; when the framing round it changes it is marked so you can check it.
 
@@ -36,6 +36,8 @@ In the Schedules panel choose **Lumber**: every framing piece grouped by size an
 
 :::warning
 Header, joist, rafter and ceiling joist sizes come from labelled default tables for a typical one- or two-story house, not engineering. **Properties** says when a span or an opening is beyond its table. A designer or engineer checks spans, loads and connections.
+
+TJI suggestions use the 16" and 24" on-center columns of [Weyerhaeuser TJ-4000, July 2025, floor span table, page 7](https://www.weyerhaeuser.com/application/files/5617/5451/8519/TJ-4000.pdf): L/480, 40 psf live plus 10 psf dead, uniform loading and a glue-nailed subfloor. The model's I shape is schematic. The suggestion does not check bearing, point loads, cantilevers, holes, stairwell headers or connections. When no size in this subset reaches the span, BimCraft refuses the TJI layout instead of inventing one.
 :::
 
 ## What's saved

@@ -1,0 +1,57 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { compareAssertions, residentialDifferences, residentialAssertionName, assertionName, executedAssertions } from './assertion-comparison.mjs';
+
+const kinds = 'all 33 kinds placed and read back, each as its own IFC4 class and type';
+const boards = 'the sub-board is a panel too: no circuit row of its own';
+test('removing either RC.6 assertion blocks comparison, even with the same total or optional notices', () => {
+  for (const missing of [kinds, boards]) {
+    const result = compareAssertions([kinds, boards], [kinds, boards].filter(s => s !== missing).concat('unrelated extra check', 'SKIP optional reader'));
+    assert.equal(result.status, 'FAIL'); assert.deepEqual(result.missing, [missing]);
+  }
+});
+test('renames need a specific justified replacement; a notice or unused record cannot excuse a lost assertion', () => {
+  const difference = residentialDifferences[0];
+  assert.equal(compareAssertions([difference.release, kinds, boards], [difference.candidate, kinds, boards], residentialDifferences).status, 'PASS');
+  assert.equal(compareAssertions([difference.release, kinds], [difference.candidate], residentialDifferences).status, 'FAIL');
+  assert.equal(compareAssertions([difference.release], ['SKIP CadCraft absent'], residentialDifferences).status, 'FAIL');
+  assert.equal(compareAssertions([difference.release], [difference.candidate], [{ ...difference, reason: '' }]).status, 'FAIL');
+});
+test('duplicate assertion names cannot mask lost occurrences, while extra candidate cases are retained', () => {
+  assert.equal(compareAssertions(['a', 'a'], ['a']).status, 'FAIL');
+  const result = compareAssertions([kinds, boards], [boards, kinds, 'independent saved devices']);
+  assert.equal(result.status, 'PASS'); assert.deepEqual(result.added, ['independent saved devices']);
+  assert.equal(result.sameNamedAssertions, false);
+});
+test('only recorded measurement-bearing residential labels normalize; device assertions cannot disappear', () => {
+  assert.equal(residentialAssertionName('web-ifc (oracle): 135 members in four assemblies'), residentialAssertionName('web-ifc (oracle): 139 members in four assemblies'));
+  assert.equal(residentialAssertionName(kinds), kinds);
+  assert.equal(compareAssertions([kinds, boards].map(residentialAssertionName), [boards].map(residentialAssertionName)).status, 'FAIL');
+});
+test('ops heat-loss labels ignore elapsed time while preserving physical values, thresholds and assertion presence', () => {
+  const a = 'heat loss per room between 0 and 200 W/m² of floor (35, 31, 41, 25, 34 W/m²); 431 ms in all';
+  const b = a.replace('431 ms', '278 ms');
+  assert.equal(assertionName('ops', a), assertionName('ops', b));
+  assert.notEqual(assertionName('ops', a), assertionName('ops', b.replace('35,', '36,')));
+  assert.notEqual(assertionName('ops', a), assertionName('ops', b.replace('200 W', '300 W')));
+  assert.equal(compareAssertions([assertionName('ops', a)], []).status, 'FAIL');
+  assert.equal(assertionName('agent', a), a);
+});
+test('executed outcomes support every upstream trailer, retain failures and never count notices or empty success text', () => {
+  for (const trailer of ['2 passed, 0 failed', 'all ok', 'all 2 assistant tool checks passed']) {
+    const rows = executedAssertions('  ok   first\n  ok   second\n  SKIP optional reader\n' + trailer);
+    assert.deepEqual(rows, [{ passed: true, name: 'first' }, { passed: true, name: 'second' }]);
+  }
+  assert.deepEqual(executedAssertions('all ok\n  --   reader unavailable'), []);
+  assert.deepEqual(executedAssertions('  FAIL schema check (["private diagnostic"])\nall ok'), [{ passed: false, name: 'schema check' }]);
+});
+
+test('stair label ignores only transient STEP references and retains values and required occurrence',()=>{
+ const a='the flight says 16 risers, 15 treads, 187.5 riser (3000 / 16), 254 tread (IFC4 attributes): 602,#770,$,16,15,187.5,254.,.STRAIGHT.);';
+ const b=a.replace('602,#770','728,#896');
+ assert.equal(assertionName('res',a),assertionName('res',b));
+ for(const changed of [b.replace(',16,15,',',15,15,'),b.replace('187.5,254.','187.6,254.'),b.replace('254.,.STRAIGHT.','255.,.STRAIGHT.')])assert.notEqual(assertionName('res',a),assertionName('res',changed));
+ assert.equal(compareAssertions([assertionName('res',a)],[]).status,'FAIL');
+ assert.equal(compareAssertions([assertionName('res',a),assertionName('res',a)],[assertionName('res',b)]).status,'FAIL');
+});

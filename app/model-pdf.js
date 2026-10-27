@@ -18,6 +18,7 @@ import { dimensionFootprint } from './dimension-geometry.js';
  * lies below the cut in thin lines, doors and windows (arcs as short lines), room names and areas, dimensions with ticks.
  * Text is Helvetica in WinAnsiEncoding (characters outside it print as "?" and are counted in `missing`).
  */
+import { isMetric } from './model-units.js';
 const PAPER = { letter: [279.4, 215.9], a4: [297, 210], tabloid: [431.8, 279.4], a3: [420, 297] };
 const PT = 72 / 25.4;
 /** Standard scales tried, largest first: architectural (ft-in) or metric. label is drawn in the title strip. */
@@ -51,7 +52,7 @@ export function planPdf(scene, { title = '', lines = [], paper = 'letter', units
   const bb = bounds(scene);
   const W = Math.max(1, bb.x1 - bb.x0), H = Math.max(1, bb.y1 - bb.y0);
   const room = [PW - 2 * margin, PH - 2 * margin - strip];
-  const list = SCALES[units] || SCALES.ftin;
+  const list = SCALES[isMetric(units) ? 'mm' : 'ftin'];
   let sc = scale ? list.find((x) => x[0] === scale) || [scale, '1:' + scale] : list.find(([r]) => W / r <= room[0] && H / r <= room[1]);   // i18n-ignore: a scale ratio
   if (!sc) { const r = Math.ceil(Math.max(W / room[0], H / room[1])); sc = [r, '1:' + r]; }   // i18n-ignore: a scale ratio
   const k = 1 / sc[0];   // plan mm → paper mm

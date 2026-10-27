@@ -32,7 +32,7 @@ import { documentPages } from './assembly-schedule-layout.js';
  */
 import { el } from './ui-util.js';
 import { readGrids, toPlan as gridsToPlan, gridsInView } from './model-grids.js';   // 0.6 DF.16 (bim-draw): grids on the elevations and sections
-import { fmtLen, parseLen, parsePitch, fmtPitch, fmtArea } from './model-units.js';
+import { fmtLen, parseLen, parsePitch, fmtPitch, fmtArea, isMetric } from './model-units.js';
 import { snapshotModel } from './model-ops.js';
 import { ModelWriter } from './model-write.js';
 import { snapPoint } from './model-tools.js';
@@ -59,7 +59,7 @@ import { readProjectedView, projectedBox } from './projected-views.js';
 import { readMaterials } from './project-materials.js';
 import { buildSet, setPdf, sheetSvg, PAPERS, readSectionLines, placeSectionLine, changeSectionLine, removeSectionLines, sectionDir } from './res-sheets.js';
 import { viewerToPlan } from './model-plan.js';
-import { DEVICES, symbolPlan, symbolScale, wallSpot, readDevices, placeDevice, changeDevice, linkLight, removeDevices, deviceSchedule, circuitSchedule, isLight, isSwitch } from './res-elec.js';
+import { DEVICES, symbolPlan, symbolScale, wallSpot, readDevices, placeDevice, changeDevice, linkLight, removeDevices, deviceSchedule, circuitSchedule, isLight, isSwitch, isBoard } from './res-elec.js';
 import { GROUPS as EL_GROUPS, SYMBOLS as EL_SYMBOLS } from './res-elec-symbols.js';
 import { counterCabinets, counterRuns, readCountertops, countertopState, placeCountertop, changeCountertop, fitCountertop, removeCountertops, COUNTER_DEFAULTS } from './res-counter.js';
 
@@ -106,13 +106,15 @@ export function mountRes(modelUi) {
       fsp.addEventListener('change', () => { R.frame.spacing = Number(fsp.value); });
       root.querySelector('[data-res-frcorner]')?.addEventListener('change', (e) => { R.frame.corners = e.target.value; });
       root.querySelector('[data-res-frroof]')?.addEventListener('change', (e) => { R.frame.roofMode = e.target.value; });
+      root.querySelector('[data-res-frfloor]')?.addEventListener('change', (e) => { R.frame.floorMode = e.target.value; });
+      root.querySelector('[data-res-frdir]')?.addEventListener('change', (e) => { R.frame.floorDir = e.target.value; });
       root.querySelector('[data-res-frblock]')?.addEventListener('change', (e) => { R.frame.blocking = e.target.checked; });
       root.querySelector('[data-res-frall]')?.addEventListener('click', () => frameAllWalls());
       root.querySelector('[data-res-frshow]')?.addEventListener('click', (e) => { R.frame.show = !R.frame.show; e.currentTarget.setAttribute('aria-pressed', R.frame.show ? 'true' : 'false'); applyFrameVis(); });
       root.querySelector('[data-res-frsee]')?.addEventListener('click', (e) => { R.frame.see = !R.frame.see; e.currentTarget.setAttribute('aria-pressed', R.frame.see ? 'true' : 'false'); applyFrameVis(); });
     }
     if (fsp) {
-      const mm = A.units() === 'mm';
+      const mm = isMetric(A.units());
       const opts = mm ? [[400, '400 mm'], [600, '600 mm']] : [[406.4, '16" o.c.'], [609.6, '24" o.c.']];   // i18n-ignore: lengths
       if (fsp.dataset.units !== A.units()) { fsp.dataset.units = A.units(); fsp.replaceChildren(...opts.map(([v, l]) => el('option', { value: String(v) }, l))); R.frame.spacing = opts[0][0]; }
       fsp.value = String(opts.reduce((b, o) => (Math.abs(o[0] - R.frame.spacing) < Math.abs(b[0] - R.frame.spacing) ? o : b))[0]);
@@ -467,7 +469,7 @@ export function mountRes(modelUi) {
     }
     return null;
   }
-  const frameOpts = () => ({ spacing: R.frame.spacing, corners: R.frame.corners, blocking: R.frame.blocking, roofMode: R.frame.roofMode });
+  const frameOpts = () => ({ spacing: R.frame.spacing, corners: R.frame.corners, blocking: R.frame.blocking, roofMode: R.frame.roofMode, floorMode: R.frame.floorMode, floorDir: R.frame.floorDir });
   function frameAllWalls() {
     const hosts = A.wallsHere().filter((w) => (w.assembly || wallType(w.typeKey))?.layers.some((l) => l.mat === 'studs')).map((w) => w.guid);
     if (!hosts.length) { A.host.status(t('res.err.noframe'), true); return; }
@@ -520,7 +522,7 @@ export function mountRes(modelUi) {
     const fr = R.frames.find((x) => x.guid === it.guid);
     if (!fr) return null;
     const run = (ch) => A.commit(changeFraming(fr.guid, ch), { ...kit.one(t('res.fr.of.' + fr.kind)), reselect: again(() => R.frames, fr.guid) });
-    const mm = A.units() === 'mm', opts = mm ? [['400', '400 mm'], ['600', '600 mm']] : [['406.4', '16" o.c.'], ['609.6', '24" o.c.']];   // i18n-ignore: lengths
+    const mm = isMetric(A.units()), opts = mm ? [['400', '400 mm'], ['600', '600 mm']] : [['406.4', '16" o.c.'], ['609.6', '24" o.c.']];   // i18n-ignore: lengths
     const cur = opts.reduce((b, o) => (Math.abs(Number(o[0]) - fr.spacing) < Math.abs(Number(b[0]) - fr.spacing) ? o : b))[0];
     kit.field(t('res.fr.spacing'), kit.select(opts, cur, 'data-mp-frsp', (v) => run({ spacing: Number(v) })));
     if (fr.kind === 'wall') {
@@ -530,6 +532,10 @@ export function mountRes(modelUi) {
       kit.field(t('res.fr.blocking'), el('label', {}, bl, ' ' + t('res.fr.blocking.on')));
     }
     if (fr.kind === 'roof') kit.field(t('res.fr.roofmode'), kit.select([['stick', t('res.fr.roof.stick')], ['truss', t('res.fr.roof.truss')]], fr.roofMode, 'data-mp-frroof', (v) => run({ roofMode: v })));
+    if (fr.kind === 'floor') {
+      kit.field(t('res.fr.floormode'), kit.select([['lumber', t('res.fr.floor.lumber')], ['tji', t('res.fr.floor.tji')]], fr.floorMode, 'data-mp-frfloor', (v) => run({ floorMode: v })));
+      kit.field(t('res.fr.floordir'), kit.select([['auto', t('res.fr.dir.auto')], ['x', t('res.fr.dir.x')], ['y', t('res.fr.dir.y')]], fr.floorDir, 'data-mp-frdir', (v) => run({ floorDir: v })));
+    }
     const q = fr.qty || {};
     kit.rows.push(el('dt', {}, t('res.fr.pieces')), el('dd', { 'data-mp-frpieces': '' }, String(q.Pieces ?? fr.parts.length)), el('dt', {}, t('res.fr.bf')), el('dd', {}, String(Math.round(Number(q.BoardFeet) || 0))));
     if (fr.notes && fr.notes !== 'ok') kit.rows.push(el('dt', { className: 'bc-mp-wide' }, ''), el('dd', { className: 'bc-mp-wide bc-sub', 'data-mp-frnotes': '' }, fr.notes.split(',').map((x) => t('res.fr.note.' + x)).join(' ')));
@@ -544,12 +550,12 @@ export function mountRes(modelUi) {
     kit.rows.push(el('dt', { className: 'bc-mp-wide' }, ''), el('dd', { className: 'bc-mp-wide bc-sub' }, t('res.fr.note')));
     return { title: t('res.fr.of.' + fr.kind) };
   }
-  const sizeLabel = (sz) => (A.units() === 'mm' ? sz.replace(/^(\dx\d+)/, (m) => LUMBER[m]?.metric || m) : sz);
+  const sizeLabel = (sz) => (isMetric(A.units()) ? sz.replace(/^(\dx\d+)/, (m) => LUMBER[m]?.metric || m) : sz);
   // the cut list as a schedule (model-ui.js Schedules panel): size, stock length, pieces, board feet
   function lumberSchedule() {
     const w = writer();
     if (!w) return null;
-    const mm = A.units() === 'mm', lst = lumberList(w, { metric: mm });
+    const mm = isMetric(A.units()), lst = lumberList(w, { metric: mm });
     if (!lst.rows.length) return { head: [t('res.fr.sch.size'), t('res.fr.sch.length'), t('res.fr.sch.count'), t('res.fr.sch.bf')], rows: [], nums: [2, 3], total: null };
     return {
       head: [t('res.fr.sch.size'), t('res.fr.sch.length'), t('res.fr.sch.count'), t('res.fr.sch.bf')],
@@ -580,7 +586,7 @@ export function mountRes(modelUi) {
     ensureTin().then(() => {
       const pts = R.tr.spots.map((q) => ({ x: q.x, y: q.y, z: q.z }));
       R.tr.spots = [];
-      A.commit(placeTerrain({ source: 'sketch', points: pts, interval: A.units() === 'mm' ? 500 : 304.8 }), { label: t('res.terrain'), verb: t('model.verb.placed') });
+      A.commit(placeTerrain({ source: 'sketch', points: pts, interval: isMetric(A.units()) ? 500 : 304.8 }), { label: t('res.terrain'), verb: t('model.verb.placed') });
     }).catch((e) => A.host.status(String(e.message || e), true));
   }
   /** Survey points from a file: points text, DXF / DWG contours, LAS / LAZ, GeoTIFF / ASCII grid. → { points (source units), lines, unit } */
@@ -649,7 +655,7 @@ export function mountRes(modelUi) {
       const zs = near.length ? near : all.map((p) => p.z).sort((a, b) => a - b);
       const datum = zs[Math.floor(zs.length / 2)] + 200 / k;
       const pts = toModel(r.points, { unitMm: k, offset, datum }), lines = r.lines.map((l) => toModel(l, { unitMm: k, offset, datum }));
-      A.commit(placeTerrain({ source: r.source || (/\.(las|laz)$/i.test(f.name) ? 'las' : /\.(tif|tiff|asc)$/i.test(f.name) ? 'grid' : /\.(dxf|dwg)$/i.test(f.name) ? 'contours' : 'points'), points: pts, lines, faces: r.faces || null, datum, offset, unit: r.unit, interval: A.units() === 'mm' ? 500 : 304.8 }), { label: t('res.terrain'), verb: t('model.verb.placed') });
+      A.commit(placeTerrain({ source: r.source || (/\.(las|laz)$/i.test(f.name) ? 'las' : /\.(tif|tiff|asc)$/i.test(f.name) ? 'grid' : /\.(dxf|dwg)$/i.test(f.name) ? 'contours' : 'points'), points: pts, lines, faces: r.faces || null, datum, offset, unit: r.unit, interval: isMetric(A.units()) ? 500 : 304.8 }), { label: t('res.terrain'), verb: t('model.verb.placed') });
       if (r.source === 'landxml') A.host.status(t('res.lx.done', { name: r.surface, n: r.points.length }) + (r.notes?.length ? ' ' + r.notes.join(' ') : ''), false, true);
     } catch (e) { console.error(e); A.host.status(t('res.err.readground', { why: e.message || e }), true); }
   }
@@ -658,7 +664,7 @@ export function mountRes(modelUi) {
     if (!trn || !R.tr.tinReady) { A.host.status(t('res.err.noterrain'), true); return; }
     const ex = existingSurface(trn), fin = finishedSurface(w, trn);
     const base = String(A.host.fileName?.() || 'model').replace(/\.ifc$/i, '');
-    A.host.download(base + ' terrain.xml', landXml([{ name: t('res.tr.existing'), surface: ex }, { name: t('res.tr.finished'), surface: fin }], { name: base, unit: A.units() === 'mm' ? 'm' : 'ft' }), 'application/xml');   // i18n-ignore: a file name
+    A.host.download(base + ' terrain.xml', landXml([{ name: t('res.tr.existing'), surface: ex }, { name: t('res.tr.finished'), surface: fin }], { name: base, unit: isMetric(A.units()) ? 'm' : 'ft' }), 'application/xml');   // i18n-ignore: a file name
     A.host.status(t('res.tr.xmldone'));
   }
   function terrainScene(scene) {
@@ -751,7 +757,7 @@ export function mountRes(modelUi) {
     }
     ks.value = R.el.kind;
     const hi = root.querySelector('[data-res-elheight]');
-    if (hi && document.activeElement !== hi) { hi.value = R.el.height ? L(R.el.height) : ''; hi.placeholder = DEVICES[R.el.kind].mount === 'ceiling' ? t('res.el.height.ceiling') : L(DEVICES[R.el.kind].height[A.units() === 'mm' ? 'mm' : 'ftin']); }
+    if (hi && document.activeElement !== hi) { hi.value = R.el.height ? L(R.el.height) : ''; hi.placeholder = DEVICES[R.el.kind].mount === 'ceiling' ? t('res.el.height.ceiling') : L(DEVICES[R.el.kind].height[isMetric(A.units()) ? 'mm' : 'ftin']); }
   }
   const elWalls = () => A.wallsHere().map((w) => ({ guid: w.guid, a: w.a, b: w.b, t: w.t }));
   function elSpot(p) {
@@ -820,7 +826,7 @@ export function mountRes(modelUi) {
     const ci = el('input', { type: 'text', className: 'bc-input', value: d.circuit, maxLength: 20, 'data-mp-elcircuit': '' });
     ci.addEventListener('change', () => run({ circuit: ci.value }));
     kit.field(t('res.el.sch.circuit'), ci);
-    if (d.kind !== 'board') {
+    if (!isBoard(d.kind)) {
       const ld = el('input', { type: 'text', className: 'bc-input bc-num', value: String(Math.round(d.load)), 'data-mp-elload': '' });
       ld.addEventListener('change', () => { const v = Number(ld.value); if (v >= 0) run({ load: v }); else ld.value = ld.defaultValue; });
       kit.field(t('res.el.load'), ld, el('span', { className: 'bc-sub' }, ' W'));   // i18n-ignore: watts
@@ -847,7 +853,7 @@ export function mountRes(modelUi) {
     const sc = circuitSchedule(R.devs, { units: A.units(), t }), row = sc.rows[i];
     if (!row) return [];
     const c = row[0] === t('res.el.nocircuit') ? '' : row[0];
-    return R.devs.filter((d) => d.kind !== 'board' && d.circuit === c).map((d) => k + d.id);
+    return R.devs.filter((d) => !isBoard(d.kind) && d.circuit === c).map((d) => k + d.id);
   }
 
   // ---- the takeoff (RC.8) ----
@@ -870,7 +876,7 @@ export function mountRes(modelUi) {
     const scenes = new Map(levels.map((l) => [l.id, A.sceneFor(l.id)]));
     const base = String(A.host.fileName?.() || 'model').replace(/\.ifc$/i, '');
     return { name: base + ' — ' + t('res.to.button').toLowerCase(), units: A.units(), levels, scenes, walls, openings, roofs, founds: R.founds, cabinets: R.cabinets, devs: R.devs, rooms,
-      lumber: lumberList(w, { metric: A.units() === 'mm' }).rows, fmtLen: L, date: new Date().toISOString().slice(0, 10) };   // i18n-ignore: a file name
+      lumber: lumberList(w, { metric: isMetric(A.units()) }).rows, fmtLen: L, date: new Date().toISOString().slice(0, 10) };   // i18n-ignore: a file name
   }
   async function makeTakeoff() {
     const d = takeoffData();
@@ -934,7 +940,7 @@ export function mountRes(modelUi) {
     return { title: t('res.sec.name', { name: sl.name }) };
   }
   const PAPER_KEY = 'bimcraft.sheets.paper';
-  const paperNow = () => { let p = null; try { p = localStorage.getItem(PAPER_KEY); } catch (e) { /* none */ } return PAPERS[p] ? p : (A.units() === 'mm' ? 'a3' : 'tabloid'); };
+  const paperNow = () => { let p = null; try { p = localStorage.getItem(PAPER_KEY); } catch (e) { /* none */ } return PAPERS[p] ? p : (isMetric(A.units()) ? 'a3' : 'tabloid'); };
   /** Every drawing of the set, from the model as it is now. */
   function makeSet(paper) {
     const input = setInput();
@@ -983,7 +989,7 @@ export function mountRes(modelUi) {
     }
     for (const sl of R.secs) {
       if(!levels.some(l=>l.id===sl.storey)||![...sl.a,...sl.b,sl.depth].every(Number.isFinite)||Math.hypot(sl.b[0]-sl.a[0],sl.b[1]-sl.a[1])<100||sl.depth<0) {
-        input.sections.push({ref:sl.guid,title:t('res.sec.name',{name:sl.name}),view:{bounds:null,warnings:[{reason:t('f05.sectionInvalid')}]}});
+        input.sections.push({ref:sl.guid,title:t('res.sec.name',{name:sl.name}),view:{bounds:null,warnings:[{reason:t('proj.section_invalid')}]}});
         continue;
       }
       const M = viewerToPlan(C, w.storeyWorld(sl.storey));
@@ -1070,7 +1076,7 @@ export function mountRes(modelUi) {
       if (kind === 'devices' || kind === 'circuits') return elScheduleKeys(kind, i);
       if (kind !== 'lumber') return [];
       const w = writer(); if (!w) return [];
-      const row = lumberList(w, { metric: A.units() === 'mm' }).rows[i]; if (!row) return [];
+      const row = lumberList(w, { metric: isMetric(A.units()) }).rows[i]; if (!row) return [];
       const k = A.kb(), out = [];
       for (const fr of R.frames) for (const p of fr.parts) { const ps = w.readPset(p, 'CadCraft_Lumber'); if (ps && String(ps.Size).startsWith(row.size)) out.push(k + p); }
       return out;

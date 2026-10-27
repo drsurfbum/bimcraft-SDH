@@ -1,0 +1,1424 @@
+[
+  {
+    "name": "elements_find",
+    "title": "Find elements",
+    "description": "Find elements of the open IFC model by class, storey, name or property value. Returns their ids for elements_isolate and element_properties. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string",
+          "description": "IFC class, e.g. IfcWall (case does not matter)."
+        },
+        "storey": {
+          "type": "string",
+          "description": "Storey name, exactly as the model names it."
+        },
+        "name": {
+          "type": "string",
+          "description": "Text the element name contains."
+        },
+        "property": {
+          "type": "object",
+          "description": "A property (or quantity) value. Without \"set\", any set holding a property of that name.",
+          "properties": {
+            "set": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "equals": {
+              "type": "string"
+            },
+            "contains": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "rules": {
+          "type": "array",
+          "maxItems": 20,
+          "description": "BimCraft Find rules; field = cls, type, storey, material, name, longname, objtype, tag, predefined, guid or p:<Set>.<Property>.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "is",
+                  "isnot",
+                  "contains",
+                  "notcontains",
+                  "starts",
+                  "gt",
+                  "lt",
+                  "gte",
+                  "lte",
+                  "has",
+                  "hasnot"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "op"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "all",
+            "any"
+          ],
+          "description": "all = every rule must match (default), any = one is enough."
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Find elements",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "elements_isolate",
+    "title": "Isolate, hide or show elements",
+    "description": "Change what the 3D view shows: isolate (only these), ghost (these, the rest see-through), hide (these), or show_all. Visibility only: the model is not changed. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "how": {
+          "type": "string",
+          "enum": [
+            "isolate",
+            "ghost",
+            "hide",
+            "show_all"
+          ]
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "maxItems": 100000
+        },
+        "class": {
+          "type": "string",
+          "description": "IFC class, e.g. IfcWall (case does not matter)."
+        },
+        "storey": {
+          "type": "string",
+          "description": "Storey name, exactly as the model names it."
+        },
+        "name": {
+          "type": "string",
+          "description": "Text the element name contains."
+        },
+        "property": {
+          "type": "object",
+          "description": "A property (or quantity) value. Without \"set\", any set holding a property of that name.",
+          "properties": {
+            "set": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "equals": {
+              "type": "string"
+            },
+            "contains": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        },
+        "rules": {
+          "type": "array",
+          "maxItems": 20,
+          "description": "BimCraft Find rules; field = cls, type, storey, material, name, longname, objtype, tag, predefined, guid or p:<Set>.<Property>.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "is",
+                  "isnot",
+                  "contains",
+                  "notcontains",
+                  "starts",
+                  "gt",
+                  "lt",
+                  "gte",
+                  "lte",
+                  "has",
+                  "hasnot"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "field",
+              "op"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "all",
+            "any"
+          ],
+          "description": "all = every rule must match (default), any = one is enough."
+        }
+      },
+      "required": [
+        "how"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Isolate, hide or show elements",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "element_properties",
+    "title": "Element properties",
+    "description": "Attributes, type name, property sets and quantity sets of one element of the open IFC model (type sets included). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "guid": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Element properties",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "app_info",
+    "title": "About this window",
+    "description": "BimCraft's window: the IFC file open, unsaved changes, whether Draw is on, levels and elements, and what the person is in the middle of. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "About this window",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "materials_list",
+    "title": "Inspect project materials",
+    "description": "Stable material IDs, exact defaults in mm, version diagnostics. Reads never migrate or write records. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Inspect project materials",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assemblies_list",
+    "title": "Inspect wall assemblies",
+    "description": "Built-in and authored wall keys, stored type GlobalIds, exact exterior-to-interior recipes and core flags in mm. Invalid records are diagnostics, never selectable fallbacks. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Inspect wall assemblies",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "material_create",
+    "title": "material_create",
+    "description": "Create a project material; retain unused definitions. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "defaultThickness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2000,
+          "description": "mm. A library default; never resizes existing recipe layers."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "fill": {
+          "type": "string",
+          "enum": [
+            "none",
+            "solid",
+            "diagonal",
+            "crosshatch"
+          ]
+        },
+        "fillColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "documentId",
+        "expectedRevision",
+        "id",
+        "name",
+        "defaultThickness",
+        "color",
+        "fill",
+        "fillColor"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "material_create",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "material_edit",
+    "title": "material_edit",
+    "description": "Edit an explicitly identified project material; defaults do not change instance layer widths. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "id": {
+          "type": "string",
+          "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "category": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "defaultThickness": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2000,
+              "description": "mm. A library default; never resizes existing recipe layers."
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "fill": {
+              "type": "string",
+              "enum": [
+                "none",
+                "solid",
+                "diagonal",
+                "crosshatch"
+              ]
+            },
+            "fillColor": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
+            "notes": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "documentId",
+        "expectedRevision",
+        "id",
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "material_edit",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assembly_create",
+    "title": "assembly_create",
+    "description": "Create an unused authored assembly. Layers have explicit material IDs and mm widths. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "exterior": {
+          "type": "boolean"
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "mat": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "t": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2000,
+                "description": "Explicit mm; zero only for material membranes."
+              },
+              "function": {
+                "type": "string",
+                "enum": [
+                  "finish",
+                  "substrate",
+                  "structure",
+                  "insulation",
+                  "membrane"
+                ]
+              },
+              "core": {
+                "type": "boolean"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "material",
+                  "cavity"
+                ]
+              },
+              "materialId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 809
+              },
+              "ventilation": {
+                "type": "string",
+                "enum": [
+                  "unspecified",
+                  "unventilated",
+                  "ventilated"
+                ]
+              }
+            },
+            "required": [
+              "mat",
+              "t",
+              "function",
+              "core",
+              "kind",
+              "materialId"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 32,
+          "description": "Ordered exterior to interior. One contiguous physical core."
+        }
+      },
+      "required": [
+        "documentId",
+        "expectedRevision",
+        "key",
+        "name",
+        "exterior",
+        "layers"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "assembly_create",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assembly_edit",
+    "title": "assembly_edit",
+    "description": "Edit an authored assembly in place; ALL instances of that type follow, preserving their location anchors. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+        },
+        "typeGuid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exterior": {
+              "type": "boolean"
+            },
+            "layers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "mat": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "t": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2000,
+                    "description": "Explicit mm; zero only for material membranes."
+                  },
+                  "function": {
+                    "type": "string",
+                    "enum": [
+                      "finish",
+                      "substrate",
+                      "structure",
+                      "insulation",
+                      "membrane"
+                    ]
+                  },
+                  "core": {
+                    "type": "boolean"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "material",
+                      "cavity"
+                    ]
+                  },
+                  "materialId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 809
+                  },
+                  "ventilation": {
+                    "type": "string",
+                    "enum": [
+                      "unspecified",
+                      "unventilated",
+                      "ventilated"
+                    ]
+                  }
+                },
+                "required": [
+                  "mat",
+                  "t",
+                  "function",
+                  "core",
+                  "kind",
+                  "materialId"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 32,
+              "description": "Ordered exterior to interior. One contiguous physical core."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "documentId",
+        "expectedRevision",
+        "key",
+        "typeGuid",
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "assembly_edit",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "assembly_duplicate",
+    "title": "assembly_duplicate",
+    "description": "Copy a discovered built-in or authored assembly to a new key and GlobalId. No instance is assigned implicitly. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "sourceGuid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "documentId",
+        "expectedRevision",
+        "sourceKey",
+        "key",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "assembly_duplicate",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "walls_edit",
+    "title": "walls_edit",
+    "description": "Change only walls identified by GlobalId, including authored type assignment, six location lines, exterior side and existing height/top settings. No join/end or reference-dimension editing. One atomic Assistant undo step. Values are mm. Requires the inspected documentId and revision. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "walls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "minItems": 1,
+          "maxItems": 1000
+        },
+        "changes": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+            },
+            "locationLine": {
+              "type": "string",
+              "enum": [
+                "center",
+                "exterior",
+                "interior",
+                "coreCenter",
+                "coreExterior",
+                "coreInterior"
+              ]
+            },
+            "exteriorSide": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right"
+              ]
+            },
+            "height": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 100000
+            },
+            "topLevel": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "Exact storey GlobalId. Mutually exclusive with height."
+            },
+            "baseOffset": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            },
+            "topOffset": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 100000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "documentId",
+        "expectedRevision",
+        "walls",
+        "changes"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "walls_edit",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "model_describe",
+    "title": "Describe the model",
+    "description": "The open BimCraft model in millimetres: its levels (name, GlobalId, elevation, height), walls by type, doors, windows, rooms with their areas, floors drawn by outline, ramps, grid line tags, columns and the site; also the wall, door and window types walls_add and opening_add take. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Describe the model",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "walls_list",
+    "title": "List walls",
+    "description": "The walls on a level that BimCraft's Draw tools can change: GlobalId, start and end (mm, in the level's plan), type, thickness, height, length, and the doors and windows in each. (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "List walls",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "walls_add",
+    "title": "Add walls",
+    "description": "Walls along points (mm, in the level's plan) on a level, joined to each other and to the walls there; rooms, floors and roofs follow as with the Wall tool. closed: true runs the last wall back to the first point. Type: one of model_describe's wall types (default ext-2x6). Height: mm, or leave it out to run up to the level above (the level's height on the top level). One undo step. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -10000000,
+              "maximum": 10000000
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 2,
+          "maxItems": 500
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+        },
+        "locationLine": {
+          "type": "string",
+          "enum": [
+            "center",
+            "exterior",
+            "interior",
+            "coreCenter",
+            "coreExterior",
+            "coreInterior"
+          ]
+        },
+        "exteriorSide": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 100000
+        },
+        "topLevel": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Exact storey GlobalId. Mutually exclusive with height."
+        },
+        "baseOffset": {
+          "type": "number",
+          "minimum": -100000,
+          "maximum": 100000
+        },
+        "topOffset": {
+          "type": "number",
+          "minimum": -100000,
+          "maximum": 100000
+        }
+      },
+      "required": [
+        "points"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add walls",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "opening_add",
+    "title": "Add a door or window",
+    "description": "A door or window in a wall (its GlobalId from walls_list or walls_add): type from model_describe (default a single door / a fixed window), offset = mm from the wall's start to the opening's near edge (default: the middle), width and height in mm (default: the type's), sill for windows. Refused if it does not fit. One undo step. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "wall": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "door",
+            "window"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "door-single",
+            "door-double",
+            "door-sliding",
+            "door-pocket",
+            "door-garage",
+            "door-bifold",
+            "door-french",
+            "door-barn",
+            "door-entry-sidelites",
+            "win-fixed",
+            "win-single-hung",
+            "win-double-hung",
+            "win-casement",
+            "win-slider",
+            "win-awning",
+            "win-picture",
+            "win-basement-egress",
+            "win-transom"
+          ]
+        },
+        "offset": {
+          "type": "number",
+          "minimum": 0
+        },
+        "width": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 20000
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 20000
+        },
+        "sill": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20000
+        }
+      },
+      "required": [
+        "wall",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add a door or window",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "floor_add",
+    "title": "Add a floor",
+    "description": "A floor or slab of any outline (mm, in the level's plan; at least three corners, not crossing itself) on a level: kind concrete | wood, use floor | slab, thickness in mm (default the kind's), offset = its top above the level (mm). One undo step. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -10000000,
+              "maximum": 10000000
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "minItems": 3,
+          "maxItems": 500
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "concrete",
+            "wood"
+          ]
+        },
+        "use": {
+          "type": "string",
+          "enum": [
+            "floor",
+            "slab"
+          ]
+        },
+        "thickness": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 3000
+        },
+        "offset": {
+          "type": "number",
+          "minimum": -10000,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "points"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add a floor",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "levels_add",
+    "title": "Add levels",
+    "description": "Levels at these heights above the lowest level (mm); a height a level already has is skipped. Names follow the model's (\"Level 3\"). One undo step. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "elevations": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -100000,
+            "maximum": 1000000
+          },
+          "minItems": 1,
+          "maxItems": 200
+        }
+      },
+      "required": [
+        "elevations"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add levels",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "grid_add",
+    "title": "Add grid lines",
+    "description": "Grid lines laid out as Build › Grid does: numbered lines (u: count and spacing in mm, a number or one per bay) and lettered lines (v), from an origin (mm, in the level's plan), turned by angle (degrees), each running extend mm past the last crossing. Added to the model's grid (one per building). One undo step. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+        },
+        "origin": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": -10000000,
+            "maximum": 10000000
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "angle": {
+          "type": "number",
+          "minimum": -360,
+          "maximum": 360
+        },
+        "u": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "spacing": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 100
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  "maxItems": 100
+                }
+              ]
+            }
+          },
+          "required": [
+            "count"
+          ],
+          "additionalProperties": false
+        },
+        "v": {
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "spacing": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 100
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  "maxItems": 100
+                }
+              ]
+            }
+          },
+          "required": [
+            "count"
+          ],
+          "additionalProperties": false
+        },
+        "extend": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20000
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Add grid lines",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "selection_get",
+    "title": "What is selected",
+    "description": "What the person has selected in BimCraft: GlobalId, class and name of each (up to 1000). (Permission: read.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "What is selected",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "selection_set",
+    "title": "Select",
+    "description": "Select elements by GlobalId to show them to the person (replace, add or remove). Changes nothing in the model. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "guids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "maxItems": 100000
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "replace",
+            "add",
+            "remove"
+          ]
+        }
+      },
+      "required": [
+        "guids"
+      ],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Select",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "undo",
+    "title": "Undo",
+    "description": "Undo the assistant's last steps (labelled \"Assistant: …\"); steps the person made are only undone with any: true. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "any": {
+          "type": "boolean"
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Undo",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "redo",
+    "title": "Redo",
+    "description": "Redo an Assistant-owned model step. Person steps require any: true. (Permission: edit.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "any": {
+          "type": "boolean"
+        },
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Redo",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false
+    }
+  },
+  {
+    "name": "model_save",
+    "title": "Save the model",
+    "description": "BimCraft's own Save as IFC: a new file with every change (desktop: the save dialog; browser: a download). The original file is never changed. (Permission: save.)",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "annotations": {
+      "title": "Save the model",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false
+    }
+  }
+]

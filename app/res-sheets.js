@@ -33,17 +33,18 @@ import { dimensionFootprint } from './dimension-geometry.js';
 import { ModelWriter, round } from './model-write.js';
 import { ids, val } from './ifc-util.js';
 import { t as tr } from './i18n.js';
+import { isMetric } from './model-units.js';
 import { noteItems } from './comforts-views.js';   // 0.6 round 2 (bim-comforts_PART_2): dimensions, level marks and tags on views
 
 export const SECTION_PSET = 'CadCraft_SectionLine';
 export const PAPERS = { letter: [279.4, 215.9], tabloid: [431.8, 279.4], archd: [914.4, 609.6], a3: [420, 297], a1: [841, 594] };
-export const scalesFor = (units) => (SCALES[units] || SCALES.ftin).map(([ratio, label]) => ({ ratio, label }));   // 0.6 DF.19: the sheet editor's list
+export const scalesFor = (units) => SCALES[isMetric(units) ? 'mm' : 'ftin'].map(([ratio, label]) => ({ ratio, label }));   // 0.6 DF.19: the sheet editor's list
 const SCALES = {
   ftin: [[16, '3/4" = 1\'-0"'], [24, '1/2" = 1\'-0"'], [32, '3/8" = 1\'-0"'], [48, '1/4" = 1\'-0"'], [64, '3/16" = 1\'-0"'], [96, '1/8" = 1\'-0"'], [192, '1/16" = 1\'-0"'], [384, '1/32" = 1\'-0"']],   // i18n-ignore: drawing scales
   mm: [[20, '1:20'], [25, '1:25'], [50, '1:50'], [100, '1:100'], [200, '1:200'], [500, '1:500'], [1000, '1:1000']],   // i18n-ignore: drawing scales
 };
 export function scaleFor(w, h, room, units = 'ftin', minRatio = 0) {
-  const list = (SCALES[units] || SCALES.ftin).filter(([r]) => r >= minRatio);
+  const list = SCALES[isMetric(units) ? 'mm' : 'ftin'].filter(([r]) => r >= minRatio);
   const s = list.find(([r]) => w / r <= room[0] && h / r <= room[1]);
   if (s) return { ratio: s[0], label: s[1] };
   const r = Math.ceil(Math.max(w / room[0], h / room[1]));
@@ -134,7 +135,7 @@ export function viewItems(view, P, k = 0) {
   if (b && !view.ground && groundY>=b.y0 && groundY<=b.y1) out.push({ t: 'line', pts: [P([b.x0 - 450, groundY]), P([b.x1 + 450, groundY])], w: 0.6, g: 0 });
   // 0.6 round 2 (bim-comforts_PART_2): the view's notes — level marks, dimensions, door / window / item tags (comforts-views.js)
   if (view.notes?.length && k > 0) out.push(...noteItems(view.notes, P, k));
-  if(b && view.warnings?.length)out.push({t:'text',s:tr('f05.diagnostic')+' '+[...new Set(view.warnings.map(w=>w.reason))].join(', '),x:P([b.x0,b.y1])[0],y:P([b.x0,b.y1])[1]+4,size:6,align:'left'});
+  if(b && view.warnings?.length)out.push({t:'text',s:tr('proj.diagnostic')+' '+[...new Set(view.warnings.map(w=>w.reason))].join(', '),x:P([b.x0,b.y1])[0],y:P([b.x0,b.y1])[1]+4,size:6,align:'left'});
   return out;
 }
 function framingItems(fr, P) {
@@ -204,7 +205,7 @@ function drawCell(title, bb, units, drawWith, forced = null, minRatio = 0) {
   const W = Math.max(1, bb.x1 - bb.x0), H = Math.max(1, bb.y1 - bb.y0);
   const cell = { title, scale: null, bb, draw: null };
   cell.draw = (x, y, w, h) => {
-    const sc = forced ? { ratio: forced, label: (SCALES[units] || SCALES.ftin).find((s) => s[0] === forced)?.[1] || '1:' + forced } : scaleFor(W, H, [w, h], units, minRatio);   // i18n-ignore: a scale ratio
+    const sc = forced ? { ratio: forced, label: SCALES[isMetric(units) ? 'mm' : 'ftin'].find((s) => s[0] === forced)?.[1] || '1:' + forced } : scaleFor(W, H, [w, h], units, minRatio);   // i18n-ignore: a scale ratio
     cell.scale = sc.label;
     const k = 1 / sc.ratio, ox = x + (w - W * k) / 2 - bb.x0 * k, oy = y + (h - H * k) / 2 - bb.y0 * k;
     cell.place = { P: at(k, ox, oy), ratio: sc.ratio, label: sc.label };
@@ -217,7 +218,7 @@ export function buildSet(input, { paper = 'tabloid', units = 'ftin', project = '
   const [PW, PH] = PAPERS[paper] || PAPERS.tabloid;
   const roomFor = (n) => [(PW - 20) / n - 12, PH - 20 - 18 - 22];
   const opts = { paper, project, date };
-  const BUILDING = units === 'mm' ? 50 : 48;   // plans, elevations and sections no larger than 1:50 or a quarter inch to the foot
+  const BUILDING = isMetric(units) ? 50 : 48;   // plans, elevations and sections no larger than 1:50 or a quarter inch to the foot
   const sheets = [];
   // plans: one level a sheet
   (input.plans || []).forEach((p, i) => {
@@ -280,7 +281,7 @@ export function composeSheet(spec, input, { paper = 'tabloid', units = 'ftin', p
   const [PW, PH] = PAPERS[paper] || PAPERS.tabloid;
   const s = sheet(spec.number || '', spec.title || '', [], { paper, project, date });
   s.views = []; s.missing = [];
-  const label = (r) => (SCALES[units] || SCALES.ftin).find((x) => x[0] === r)?.[1] || '1:' + r;   // i18n-ignore: a scale ratio
+  const label = (r) => SCALES[isMetric(units) ? 'mm' : 'ftin'].find((x) => x[0] === r)?.[1] || '1:' + r;   // i18n-ignore: a scale ratio
   const find = (kind, ref) => ((kind === 'plan' ? input.plans : kind === 'rcp' ? input.rcps : kind === 'callout' ? input.callouts : kind === 'elevation' ? input.elevations : kind === 'interior' ? input.interiors : kind === 'section' ? input.sections : input.schedules) || []).find((x) => x.ref === ref);
   const planLike = (kind) => kind === 'plan' || kind === 'rcp' || kind === 'callout';   // 0.6 DC.117: a ceiling plan and a callout draw as a plan
   (spec.views || []).forEach((v, i) => {
@@ -295,7 +296,7 @@ export function composeSheet(spec, input, { paper = 'tabloid', units = 'ftin', p
       if (!bb) { s.missing.push(i); return; }
       const W = bb.x1 - bb.x0, H = bb.y1 - bb.y0;
       // 1:ratio as placed; else the view's own scale (0.6 DC.117); else the largest standard scale that fits a third of the sheet
-      ratio = v.ratio > 0 ? v.ratio : src.scene?.scale > 0 ? src.scene.scale : src.view?.scale > 0 ? src.view.scale : scaleFor(W, H, [PW / 3, PH / 3], units, units === 'mm' ? 50 : 48).ratio;
+      ratio = v.ratio > 0 ? v.ratio : src.scene?.scale > 0 ? src.scene.scale : src.view?.scale > 0 ? src.view.scale : scaleFor(W, H, [PW / 3, PH / 3], units, isMetric(units) ? 50 : 48).ratio;
       const k = 1 / ratio;
       w = W * k; h = H * k;
       draw = (x0, y0) => { const P = at(k, x0 - bb.x0 * k, y0 - bb.y0 * k); return planLike(v.kind) ? planItems(src.scene, P, k) : viewItems(src.view, P, k); };
@@ -304,7 +305,7 @@ export function composeSheet(spec, input, { paper = 'tabloid', units = 'ftin', p
     s.items.push(...draw(x0, y0));
     if(src.document){
       const prefix=v.ref.split(':')[0]+':',omitted=input.schedules.filter(p=>p.ref.startsWith(prefix)&&!spec.views.some(v=>v.kind==='schedule'&&v.ref===p.ref));
-      if(omitted.length)s.items.push({t:'text',s:`${omitted.length} continuation page(s) not on this sheet; place all pages or export drawing set.`,x:x0,y:y0-12,size:8,align:'left'});
+      if(omitted.length)s.items.push({t:'text',s:tr('asched.omitted',{n:omitted.length}),x:x0,y:y0-12,size:8,align:'left'});
     }
     // its title under it, underlined, the scale under that (as the set's cells)
     s.items.push({ t: 'text', s: src.title, x: x0, y: y0 - 6, size: 9, align: 'left', bold: true });
@@ -321,7 +322,7 @@ export function planSheet(number, title, scene, { paper = 'tabloid', units = 'ft
   let bb = boundsOfScene(scene);
   for (const q of extra) { if (!bb) bb = { x0: q[0] - 1000, y0: q[1] - 1000, x1: q[0] + 1000, y1: q[1] + 1000 }; bb = { x0: Math.min(bb.x0, q[0] - 300), y0: Math.min(bb.y0, q[1] - 300), x1: Math.max(bb.x1, q[0] + 300), y1: Math.max(bb.y1, q[1] + 300) }; }
   if (!bb) return null;
-  const c = drawCell(title, bb, units, (P, k) => planItems(scene, P, k), null, units === 'mm' ? 50 : 48);
+  const c = drawCell(title, bb, units, (P, k) => planItems(scene, P, k), null, isMetric(units) ? 50 : 48);
   const s = sheet(number, title, [c], { paper, project, date });
   s.place = s.views[0].place;
   return s;

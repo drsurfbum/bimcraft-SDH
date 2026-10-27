@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "head": "21fa4897d6bdf130cce12b55bd73278958528918",
+  "node": "v26.9.0",
+  "platform": "darwin",
+  "server": "/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01-up07-candidate/.cc-test/tools/mcp/server.mjs",
+  "version": "0.7.0-mcp01.1",
+  "checks": [
+    "real stdio initialization, version and schema/registration catalog",
+    "0.7 generic property/protected/binding/invalid-batch refusals and authored wall_change use the shared engine",
+    "retained opening edits and ordinary product movement/deletion succeed through real calls and Undo restores the fixture",
+    "discovery includes authored assemblies and exact instance values",
+    "duplicate has distinct stable identity through Undo/Redo",
+    "material and recipe create/edit preserve explicit layers, cavity ventilation and zero membranes",
+    "assignment is instance-specific; shared edits keep core anchors, wall lengths and openings",
+    "material defaults never resize existing layers; exact defaults survive Undo/Redo",
+    "all six location lines × both exterior sides and level/fixed instance heights",
+    "21 invalid/stale/foreign/schema/core/material failures leave no partial semantic edits",
+    "actual saved IFC reopens exactly; separately opened original and source bytes unchanged",
+    "edit/save denial, allowed roots and overwrite protection refuse without changes",
+    "unsupported/corrupt assemblies, invalid core and material-library records refuse atomically over transport"
+  ],
+  "catalogCount": 43,
+  "negativeCases": 34,
+  "skips": []
+}

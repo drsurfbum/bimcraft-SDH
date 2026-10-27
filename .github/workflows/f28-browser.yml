@@ -1,11 +1,13 @@
 name: F28 live workspace acceptance
 on:
+  push:
+    branches: [candidate/f08-07-20261026, integration/upstream-0.7-20261025]
   pull_request:
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: f28-browser-${{ github.ref }}
+  group: f28-browser-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   browser:
@@ -36,8 +38,6 @@ jobs:
       - name: Bounded commands and model invariants
         run: node --test tests/features/f28/*.test.mjs
       - name: Real browser acceptance
-        env:
-          F28_EMIT_REVIEW_FRAMES: '1'
         run: node tests/features/f28/browser.mjs
       - name: Independent downloaded IFC validation
         run: .cc-test/f28-reader/bin/python -I tests/features/f28/independent.py
@@ -49,5 +49,10 @@ jobs:
         with:
           name: f28-browser
           path: |
-            .cc-test/f28-browser/
+            .cc-test/f28-browser/report.json
             evidence/f28/performance-node.json
+            !**/*.ifc
+            !**/*.pdf
+            !**/*.csv
+            !**/expected.json
+            !**/*-expected.json

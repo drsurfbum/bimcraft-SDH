@@ -4,6 +4,7 @@ import { ids, val } from './ifc-util.js';
 import { readWalls, locationOffset } from './model-walls.js';
 import { wallGeom, BULGE_MAX } from './model-arcs.js';
 import { ModelWriter } from './model-write.js';
+import { t as tr } from './i18n.js';
 import { checkRecordVersion, parseRecord, recordError, readRecordPset } from './record-contract.js';
 export const DIMENSION_PSET = 'CadCraft_WallDimension';
 export const WALL_REFERENCES = ['exterior', 'interior', 'center', 'coreExterior', 'coreInterior', 'coreCenter'];
@@ -39,8 +40,10 @@ export function resolveDimension(d, walls) {
 }
 export function readWallDimensions(w) {
   const out = [];
+  let so = null;   // one pass over the containment relations, only when there is a dimension (0.7: storeyOfId per dimension scanned them all)
   for (const id of ids(w.api,w.mid,'IFCANNOTATION')) {
-    const identity={id,guid:w.guidOf(id),storey:w.storeyOfId(id)};
+    so ??= w.storeyOf();
+    const identity={id,guid:w.guidOf(id),storey:so.get(id) ?? null};
     let d;
     try {
       const ps=readRecordPset(w,id,DIMENSION_PSET,'dimension');
@@ -57,12 +60,12 @@ export function readWallDimensions(w) {
   return out.map(d=>counts.get(d.guid)>1?{...d,issue:'ambiguous'}:d);
 }
 function validateReferences(d) {
-  if (!d || !['x','y','aligned'].includes(d.axis) || !Number.isFinite(d.offset) || Math.abs(d.offset)>1e7) throw new Error('Invalid dimension settings.');
-  if (!Array.isArray(d.refs) || d.refs.length!==2 || d.refs.some(r=>!r || typeof r.wall!=='string' || !r.wall || !WALL_REFERENCES.includes(r.reference) || !Number.isFinite(r.station) || r.station<0 || r.station>1)) throw new Error('Pick two valid wall references.');
+  if (!d || !['x','y','aligned'].includes(d.axis) || !Number.isFinite(d.offset) || Math.abs(d.offset)>1e7) throw new Error(tr('wall.err.invalid_dimension_settings'));
+  if (!Array.isArray(d.refs) || d.refs.length!==2 || d.refs.some(r=>!r || typeof r.wall!=='string' || !r.wall || !WALL_REFERENCES.includes(r.reference) || !Number.isFinite(r.station) || r.station<0 || r.station>1)) throw new Error(tr('wall.err.pick_two_valid_wall_references'));
 }
 function validateSpec(d) {
   checkRecordVersion(d,'dimension'); validateReferences(d);
-  if(!/^(plan:|rcp:|callout:).+/.test(d.view || '')) throw new Error('Invalid dimension view.');
+  if(!/^(plan:|rcp:|callout:).+/.test(d.view || '')) throw new Error(tr('wall.err.invalid_dimension_view'));
 }
 // Update exported IFC curves in the same journal as the wall edit. Broken references lose their curves.
 export function syncWallDimensions(w) {
@@ -89,16 +92,17 @@ export function saveWallDimension(input) {
   return operation(w=>{
     checkRecordVersion(spec,'dimension');
     const d={version:1,refs:spec.refs,axis:spec.axis || 'aligned',offset:spec.offset ?? 300,view:spec.view}; validateSpec(d);
-    const st=w.byGuid(spec.level); if(!st) throw new Error('Dimension level is missing.');
+    const st=w.byGuid(spec.level); if(!st) throw new Error(tr('wall.err.dimension_level_is_missing'));
     const r=resolveDimension({...d,storey:st},readWalls(w));
     if(['unsupported','corrupt'].includes(r.status)) throw recordError('assembly',r.status);
-    if(r.status!=='ok') throw new Error('The references are missing or coincide in the selected direction.');
+    if(r.status!=='ok') throw new Error(tr('wall.err.the_references_are_missing_or_coincide_in_the_se'));
     const existing=readWallDimensions(w).filter(d=>d.guid===guid);
-    if(spec.guid && (existing.length!==1 || existing[0].storey!==st)) throw new Error('Dimension is no longer available.');
+    if(spec.guid && (existing.length!==1 || existing[0].storey!==st)) throw new Error(tr('wall.err.dimension_is_no_longer_available'));
     if(existing.some(d=>d.issue)) throw recordError('dimension',existing[0].issue==='unsupported'?'unsupported':'corrupt');
     let id=existing[0]?.id || null;
     if(!id) {
       guid ||= val(w.guid()); const sl=w.api.GetLine(w.mid,st,false);
+      // i18n-ignore: the annotation's name as written into the IFC
       id=w.make('IFCANNOTATION',guid,w.ownerHistory(),w.L('Wall reference dimension'),null,w.L('CadCraft_WallDimension'),w.H(w.placeAt(sl.ObjectPlacement.value,0,0,0,0)),null,...(/^IFC4X3/i.test(w.schema||'')?['USERDEFINED']:[]));
       w.noteGuid(guid,id);w.contain(id,st);
     }

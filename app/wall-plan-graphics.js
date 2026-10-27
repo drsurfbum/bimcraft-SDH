@@ -77,18 +77,19 @@ function mappedPath(points, map, closed = false) {
  * carry a diagnostic. No defaults stand in for an unsupported authored record.
  */
 export function wallPlanGraphics(walls, outlines, openings, materials, { detail = 'coarse', cutZ = 1200, scale = 50, keyBase = 0 } = {}) {
-  if (!PLAN_DETAILS.includes(detail)) throw new Error('Invalid plan detail');
+  if (!PLAN_DETAILS.includes(detail)) throw new Error('Invalid plan detail')   // i18n-ignore: a programming error (callers pass PLAN_DETAILS);
   const byMaterial = new Map((materials || []).map(m => [m.id, m]));
   return walls.map(wall => {
     const poly = outlines.get(wall.guid) || [], ops = openings.filter(o => o.wall === wall.id);
-    const row = { key: keyBase + wall.id, guid: wall.guid, poly, pieces: poly.length ? wallPieces(wall, poly, ops, cutZ) : [] };
+    const sourcePieces = poly.joinPieces || (poly.length ? [poly] : []);
+    const row = { key: keyBase + wall.id, guid: wall.guid, poly, pieces: sourcePieces.flatMap(p => wallPieces(wall, p, ops, cutZ)) };
     const layers = wall.assembly?.layers;
     if (detail === 'coarse' || !poly.length) return row;
-    if (!materials || !layers?.length || layers.some(l => !Number.isFinite(l.t) || l.t < 0 || (l.kind !== 'cavity' && !byMaterial.has(l.materialId))) || Math.abs(layers.reduce((s, l) => s + l.t, 0) - wall.t) > 0.005) {
+    if (wall.joinIssue || !materials || !layers?.length || layers.some(l => !Number.isFinite(l.t) || l.t < 0 || (l.kind !== 'cavity' && !byMaterial.has(l.materialId))) || Math.abs(layers.reduce((s, l) => s + l.t, 0) - wall.t) > 0.005) {
       row.graphicWarning = 'unavailable'; return row;
     }
     const map = wallMap(wall), local = localEnvelope(poly, map);
-    let pieces = [local];
+    let pieces = poly.joinPieces ? poly.joinPieces.map(p => localEnvelope(p, map)) : [local];
     for (const o of ops) {
       if (!(o.width > 0) || cutZ < o.sill || cutZ > o.sill + o.height) continue;
       pieces = pieces.flatMap(p => [clip(p, 0, o.offset, -1), clip(p, 0, o.offset + o.width, 1)]).filter(p => p.length >= 3);

@@ -1,0 +1,51 @@
+[
+  {
+    "file": ".cc-test/f08/seed.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "file": ".cc-test/f08/edited.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "file": ".cc-test/f08/browser/saved.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "actualDownloadedPlanPDF": true,
+    "detailVectorFillPolygons": 65,
+    "maxVectorGeometryErrorMm": 0.0000023115138123376586,
+    "rasterImages": 0,
+    "csvLayers": 11
+  },
+  {
+    "idealEnvelopeDifferenceMm2": 6.313891375338436e-9,
+    "baselineEnvelopeDifferenceFromIdealMm2": 62095.30752973697,
+    "newOverlapAreaMm2": 0
+  },
+  {
+    "independentAngleCoreOrientationCases": 28,
+    "angles": [
+      30,
+      45,
+      60,
+      90,
+      120,
+      135,
+      150
+    ],
+    "maxAllowedOverlapMm2": 0.00001
+  }
+]

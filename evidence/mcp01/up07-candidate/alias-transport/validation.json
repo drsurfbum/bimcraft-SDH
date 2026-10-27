@@ -1,0 +1,15 @@
+{
+  "source": "31f7e9167f16f084bc1311a17271921a3c674bc4",
+  "appSameAsCompatibilityMerge": true,
+  "contractTests": 42,
+  "retainedDf25Assertions": 31,
+  "sourceStdioChecks": 14,
+  "packageChecks": 4,
+  "packageWorkflowChecks": 14,
+  "liveChecks": 19,
+  "historyRepeats": 2,
+  "aliasRefusal": "Resolved ordinary-set alias must reach protected owner and return specific protected-record refusal; bytes/history unchanged on real live and stdio transports",
+  "independent": "Three primary saved IFC outputs and their persisted alias source fixtures: zero schema findings",
+  "previousLimitation": "Old focused fixture cached its property index after test-only raw insertion; a generic error could be unresolved-property, not proof of owner guard. Reindex, positive resolution assertion and exact refusal-reason checks now required. Existing shared domain guard unchanged.",
+  "finalDelivery": "Commit containing this report; exact SHA and all ten final-head CI links in PR #16. Supersedes df55e5d evidence delivery; older reports preserved as their actual source-time records."
+}

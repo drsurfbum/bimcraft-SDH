@@ -20,7 +20,7 @@ The primary user designs houses and prepares residential construction documents.
 
 ## Verified starting point
 
-Repository: https://github.com/achartt/bimcraft-SDH
+Repository: https://github.com/drsurfbum/bimcraft-SDH
 
 Development checkout on the current computer: `/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-dev`.
 

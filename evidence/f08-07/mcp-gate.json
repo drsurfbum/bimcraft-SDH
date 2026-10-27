@@ -1,0 +1,24 @@
+{
+  "status": "BLOCKED",
+  "foundation": "82da107dfd760199bc943249590812978c1a6082",
+  "acceptedSharedAdapter": false,
+  "tools": {
+    "wall_joins_get": {
+      "implemented": false,
+      "registered": false,
+      "transportTested": false
+    },
+    "wall_join_end_set": {
+      "implemented": false,
+      "registered": false,
+      "transportTested": false
+    },
+    "wall_join_diagnostics": {
+      "implemented": false,
+      "registered": false,
+      "transportTested": false
+    }
+  },
+  "inheritedWallCreationIsNotCoverage": true,
+  "owner": "F08 follow-on after accepted shared adapter"
+}

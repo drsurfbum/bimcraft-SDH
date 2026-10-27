@@ -1,0 +1,3298 @@
+{
+  "head": "9224167fe3e2e856c57679065b545d834f52ade1",
+  "dirty": false,
+  "live": [
+    {
+      "name": "app_info",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assemblies_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assembly_create",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "exterior": {
+            "type": "boolean"
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "mat": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "t": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 2000,
+                  "description": "Explicit mm; zero only for material membranes."
+                },
+                "function": {
+                  "type": "string",
+                  "enum": [
+                    "finish",
+                    "substrate",
+                    "structure",
+                    "insulation",
+                    "membrane"
+                  ]
+                },
+                "core": {
+                  "type": "boolean"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "material",
+                    "cavity"
+                  ]
+                },
+                "materialId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 809
+                },
+                "ventilation": {
+                  "type": "string",
+                  "enum": [
+                    "unspecified",
+                    "unventilated",
+                    "ventilated"
+                  ]
+                }
+              },
+              "required": [
+                "mat",
+                "t",
+                "function",
+                "core",
+                "kind",
+                "materialId"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 32,
+            "description": "Ordered exterior to interior. One contiguous physical core."
+          }
+        },
+        "required": [
+          "documentId",
+          "expectedRevision",
+          "key",
+          "name",
+          "exterior",
+          "layers"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assembly_duplicate",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sourceKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sourceGuid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "documentId",
+          "expectedRevision",
+          "sourceKey",
+          "key",
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assembly_edit",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+          },
+          "typeGuid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "exterior": {
+                "type": "boolean"
+              },
+              "layers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "mat": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "t": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2000,
+                      "description": "Explicit mm; zero only for material membranes."
+                    },
+                    "function": {
+                      "type": "string",
+                      "enum": [
+                        "finish",
+                        "substrate",
+                        "structure",
+                        "insulation",
+                        "membrane"
+                      ]
+                    },
+                    "core": {
+                      "type": "boolean"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "material",
+                        "cavity"
+                      ]
+                    },
+                    "materialId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 809
+                    },
+                    "ventilation": {
+                      "type": "string",
+                      "enum": [
+                        "unspecified",
+                        "unventilated",
+                        "ventilated"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "mat",
+                    "t",
+                    "function",
+                    "core",
+                    "kind",
+                    "materialId"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 32,
+                "description": "Ordered exterior to interior. One contiguous physical core."
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "documentId",
+          "expectedRevision",
+          "key",
+          "typeGuid",
+          "changes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "element_properties",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "guid": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "elements_find",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "class": {
+            "type": "string",
+            "description": "IFC class, e.g. IfcWall (case does not matter)."
+          },
+          "storey": {
+            "type": "string",
+            "description": "Storey name, exactly as the model names it."
+          },
+          "name": {
+            "type": "string",
+            "description": "Text the element name contains."
+          },
+          "property": {
+            "type": "object",
+            "description": "A property (or quantity) value. Without \"set\", any set holding a property of that name.",
+            "properties": {
+              "set": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "equals": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "rules": {
+            "type": "array",
+            "maxItems": 20,
+            "description": "BimCraft Find rules; field = cls, type, storey, material, name, longname, objtype, tag, predefined, guid or p:<Set>.<Property>.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "is",
+                    "isnot",
+                    "contains",
+                    "notcontains",
+                    "starts",
+                    "gt",
+                    "lt",
+                    "gte",
+                    "lte",
+                    "has",
+                    "hasnot"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "op"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "all",
+              "any"
+            ],
+            "description": "all = every rule must match (default), any = one is enough."
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "elements_isolate",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "how": {
+            "type": "string",
+            "enum": [
+              "isolate",
+              "ghost",
+              "hide",
+              "show_all"
+            ]
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 100000
+          },
+          "class": {
+            "type": "string",
+            "description": "IFC class, e.g. IfcWall (case does not matter)."
+          },
+          "storey": {
+            "type": "string",
+            "description": "Storey name, exactly as the model names it."
+          },
+          "name": {
+            "type": "string",
+            "description": "Text the element name contains."
+          },
+          "property": {
+            "type": "object",
+            "description": "A property (or quantity) value. Without \"set\", any set holding a property of that name.",
+            "properties": {
+              "set": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "equals": {
+                "type": "string"
+              },
+              "contains": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "rules": {
+            "type": "array",
+            "maxItems": 20,
+            "description": "BimCraft Find rules; field = cls, type, storey, material, name, longname, objtype, tag, predefined, guid or p:<Set>.<Property>.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "is",
+                    "isnot",
+                    "contains",
+                    "notcontains",
+                    "starts",
+                    "gt",
+                    "lt",
+                    "gte",
+                    "lte",
+                    "has",
+                    "hasnot"
+                  ]
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "op"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "all",
+              "any"
+            ],
+            "description": "all = every rule must match (default), any = one is enough."
+          }
+        },
+        "required": [
+          "how"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "floor_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -10000000,
+                "maximum": 10000000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minItems": 3,
+            "maxItems": 500
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "concrete",
+              "wood"
+            ]
+          },
+          "use": {
+            "type": "string",
+            "enum": [
+              "floor",
+              "slab"
+            ]
+          },
+          "thickness": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 3000
+          },
+          "offset": {
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "points"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "grid_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -10000000,
+              "maximum": 10000000
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "angle": {
+            "type": "number",
+            "minimum": -360,
+            "maximum": 360
+          },
+          "u": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "spacing": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    "maxItems": 100
+                  }
+                ]
+              }
+            },
+            "required": [
+              "count"
+            ],
+            "additionalProperties": false
+          },
+          "v": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "spacing": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    "maxItems": 100
+                  }
+                ]
+              }
+            },
+            "required": [
+              "count"
+            ],
+            "additionalProperties": false
+          },
+          "extend": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20000
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "levels_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "elevations": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 1000000
+            },
+            "minItems": 1,
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "elevations"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "material_create",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "defaultThickness": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000,
+            "description": "mm. A library default; never resizes existing recipe layers."
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "fill": {
+            "type": "string",
+            "enum": [
+              "none",
+              "solid",
+              "diagonal",
+              "crosshatch"
+            ]
+          },
+          "fillColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "documentId",
+          "expectedRevision",
+          "id",
+          "name",
+          "defaultThickness",
+          "color",
+          "fill",
+          "fillColor"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "material_edit",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "category": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "defaultThickness": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2000,
+                "description": "mm. A library default; never resizes existing recipe layers."
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "fill": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "solid",
+                  "diagonal",
+                  "crosshatch"
+                ]
+              },
+              "fillColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "notes": {
+                "type": "string",
+                "maxLength": 2000
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "documentId",
+          "expectedRevision",
+          "id",
+          "changes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "materials_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "model_describe",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "model_save",
+      "group": "save",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "opening_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "wall": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "door",
+              "window"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "door-single",
+              "door-double",
+              "door-sliding",
+              "door-pocket",
+              "door-garage",
+              "door-bifold",
+              "door-french",
+              "door-barn",
+              "door-entry-sidelites",
+              "win-fixed",
+              "win-single-hung",
+              "win-double-hung",
+              "win-casement",
+              "win-slider",
+              "win-awning",
+              "win-picture",
+              "win-basement-egress",
+              "win-transom"
+            ]
+          },
+          "offset": {
+            "type": "number",
+            "minimum": 0
+          },
+          "width": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 20000
+          },
+          "height": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 20000
+          },
+          "sill": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20000
+          }
+        },
+        "required": [
+          "wall",
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "redo",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "any": {
+            "type": "boolean"
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "selection_get",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "selection_set",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "guids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "maxItems": 100000
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "replace",
+              "add",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "guids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "undo",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "any": {
+            "type": "boolean"
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "walls_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -10000000,
+                "maximum": 10000000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minItems": 2,
+            "maxItems": 500
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+          },
+          "locationLine": {
+            "type": "string",
+            "enum": [
+              "center",
+              "exterior",
+              "interior",
+              "coreCenter",
+              "coreExterior",
+              "coreInterior"
+            ]
+          },
+          "exteriorSide": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ]
+          },
+          "height": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 100000
+          },
+          "topLevel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Exact storey GlobalId. Mutually exclusive with height."
+          },
+          "baseOffset": {
+            "type": "number",
+            "minimum": -100000,
+            "maximum": 100000
+          },
+          "topOffset": {
+            "type": "number",
+            "minimum": -100000,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "points"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "walls_edit",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "walls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+              },
+              "locationLine": {
+                "type": "string",
+                "enum": [
+                  "center",
+                  "exterior",
+                  "interior",
+                  "coreCenter",
+                  "coreExterior",
+                  "coreInterior"
+                ]
+              },
+              "exteriorSide": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "right"
+                ]
+              },
+              "height": {
+                "type": "number",
+                "minimum": 100,
+                "maximum": 100000
+              },
+              "topLevel": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "description": "Exact storey GlobalId. Mutually exclusive with height."
+              },
+              "baseOffset": {
+                "type": "number",
+                "minimum": -100000,
+                "maximum": 100000
+              },
+              "topOffset": {
+                "type": "number",
+                "minimum": -100000,
+                "maximum": 100000
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "documentId",
+          "expectedRevision",
+          "walls",
+          "changes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "walls_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "headless": [
+    {
+      "name": "assemblies_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assembly_create",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "exterior": {
+            "type": "boolean"
+          },
+          "layers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "mat": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "t": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 2000,
+                  "description": "Explicit mm; zero only for material membranes."
+                },
+                "function": {
+                  "type": "string",
+                  "enum": [
+                    "finish",
+                    "substrate",
+                    "structure",
+                    "insulation",
+                    "membrane"
+                  ]
+                },
+                "core": {
+                  "type": "boolean"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "material",
+                    "cavity"
+                  ]
+                },
+                "materialId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 809
+                },
+                "ventilation": {
+                  "type": "string",
+                  "enum": [
+                    "unspecified",
+                    "unventilated",
+                    "ventilated"
+                  ]
+                }
+              },
+              "required": [
+                "mat",
+                "t",
+                "function",
+                "core",
+                "kind",
+                "materialId"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 32,
+            "description": "Ordered exterior to interior. One contiguous physical core."
+          }
+        },
+        "required": [
+          "doc",
+          "documentId",
+          "expectedRevision",
+          "key",
+          "name",
+          "exterior",
+          "layers"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assembly_duplicate",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sourceKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "sourceGuid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "doc",
+          "documentId",
+          "expectedRevision",
+          "sourceKey",
+          "key",
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "assembly_edit",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^wall-[a-zA-Z0-9_-]{1,80}$"
+          },
+          "typeGuid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "exterior": {
+                "type": "boolean"
+              },
+              "layers": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "mat": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "t": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2000,
+                      "description": "Explicit mm; zero only for material membranes."
+                    },
+                    "function": {
+                      "type": "string",
+                      "enum": [
+                        "finish",
+                        "substrate",
+                        "structure",
+                        "insulation",
+                        "membrane"
+                      ]
+                    },
+                    "core": {
+                      "type": "boolean"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "material",
+                        "cavity"
+                      ]
+                    },
+                    "materialId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 809
+                    },
+                    "ventilation": {
+                      "type": "string",
+                      "enum": [
+                        "unspecified",
+                        "unventilated",
+                        "ventilated"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "mat",
+                    "t",
+                    "function",
+                    "core",
+                    "kind",
+                    "materialId"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 32,
+                "description": "Ordered exterior to interior. One contiguous physical core."
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "doc",
+          "documentId",
+          "expectedRevision",
+          "key",
+          "typeGuid",
+          "changes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "command_run",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "input": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100000
+              },
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 10000
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "pick": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        "shift": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "pick"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "window": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 4,
+                          "maxItems": 4
+                        },
+                        "crossing": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "window"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "entity": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "at": {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        },
+                        "shift": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "entity"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "escape": {
+                          "type": "boolean",
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "escape"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 5000
+              }
+            ]
+          },
+          "select": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxItems": 100000,
+            "description": "Object ids selected before the command (noun-verb)."
+          }
+        },
+        "required": [
+          "doc",
+          "input"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "doc_close",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drawing_check",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "rules": {
+            "type": "object",
+            "properties": {
+              "layers": {
+                "type": "object",
+                "properties": {
+                  "allowed": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 500
+                  },
+                  "required": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 500
+                  },
+                  "noObjectsOn": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 50
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "objects": {
+                "type": "object",
+                "properties": {
+                  "colorByLayer": {
+                    "type": "boolean"
+                  },
+                  "linetypeByLayer": {
+                    "type": "boolean"
+                  },
+                  "lineweightByLayer": {
+                    "type": "boolean"
+                  },
+                  "textHeights": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "maxItems": 50
+                  },
+                  "textStyles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 50
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "blocks": {
+                "type": "object",
+                "properties": {
+                  "noUnused": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              "units": {
+                "type": "object",
+                "properties": {
+                  "lunits": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5
+                  },
+                  "insunits": {
+                    "type": "string",
+                    "maxLength": 40
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "doc",
+          "rules"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drawing_convert",
+      "group": "export",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "out": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "dwg",
+              "dxf2000",
+              "dxf"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "enum": [
+              "2000",
+              "2004",
+              "2007",
+              "2010",
+              "2013",
+              "2018"
+            ]
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false,
+            "description": "Replace a file that already exists (and was not opened or written in this session)."
+          }
+        },
+        "required": [
+          "path",
+          "out"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drawing_describe",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drawing_new",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "default": "Drawing1"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drawing_open",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drawing_plot",
+      "group": "export",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "out": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "layout": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "window": {
+            "type": "object",
+            "properties": {
+              "minX": {
+                "type": "number"
+              },
+              "minY": {
+                "type": "number"
+              },
+              "maxX": {
+                "type": "number"
+              },
+              "maxY": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "minX",
+              "minY",
+              "maxX",
+              "maxY"
+            ],
+            "additionalProperties": false
+          },
+          "paper": {
+            "type": "string",
+            "enum": [
+              "iso-a4",
+              "iso-a3",
+              "iso-a2",
+              "iso-a1",
+              "iso-a0",
+              "letter",
+              "legal",
+              "ansi-b",
+              "ansi-c",
+              "ansi-d",
+              "arch-c",
+              "arch-d",
+              "arch-e"
+            ],
+            "default": "iso-a3"
+          },
+          "portrait": {
+            "type": "boolean",
+            "default": false
+          },
+          "scale": {
+            "type": "string",
+            "maxLength": 40,
+            "default": "fit"
+          },
+          "mono": {
+            "type": "boolean",
+            "default": true
+          },
+          "pen": {
+            "type": "number",
+            "minimum": 0.05,
+            "maximum": 2,
+            "default": 0.25
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false,
+            "description": "Replace a file that already exists (and was not opened or written in this session)."
+          }
+        },
+        "required": [
+          "doc",
+          "out"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "drawing_save",
+      "group": "save",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "dwg",
+              "dxf2000",
+              "dxf"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "enum": [
+              "2000",
+              "2004",
+              "2007",
+              "2010",
+              "2013",
+              "2018"
+            ]
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false,
+            "description": "Replace a file that already exists (and was not opened or written in this session)."
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "files_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "folder": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A folder inside the allowed ones; default the first allowed folder."
+          },
+          "extensions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 12
+            },
+            "maxItems": 20,
+            "description": "e.g. [\"dwg\", \"dxf\"]"
+          },
+          "recursive": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "floor_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -10000000,
+                "maximum": 10000000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minItems": 3,
+            "maxItems": 500
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "concrete",
+              "wood"
+            ]
+          },
+          "use": {
+            "type": "string",
+            "enum": [
+              "floor",
+              "slab"
+            ]
+          },
+          "thickness": {
+            "type": "number",
+            "minimum": 10,
+            "maximum": 3000
+          },
+          "offset": {
+            "type": "number",
+            "minimum": -10000,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "doc",
+          "points"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "grid_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -10000000,
+              "maximum": 10000000
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "angle": {
+            "type": "number",
+            "minimum": -360,
+            "maximum": 360
+          },
+          "u": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "spacing": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    "maxItems": 100
+                  }
+                ]
+              }
+            },
+            "required": [
+              "count"
+            ],
+            "additionalProperties": false
+          },
+          "v": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "spacing": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 100
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    "maxItems": 100
+                  }
+                ]
+              }
+            },
+            "required": [
+              "count"
+            ],
+            "additionalProperties": false
+          },
+          "extend": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20000
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ifc_new",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "default": "Building"
+          },
+          "levels": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 2
+          },
+          "height": {
+            "type": "number",
+            "minimum": 1000,
+            "maximum": 20000,
+            "default": 3000
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ifc_open",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ifc_properties",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "doc",
+          "id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ifc_query",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "class": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{3,80}$"
+          },
+          "storey": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "property": {
+            "type": "object",
+            "properties": {
+              "set": {
+                "type": "string",
+                "maxLength": 255
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              "equals": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean"
+                ]
+              },
+              "contains": {
+                "type": "string",
+                "maxLength": 255
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500,
+            "default": 100
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "ifc_save",
+      "group": "save",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false,
+            "description": "Replace a file that already exists (and was not opened or written in this session)."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "levels_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "elevations": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": -100000,
+              "maximum": 1000000
+            },
+            "minItems": 1,
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "doc",
+          "elevations"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "markups_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "sheet": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Open",
+              "Accepted",
+              "Rejected",
+              "Completed"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "author": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 200
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "material_create",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "defaultThickness": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2000,
+            "description": "mm. A library default; never resizes existing recipe layers."
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "fill": {
+            "type": "string",
+            "enum": [
+              "none",
+              "solid",
+              "diagonal",
+              "crosshatch"
+            ]
+          },
+          "fillColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "doc",
+          "documentId",
+          "expectedRevision",
+          "id",
+          "name",
+          "defaultThickness",
+          "color",
+          "fill",
+          "fillColor"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "material_edit",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^material-[a-zA-Z0-9_-]{1,800}$"
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "category": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "defaultThickness": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2000,
+                "description": "mm. A library default; never resizes existing recipe layers."
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "fill": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "solid",
+                  "diagonal",
+                  "crosshatch"
+                ]
+              },
+              "fillColor": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "notes": {
+                "type": "string",
+                "maxLength": 2000
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "doc",
+          "documentId",
+          "expectedRevision",
+          "id",
+          "changes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "materials_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "model_describe",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "object_get",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "doc",
+          "id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "objects_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "line",
+              "circle",
+              "arc",
+              "poly",
+              "ellipse",
+              "text",
+              "point",
+              "insert",
+              "hatch",
+              "dim",
+              "viewport",
+              "mleader",
+              "spline",
+              "face3d",
+              "image",
+              "wipeout"
+            ]
+          },
+          "layer": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "block": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "References of this block only."
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Texts (and attribute values) containing this."
+          },
+          "within": {
+            "type": "object",
+            "properties": {
+              "minX": {
+                "type": "number"
+              },
+              "minY": {
+                "type": "number"
+              },
+              "maxX": {
+                "type": "number"
+              },
+              "maxY": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "minX",
+              "minY",
+              "maxX",
+              "maxY"
+            ],
+            "additionalProperties": false,
+            "description": "Only objects entirely inside this box."
+          },
+          "space": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "\"model\" (default) or a sheet name."
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 100
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "opening_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "wall": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "door",
+              "window"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "door-single",
+              "door-double",
+              "door-sliding",
+              "door-pocket",
+              "door-garage",
+              "door-bifold",
+              "door-french",
+              "door-barn",
+              "door-entry-sidelites",
+              "win-fixed",
+              "win-single-hung",
+              "win-double-hung",
+              "win-casement",
+              "win-slider",
+              "win-awning",
+              "win-picture",
+              "win-basement-egress",
+              "win-transom"
+            ]
+          },
+          "offset": {
+            "type": "number",
+            "minimum": 0
+          },
+          "width": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 20000
+          },
+          "height": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 20000
+          },
+          "sill": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20000
+          }
+        },
+        "required": [
+          "doc",
+          "wall",
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "redo",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "any": {
+            "type": "boolean",
+            "default": false
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "script_run",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "script": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000000
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "scr",
+              "lisp"
+            ],
+            "default": "scr"
+          }
+        },
+        "required": [
+          "doc",
+          "script"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "takeoff_estimate",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "takeoff_export",
+      "group": "export",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "out": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          },
+          "overwrite": {
+            "type": "boolean",
+            "default": false,
+            "description": "Replace a file that already exists (and was not opened or written in this session)."
+          }
+        },
+        "required": [
+          "doc",
+          "out"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "takeoff_open",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "A file inside the folders the assistant may use (relative = inside the first one)."
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "takeoff_quantities",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "by": {
+            "type": "string",
+            "enum": [
+              "item",
+              "sheet"
+            ],
+            "default": "item"
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "undo",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "steps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 1
+          },
+          "any": {
+            "type": "boolean",
+            "default": false
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "walls_add",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -10000000,
+                "maximum": 10000000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "minItems": 2,
+            "maxItems": 500
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+          },
+          "locationLine": {
+            "type": "string",
+            "enum": [
+              "center",
+              "exterior",
+              "interior",
+              "coreCenter",
+              "coreExterior",
+              "coreInterior"
+            ]
+          },
+          "exteriorSide": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ]
+          },
+          "height": {
+            "type": "number",
+            "minimum": 100,
+            "maximum": 100000
+          },
+          "topLevel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Exact storey GlobalId. Mutually exclusive with height."
+          },
+          "baseOffset": {
+            "type": "number",
+            "minimum": -100000,
+            "maximum": 100000
+          },
+          "topOffset": {
+            "type": "number",
+            "minimum": -100000,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "doc",
+          "points"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "walls_edit",
+      "group": "edit",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "walls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "description": "Dynamic key from assemblies_list or model_describe; no built-in fallback."
+              },
+              "locationLine": {
+                "type": "string",
+                "enum": [
+                  "center",
+                  "exterior",
+                  "interior",
+                  "coreCenter",
+                  "coreExterior",
+                  "coreInterior"
+                ]
+              },
+              "exteriorSide": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "right"
+                ]
+              },
+              "height": {
+                "type": "number",
+                "minimum": 100,
+                "maximum": 100000
+              },
+              "topLevel": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "description": "Exact storey GlobalId. Mutually exclusive with height."
+              },
+              "baseOffset": {
+                "type": "number",
+                "minimum": -100000,
+                "maximum": 100000
+              },
+              "topOffset": {
+                "type": "number",
+                "minimum": -100000,
+                "maximum": 100000
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "doc",
+          "documentId",
+          "expectedRevision",
+          "walls",
+          "changes"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "name": "walls_list",
+      "group": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "string",
+            "pattern": "^d[0-9]{1,6}$",
+            "description": "A handle from drawing_open, ifc_open or takeoff_open."
+          },
+          "level": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "doc"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

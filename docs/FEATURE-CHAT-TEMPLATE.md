@@ -8,7 +8,8 @@ Implement **[feature ID — title]** in my residential BIM fork.
 
 ## Starting point
 
-- Repository: https://github.com/achartt/bimcraft-SDH
+- Repository: https://github.com/drsurfbum/bimcraft-SDH
+- Current GitHub identity and future-commit settings: `docs/GITHUB-IDENTITY.md`.
 - Approved base branch and exact commit: [branch, SHA; confirm it includes prerequisites]
 - Feature branch: [unique branch name]
 - Isolated checkout/worktree: [absolute path, or create a separate checkout for this feature]

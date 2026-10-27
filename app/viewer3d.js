@@ -117,6 +117,7 @@ export class Viewer3D {
     this.vis = new Visibility();
     this.batches = [];
     this.edgesOn = true;
+    this.displayMode = 'edges';
     this.spacesOn = false;
     this.box = new THREE.Box3();
 
@@ -186,6 +187,7 @@ export class Viewer3D {
     this.spaceMeshes = Ls.flatMap((L) => L.spaceMeshes);
     this.batches = Ls.flatMap((L) => L.batches);
     this.edgesAvailable = Ls.some((L) => L.edges.length);
+    this.applyDisplayMode();
     this.box.makeEmpty();
     for (const L of Ls) if (L.group.visible && !L.box.isEmpty()) this.box.union(L.box.clone().applyMatrix4(L.group.matrix));
     if (this.box.isEmpty()) for (const L of Ls) if (L.group.visible) for (const m of L.spaceMeshes) this.box.union(m.geometry.boundingBox.clone().applyMatrix4(L.group.matrix));
@@ -656,8 +658,22 @@ export class Viewer3D {
 
   setEdges(on) {
     this.edgesOn = on;
-    for (const e of this.edges) e.visible = on;
+    this.displayMode = on ? 'edges' : 'shaded';
+    this.applyDisplayMode();
     this.render();
+  }
+
+  setDisplayMode(mode) {
+    if (!['shaded', 'edges', 'wireframe'].includes(mode)) return;
+    this.displayMode = mode;
+    this.edgesOn = mode === 'edges';
+    this.applyDisplayMode();
+    this.render();
+  }
+
+  applyDisplayMode() {
+    for (const mesh of this.meshes) for (const material of mesh.material) material.wireframe = this.displayMode === 'wireframe';
+    for (const edge of this.edges) edge.visible = this.displayMode === 'edges';
   }
 
   /** The view presets' frame (0.6 DC.57): turned by `rad` about the vertical, so a building turned in its site is seen
@@ -671,7 +687,9 @@ export class Viewer3D {
     const c = this.box.getCenter(new THREE.Vector3());
     const size = this.box.getSize(new THREE.Vector3());
     const radius = Math.max(size.length() / 2, 0.5);
-    const dist = radius / Math.sin(THREE.MathUtils.degToRad(this.camera.fov / 2)) * 1.05;
+    // 0.7 SU.751: the field of view is vertical; in a pane taller than wide the width is what runs out first (the house was cut off at the side)
+    const halfV = THREE.MathUtils.degToRad(this.camera.fov / 2), halfH = Math.atan(Math.tan(halfV) * (this.camera.aspect > 0 ? this.camera.aspect : 1));
+    const dist = radius / Math.sin(Math.min(halfV, halfH)) * 1.05;
     const dirs = {
       iso: new THREE.Vector3(1, 0.8, 1),
       top: new THREE.Vector3(0, 1, 0.0001),

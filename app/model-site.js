@@ -23,7 +23,7 @@
  *                                                 `count` stay where they are
  *   Errors: model.err.site.shape, model.err.site.nobuilding, model.err.lv.none, model.err.lv.split.
  */
-import { op, regenAll } from './model-ops.js';
+import { reserveGuid, op, regenAll } from './model-ops.js';
 import { readLevels, addLevel, setLevel } from './model-levels.js';
 import { polyProblem } from './model-floors.js';
 import { scaleT, round } from './model-write.js';
@@ -162,7 +162,7 @@ export function addLevels({ elevations, height }) {
       if (readLevels(w).some((l) => Math.abs(l.elevation - z) < 1)) return;
       levels = readLevels(w);
       const next = want[i + 1] !== undefined ? want[i + 1] - e : (height > 0 ? height : (levels[levels.length - 1]?.height || 3000));
-      if (!guids[i]) guids[i] = val(w.guid());
+      reserveGuid(w, guids, i);
       const r = addLevel(w, { name: levelName(levels, levels.length + 1), elevation: z, height: Math.max(1000, next), guid: guids[i] });
       made.set(r.guid, r.id); out.push(r.id);
     });
@@ -183,7 +183,7 @@ export function splitLevels({ total, count }) {
     for (let i = 0; i < n; i++) {
       const z = base + i * h;
       if (order[i]) { setLevel(w, order[i], { elevation: z, height: h, shiftAbove: false }); out.push(w.byGuid(order[i])); continue; }
-      if (!guids[i]) guids[i] = val(w.guid());
+      reserveGuid(w, guids, i);
       const r = addLevel(w, { name: levelName(readLevels(w), i + 1), elevation: z, height: h, guid: guids[i] });
       made.set(r.guid, r.id); out.push(r.id);
     }

@@ -6,3 +6,9 @@ dist/
 /evidence/f04/native-canvas-detail.png
 
 /evidence/f04/styled-reopened.ifc
+
+# F08 generated fixture and full evidence remain local.
+/fixtures/f08/*.ifc
+/evidence/f08/*.ifc
+/evidence/f08/audit-*.json
+/evidence/f08/matrix.json

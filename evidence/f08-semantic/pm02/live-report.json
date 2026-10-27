@@ -1,0 +1,302 @@
+{
+  "head": "0b91ab1e064987e5bddfe08268e4e19980ea2e5a",
+  "checks": [
+    "real Streamable HTTP initialization/discovery through live host.control",
+    "nonmutating semantic readback and complete-storey diagnostic scope",
+    "internal T host relation survives an edit to the other stable end",
+    "both physically joined analytic ends × all allow/cap combinations; 24 real Undo/Redo cycles; genuine no-ops",
+    "invalid patches, relation injection, duplicate scope, stale revisions and foreign IDs refuse without readback changes",
+    "specific protected-record refusals for real direct and correctly resolved alias properties; Redo and Undo remain usable",
+    "identical projects/names in separate live editors, wrong token, busy and denied edit/save/export retain both projects",
+    "actual live MCP save/download/reopen preserves profiles/records and refuses old instance binding",
+    "native project switch during semantic edit reports completed original mutation; replacement bytes/both histories unchanged; original Undo works",
+    "existing full-project live open closes original IFC yet preserves confirmed mutation progress; captured readback is labeled and replacement remains untouched",
+    "native undo during semantic HTTP completion retains exactly one own commit, marks captured readback noncurrent and Undo unavailable; history_empty refusal preserves person state; native replay works",
+    "native person-edit during semantic HTTP completion retains exactly one own commit, marks captured readback noncurrent and Undo unavailable; person_owned refusal preserves person state; native replay works",
+    "actual live transport corrupt/duplicate/future/ambiguous target and neighbor/curved refusals preserve bytes and histories; legacy migration Undo restores every STEP entity (DATA row order normalized)"
+  ],
+  "errors": [],
+  "console": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x10c004d5c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x10c004d5c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x10c004d5c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x10c004d5c00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    },
+    {
+      "type": "warning",
+      "text": "No available adapters."
+    }
+  ],
+  "browser": "151.0.7922.34",
+  "ownership": {
+    "status": "PASS",
+    "receipt": {
+      "documentId": "bim-f993eba9-c545-409f-ae9a-981b827c413b",
+      "revision": 1,
+      "wall": "0F08W00000000000000014",
+      "end": "a",
+      "endId": "0F08W00000000000000014:a",
+      "changed": true,
+      "completedSteps": 1,
+      "complete": false,
+      "code": "POST_COMMIT_INTERRUPTED",
+      "before": {
+        "id": "0F08W00000000000000014:a",
+        "allow": true,
+        "cap": "envelope",
+        "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+        "joinEligible": true
+      },
+      "after": {
+        "id": "0F08W00000000000000014:a",
+        "allow": false,
+        "cap": "envelope",
+        "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+        "joinEligible": false
+      },
+      "affectedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "geometryChangedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "readback": {
+        "phase": "synchronous-commit",
+        "originalDocumentReadable": false,
+        "current": false
+      },
+      "undo": {
+        "owner": null,
+        "available": false,
+        "label": "Assistant: wall_join_end_set",
+        "documentId": "bim-f993eba9-c545-409f-ae9a-981b827c413b",
+        "revision": 1
+      },
+      "error": "Document changed during request."
+    },
+    "proof": {
+      "switched": true,
+      "replacementActive": true,
+      "bytesUnchanged": true,
+      "historyUnchanged": true
+    },
+    "mockedDispatcher": false,
+    "mockedMutation": false
+  },
+  "fileClose": {
+    "status": "PASS",
+    "receipt": {
+      "documentId": "bim-f993eba9-c545-409f-ae9a-981b827c413b",
+      "revision": 3,
+      "wall": "0F08W00000000000000014",
+      "end": "a",
+      "endId": "0F08W00000000000000014:a",
+      "changed": true,
+      "completedSteps": 1,
+      "complete": false,
+      "code": "POST_COMMIT_INTERRUPTED",
+      "before": {
+        "id": "0F08W00000000000000014:a",
+        "allow": true,
+        "cap": "envelope",
+        "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+        "joinEligible": true
+      },
+      "after": {
+        "id": "0F08W00000000000000014:a",
+        "allow": false,
+        "cap": "envelope",
+        "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+        "joinEligible": false
+      },
+      "affectedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "geometryChangedWalls": [
+        "0F08W00000000000000014",
+        "0F08W00000000000000015"
+      ],
+      "readback": {
+        "phase": "synchronous-commit",
+        "originalDocumentReadable": false,
+        "current": false
+      },
+      "undo": {
+        "owner": null,
+        "available": false,
+        "label": "Assistant: wall_join_end_set",
+        "documentId": "bim-f993eba9-c545-409f-ae9a-981b827c413b",
+        "revision": 3
+      },
+      "error": "The active document changed or became busy after the original edit completed."
+    },
+    "proof": {
+      "existingLiveOpenInvoked": true,
+      "originalIfcClosed": true,
+      "replacementHistorySteps": 0
+    },
+    "mockedDispatcher": false,
+    "mockedMutation": false
+  },
+  "interleavings": [
+    {
+      "action": "undo",
+      "status": "PASS",
+      "receipt": {
+        "documentId": "bim-d1a6d179-08c7-46da-9e53-db9fcdc8ca30",
+        "revision": 1,
+        "wall": "0F08W00000000000000014",
+        "end": "a",
+        "endId": "0F08W00000000000000014:a",
+        "changed": true,
+        "completedSteps": 1,
+        "complete": false,
+        "code": "POST_COMMIT_INTERRUPTED",
+        "stopped": {
+          "code": "history_changed",
+          "message": "History changed outside this request. Captured commit-time data may no longer describe the current model."
+        },
+        "before": {
+          "id": "0F08W00000000000000014:a",
+          "allow": true,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": true
+        },
+        "after": {
+          "id": "0F08W00000000000000014:a",
+          "allow": false,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": false
+        },
+        "affectedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "geometryChangedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "readback": {
+          "phase": "synchronous-commit",
+          "originalDocumentReadable": false,
+          "current": false
+        },
+        "undo": {
+          "owner": null,
+          "available": false,
+          "label": "Assistant: wall_join_end_set",
+          "documentId": "bim-d1a6d179-08c7-46da-9e53-db9fcdc8ca30",
+          "revision": 1
+        },
+        "error": "History changed outside this request after its confirmed edit. Inspect the document again before retrying."
+      },
+      "proof": {
+        "fired": true,
+        "changes": [],
+        "undone": [
+          [
+            "model",
+            "Assistant: wall_join_end_set"
+          ]
+        ]
+      },
+      "undoRefusal": "history_empty",
+      "refusalBytesAndBothHistoriesUnchanged": true,
+      "nativeReplayRestoresPhysicalProfile": true,
+      "mockedDispatcher": false,
+      "mockedMutation": false
+    },
+    {
+      "action": "person-edit",
+      "status": "PASS",
+      "receipt": {
+        "documentId": "bim-7fe5f1fd-b3f7-40de-96ff-73e86f046127",
+        "revision": 1,
+        "wall": "0F08W00000000000000014",
+        "end": "a",
+        "endId": "0F08W00000000000000014:a",
+        "changed": true,
+        "completedSteps": 1,
+        "complete": false,
+        "code": "POST_COMMIT_INTERRUPTED",
+        "stopped": {
+          "code": "history_changed",
+          "message": "History changed outside this request. Captured commit-time data may no longer describe the current model."
+        },
+        "before": {
+          "id": "0F08W00000000000000014:a",
+          "allow": true,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": true
+        },
+        "after": {
+          "id": "0F08W00000000000000014:a",
+          "allow": false,
+          "cap": "envelope",
+          "node": "join:0F08W00000000000000014:a|0F08W00000000000000015:a",
+          "joinEligible": false
+        },
+        "affectedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "geometryChangedWalls": [
+          "0F08W00000000000000014",
+          "0F08W00000000000000015"
+        ],
+        "readback": {
+          "phase": "synchronous-commit",
+          "originalDocumentReadable": false,
+          "current": false
+        },
+        "undo": {
+          "owner": null,
+          "available": false,
+          "label": "Assistant: wall_join_end_set",
+          "documentId": "bim-7fe5f1fd-b3f7-40de-96ff-73e86f046127",
+          "revision": 1
+        },
+        "error": "History changed outside this request after its confirmed edit. Inspect the document again before retrying."
+      },
+      "proof": {
+        "fired": true,
+        "changes": [
+          [
+            "model",
+            "Assistant: wall_join_end_set"
+          ],
+          [
+            "model",
+            "Wall"
+          ]
+        ],
+        "undone": []
+      },
+      "undoRefusal": "person_owned",
+      "refusalBytesAndBothHistoriesUnchanged": true,
+      "nativeReplayRestoresPhysicalProfile": true,
+      "mockedDispatcher": false,
+      "mockedMutation": false
+    }
+  ],
+  "catalogCount": 32,
+  "requests": 353,
+  "status": "PASS"
+}
