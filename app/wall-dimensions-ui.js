@@ -55,7 +55,7 @@ export function mountWallDimensions(modelUi) {
     }
     return {title:t('title')};
   }
-  const extension={canAlignedDimension(){return !A.S.busy&&!A.S.reloading&&!A.S.queue.length&&!!A.S.data?.levels.length;},startAlignedDimension(){axis='aligned';axisSelect.value=axis;A.setTool('wallDimension');hint();return true;},tools:['wallDimension'],hint:()=> 'dimension.hint.first',typed:(name,text)=>{
+  const extension={alignedDimensionReason(){return A.S.busy||A.S.reloading||A.S.queue.length?A.t('ws.why.busy'):A.S.on&&!A.S.data?.levels.length?A.t('ws.why.nolevels'):'';},startAlignedDimension(){axis='aligned';axisSelect.value=axis;A.setTool('wallDimension');hint();return true;},tools:['wallDimension'],hint:()=> 'dimension.hint.first',typed:(name,text)=>{
       if(text===undefined) return true;
       const q=parseTyped(text,A.units());
       if(q?.kind!=='abs'){A.host.status(t('coordinates'),true);return false;}

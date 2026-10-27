@@ -43,9 +43,14 @@ jobs:
       - name: Actual source and isolated packaged MCP
         run: |
           node tests/features/f09/semantic.mjs
+          node .cc-test/bin/test-bimcraft.mjs --input
           node tests/features/f09/package.mjs
       - name: Both layouts and real live HTTP
         run: node tests/features/f09/browser.mjs
+      - name: Independently inspect actual UI and all MCP saved outputs
+        env:
+          F09_REQUIRE_UI_OUTPUT: '1'
+        run: .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
       - name: Candidate discovery on unchanged F03 fixture sizes
         run: node tests/features/f09/measure.mjs
       - name: Retain summary evidence only

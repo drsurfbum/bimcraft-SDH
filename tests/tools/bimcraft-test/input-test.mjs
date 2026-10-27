@@ -40,8 +40,10 @@ export async function inputMode({ APP, ROOT }) {
   ok(GROUPS.every((g) => typeof en['input.grp.' + g] === 'string'), 'every group has its name in en.json');
   // every selector names an attribute the page has (ui.inc, the app bar, or settings.inc)
   const attr = (sel) => [...sel.matchAll(/\[(data-[\w-]+)(?:="([^"]*)")?\]/g)].map((m) => m[2] ? `${m[1]}="${m[2]}"` : m[1]);
-  const missing = COMMANDS.filter((c) => !attr(c.sel).every((a) => ui.includes(a) || bar.includes(a)));
-  ok(!missing.length, 'every command\'s button is in ui.inc or the app bar' + (missing.length ? ': ' + missing.map((c) => c.id).join(', ') : ''));
+  const missing = COMMANDS.filter((c) => c.mount
+    ? !['interaction-ui.js', 'wall-dimensions-ui.js'].includes(c.mount) || !fs.existsSync(path.join(APP, c.mount))
+    : !attr(c.sel).every((a) => ui.includes(a) || bar.includes(a)));
+  ok(!missing.length, 'every command\'s button is static or has an explicit mounted owner' + (missing.length ? ': ' + missing.map((c) => c.id).join(', ') : ''));
   // every button of the toolbar does something a command does (else a style would lose it)
   const tbStart = ui.indexOf('data-toolbar hidden>'), tbEnd = ui.indexOf('data-sectionbar', tbStart);
   const tb = ui.slice(tbStart, tbEnd);

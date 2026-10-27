@@ -4730,7 +4730,7 @@ function init(root) {
     download: (name, text, type) => download(name, text, type),
     command: (id) => {
       if (id === 'model.dimension') return {
-        reason: workspace?.active ? t('f09.documentation') : !editor || mode !== 'ifc' ? t('ws.why.open') : modelUi?.ask('canAlignedDimension') === false ? t('ws.why.busy') : '',
+        reason: workspace?.active ? t('f09.documentation') : !editor || mode !== 'ifc' ? t('ws.why.open') : modelUi?.ask('alignedDimensionReason') || '',
         run: () => modelUi?.ask('startAlignedDimension'),
       };
       if (!workspace?.active) return null;

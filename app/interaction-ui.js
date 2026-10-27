@@ -74,7 +74,7 @@ export function mountInteractions(A) {
         const currentReason = command ? window.ccInput?.why(command) : why;
         if (currentReason) { A.host.status(currentReason, true); return; }
         dismiss();
-        if (local) local(); else window.ccInput?.run(command);
+        if (local) local(); else window.ccInput?.run(command, () => { const valid = sameInteraction(A, token); if (!valid) A.host.status(t('stale'), true); return valid; });
       }); menu.append(button);
     };
     if (A.S.tool !== 'select' || A.S.drag || A.S.chain) {

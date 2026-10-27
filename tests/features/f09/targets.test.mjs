@@ -6,7 +6,7 @@ import { model } from '../f04/fixture.mjs';
 import { readWalls, locationLine } from '../../../app/model-walls.js';
 import { readOpenings } from '../../../app/model-openings.js';
 import { referencePoint, WALL_REFERENCES, readWallDimensions, resolveDimension } from '../../../app/wall-dimensions.js';
-import { changeWall } from '../../../app/model-ops.js';
+import { changeWall, op } from '../../../app/model-ops.js';
 import { snapPoint } from '../../../app/model-tools.js';
 import { wallTarget, wallTargetCandidates, targetCandidateId } from '../../../app/wall-targets.js';
 import { modelTools } from '../../../app/agents.js';
@@ -62,6 +62,9 @@ test('new semantic resolver requires revision/document binding, is read-only, an
   assert.throws(()=>tool.run({...args,expectedRevision:state.revision+1}),/Revision/);
   assert.throws(()=>tool.run({...args,wall:'0F09W00000000000000001'}),/foreign/);
   m.change(changeWall(wall.guid,{bulge:.1}));assert.throws(()=>tool.run({...args,...documentState(m.ed)}),/Unsupported/);m.ed.undo();
+  const opening=readOpenings(m.w())[0];
+  m.change(op(w=>{const line=w.touch(opening.id);line.GlobalId=w.L(wall.guid);w.write(line);return {id:opening.id};}));
+  assert.throws(()=>tool.run({...args,...documentState(m.ed)}),/ambiguous wall GlobalId/);m.ed.undo();
 });
 
 test('shared snap engine resolves explicit references, exposes ambiguous hosts and respects temporary snap-off', async () => {

@@ -67,6 +67,7 @@ export async function source() {
     const untouched=await tool(client,'model_describe',{doc:foreign});
     await tool(client,'wall_reference_resolve',{doc:foreign,documentId:result.state.documentId,expectedRevision:untouched.revision,wall:wall.guid,reference:'coreCenter',station:.5},true);
     assert.deepEqual(await tool(client,'model_describe',{doc:foreign}),untouched);
+    fs.writeFileSync(path.join(out,'expected-private.json'),JSON.stringify({wall:result.wall,a:result.a,b:result.b,openings:[],dimensions:[]}));
     const saved=path.join(out,'saved.ifc');await call('ifc_save',{path:saved});
     const reopened=(await tool(client,'ifc_open',{path:saved})).doc,state=await tool(client,'model_describe',{doc:reopened});
     const read=await tool(client,'wall_reference_resolve',{doc:reopened,documentId:state.documentId,expectedRevision:state.revision,wall:other.guid,reference:'center',station:0});

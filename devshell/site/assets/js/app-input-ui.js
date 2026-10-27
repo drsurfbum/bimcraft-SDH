@@ -114,7 +114,8 @@ function mount(cfg, reg) {
     return '';
   }
   const why = (c, b) => (H.why ? H.why(c, b, generic) : generic(c, b));
-  async function run(id) {
+  async function run(id, validContext = () => true) {
+    if (!validContext()) return false;
     const c = byId.get(id);
     if (!c) return false;
     closeMenus();
@@ -125,12 +126,12 @@ function mount(cfg, reg) {
       const p = await H.prepare(c);
       if (p) { status(T('shell.input.cant', { cmd: label(id), why: p }), true); return false; }
     }
-    if (H.context && H.context() !== context) return false;
+    if (!validContext() || (H.context && H.context() !== context)) return false;
     if (why(c, target(c))) return false;
     const handled = H.run ? await H.run(c) : undefined;
     if (handled === false) return false;
     if (handled === undefined) {
-      if (H.context && H.context() !== context) return false;
+      if (!validContext() || (H.context && H.context() !== context)) return false;
       if (why(c, target(c))) return false;
       target(c)?.click();
     }

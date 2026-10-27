@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* i18n-ignore-file: semantic MCP schemas/results, never display strings. */
+import { ids, val } from './ifc-util.js';
 import { readLevels } from './model-levels.js';
 import { ModelWriter } from './model-write.js';
 import { requireWalls, bindDocument, BINDING, objectSchema } from './material-wall-agent.js';
@@ -18,6 +19,8 @@ export function wallTargetTools(env) {
       if (!ed) throw new Error('No IFC editor is open.');
       if (env.busy?.()) throw new Error('Document is busy.');
       const state = bindDocument(ed, a), w = new ModelWriter(ed.W, ed.api, ed.mid);
+      const count = ids(w.api, w.mid, 'IFCPRODUCT', true).filter(id => val(w.api.GetLine(w.mid, id, false)?.GlobalId) === a.wall).length;
+      if (count !== 1) throw new Error('Missing, foreign or ambiguous wall GlobalId.');
       const walls = requireWalls(w, [a.wall]), target = wallTarget(walls, a);
       if (!target) throw new Error('Unsupported analytic reference: requires one authored straight wall and a valid station.');
       const level = readLevels(w).find(l => l.id === walls[0].storey);
