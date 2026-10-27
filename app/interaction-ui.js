@@ -105,6 +105,7 @@ export function mountInteractions(A) {
   });
   window.addEventListener('keydown', e => {
     if (e.isComposing) return;
+    if ((e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) && e.target === canvas) { e.preventDefault(); e.stopImmediatePropagation(); open(lastPointer, e); return; }
     if (e.key === 'Escape') {
       if (menu) { reset(); e.preventDefault(); e.stopImmediatePropagation(); canvas.focus(); A.drawOverlay(); return; }
       if (A.S.drag) { reset(); A.cancelInteraction(); e.preventDefault(); e.stopImmediatePropagation(); return; }

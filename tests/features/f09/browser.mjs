@@ -19,7 +19,7 @@ const check=s=>{report.checks.push(s);console.log('PASS',s);};
 const fixture=path.resolve('fixtures/f04/layered-plans.ifc');
 const m=await model(),walls=readWalls(m.w()),target=walls[0],other=walls.findLast(w=>!w.bulge&&!readOpenings(m.w()).some(o=>o.wallGuid===w.guid));
 const expected=Object.fromEntries(WALL_REFERENCES.map(reference=>[reference,referencePoint({wall:target.guid,reference,station:.3728282828},walls)]));
-let app,browser,live;
+let app,browser,live,lastPage;
 const settle=async page=>{await page.waitForFunction(()=>globalThis.bimcraftLive?.editor&&!bimcraftWorkspace.snapshot().busy&&(!globalThis.bimcraftPlan||!bimcraftPlan.state.reloading&&!bimcraftPlan.state.busy&&!bimcraftPlan.state.queue.length),null,{timeout:90000});await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));};
 const state=page=>page.evaluate(()=>({tool:bimcraftPlan.state.tool,changes:bimcraftLive.editor.changes.length,selection:bimcraftWorkspace.snapshot().selection}));
 async function point(page,p){return page.evaluate(p=>{const v=bimcraftPlan.view,s=v.toScreen(p),r=v.canvas.getBoundingClientRect();return {x:r.x+s.x,y:r.y+s.y};},p);}
@@ -28,8 +28,8 @@ async function open(page,layout){await page.goto('http://127.0.0.1:8061/?space=p
 try{
  app=await start({port:8061,host:'127.0.0.1',offline:true});browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});report.browser=browser.version();
  for(const layout of [false,true]){
-  const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true}),page=await context.newPage();page.on('pageerror',e=>report.errors.push(e.stack||e.message));
-  await open(page,layout);await page.waitForFunction(()=>!!window.ccInput);assert.equal(await page.evaluate(()=>ccInput.current().id),'cadcraft');
+  const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true}),page=await context.newPage();lastPage=page;page.on('pageerror',e=>report.errors.push(e.stack||e.message));
+  await open(page,layout);await page.waitForFunction(()=>!!window.ccInput);await page.evaluate(()=>{window.__f09Events=[];for(const phase of [true,false])window.addEventListener('keydown',e=>{__f09Events.push({key:e.key,shift:e.shiftKey,prevented:e.defaultPrevented,target:e.target.tagName,phase});if(__f09Events.length>40)__f09Events.shift();},phase);});assert.equal(await page.evaluate(()=>ccInput.current().id),'cadcraft');
   await page.locator('[data-f09-shortcuts]').click();await page.locator('[data-f09-use-ribbon]').click();
   await page.evaluate(()=>{window.__f09WallStarts=0;document.querySelector('[data-mtool="wall"]').addEventListener('click',()=>__f09WallStarts++);});
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('w');assert.equal((await state(page)).tool,'select');await page.keyboard.press('a');await settle(page);assert.equal((await state(page)).tool,'wall');assert.equal(await page.evaluate(()=>__f09WallStarts),1);
@@ -81,6 +81,6 @@ try{
   await context.close();
  }
  assert.deepEqual(report.errors,[]);report.status='PASS';
-}catch(e){report.status='FAIL';report.error=e.stack;throw e;}finally{
+}catch(e){report.status='FAIL';report.error=e.stack;if(lastPage&&!lastPage.isClosed()){await lastPage.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});report.failureState=await lastPage.evaluate(()=>({events:window.__f09Events,tool:window.bimcraftPlan?.state.tool,focus:document.activeElement?.outerHTML,menus:document.querySelectorAll('[data-f09-menu]').length})).catch(()=>null);}throw e;}finally{
  fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await live?.close();await browser?.close();await new Promise(r=>app?app.close(r):r());
 }

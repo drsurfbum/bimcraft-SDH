@@ -17,13 +17,20 @@ export async function workflow(call, wall, other, expected, check) {
   const bind=()=>({documentId:state.documentId,expectedRevision:state.revision});
   for(const reference of WALL_REFERENCES){
     const r=await call('wall_reference_resolve',{...bind(),wall,reference,station:.3728282828});
-    assert.deepEqual(r.p,expected[reference]);assert.equal(r.geometry,'analytic-wall-reference');assert.equal(r.persistent,false);assert.equal(r.units,'mm');
+    assert.deepEqual(r.p,expected[reference]);assert.equal(r.geometry,'analytic-wall-reference');assert.equal(r.persistent,false);assert.equal(r.units,'mm');assert.equal(r.frame,'storey-plan');assert.ok(state.levels.some(l=>l.guid===r.level));
   }
   assert.deepEqual(await call('model_describe'),state);check('six exact analytic references through real transport; no history or model changes');
   const args={...bind(),wall,reference:'coreExterior',station:.3728282828};
   for(const bad of [{documentId:'foreign-document'},{expectedRevision:state.revision+1},{station:-.01},{station:1.01},{reference:'physical-face'},{wall:'0F09W00000000000000001'},{unexpected:true}])await call('wall_reference_resolve',{...args,...bad},true);
   const {expectedRevision,...missing}=args;await call('wall_reference_resolve',missing,true);
   assert.deepEqual(await call('model_describe'),state);check('actual strict schema, missing binding, foreign host and stale revision refusals');
+  const placementTarget=await call('wall_reference_resolve',args),type=(await call('walls_list')).walls.find(w=>w.guid===wall).type;
+  const placed=await call('walls_add',{...bind(),level:placementTarget.level,type,locationLine:'center',exteriorSide:'left',height:2700.123456,points:[placementTarget.p,[placementTarget.p[0]+1200.123456,placementTarget.p[1]+900.123456]]});
+  assert.equal(placed.walls.length,1);const made=placed.values.find(w=>w.guid===placed.walls[0]);for(let i=0;i<2;i++)assert.ok(Math.abs(made.a[i]-placementTarget.p[i])<.005);
+  state=await call('model_describe');await call('undo',{...bind(),steps:1});state=await call('model_describe');
+  assert.ok(!(await call('walls_list')).walls.some(w=>w.guid===placed.walls[0]));check('explicit raw-mm target drives existing custom-type wall placement and atomic Undo');
+  // Refresh binding after the intentional placement/Undo cycle.
+  Object.assign(args,bind());
   const before=(await call('walls_list')).walls.find(w=>w.guid===other);
   const target=await call('wall_reference_resolve',args),old=await call('wall_joins_get',{documentId:state.documentId,wall:other});
   const dx=target.p[0]-before.a[0],dy=target.p[1]-before.a[1];

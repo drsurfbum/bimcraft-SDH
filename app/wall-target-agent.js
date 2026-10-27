@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 /* i18n-ignore-file: semantic MCP schemas/results, never display strings. */
+import { readLevels } from './model-levels.js';
 import { ModelWriter } from './model-write.js';
 import { requireWalls, bindDocument, BINDING, objectSchema } from './material-wall-agent.js';
 import { WALL_REFERENCES } from './wall-dimensions.js';
@@ -19,6 +20,8 @@ export function wallTargetTools(env) {
       const state = bindDocument(ed, a), w = new ModelWriter(ed.W, ed.api, ed.mid);
       const walls = requireWalls(w, [a.wall]), target = wallTarget(walls, a);
       if (!target) throw new Error('Unsupported analytic reference: requires one authored straight wall and a valid station.');
-      return { ...state, ...target, levelId: walls[0].storey };
+      const level = readLevels(w).find(l => l.id === walls[0].storey);
+      if (!level) throw new Error('Missing wall level.');
+      return { ...state, ...target, level: level.guid, levelId: level.id, frame: 'storey-plan' };
     } }];
 }
