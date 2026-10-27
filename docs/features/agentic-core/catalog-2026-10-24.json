@@ -1,0 +1,1032 @@
+{
+  "definitions": {
+    "head": "3e42c21e33e642d1e07bea2fc3356344f91db00e",
+    "sharedModel": [
+      {
+        "name": "model_describe",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "walls_list",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "walls_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            },
+            "points": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -10000000,
+                  "maximum": 10000000
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 2,
+              "maxItems": 500
+            },
+            "closed": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "ext-2x6",
+                "ext-2x4",
+                "brick-2x4",
+                "int-2x4",
+                "int-2x6",
+                "cmu-8",
+                "concrete-200",
+                "ext-300",
+                "int-100"
+              ]
+            },
+            "height": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "points"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "opening_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "wall": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "door",
+                "window"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "door-single",
+                "door-double",
+                "door-sliding",
+                "door-pocket",
+                "door-garage",
+                "door-bifold",
+                "door-french",
+                "door-barn",
+                "door-entry-sidelites",
+                "win-fixed",
+                "win-single-hung",
+                "win-double-hung",
+                "win-casement",
+                "win-slider",
+                "win-awning",
+                "win-picture",
+                "win-basement-egress",
+                "win-transom"
+              ]
+            },
+            "offset": {
+              "type": "number",
+              "minimum": 0
+            },
+            "width": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 20000
+            },
+            "height": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 20000
+            },
+            "sill": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 20000
+            }
+          },
+          "required": [
+            "wall",
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "floor_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            },
+            "points": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -10000000,
+                  "maximum": 10000000
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 3,
+              "maxItems": 500
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "concrete",
+                "wood"
+              ]
+            },
+            "use": {
+              "type": "string",
+              "enum": [
+                "floor",
+                "slab"
+              ]
+            },
+            "thickness": {
+              "type": "number",
+              "minimum": 10,
+              "maximum": 3000
+            },
+            "offset": {
+              "type": "number",
+              "minimum": -10000,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "points"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "levels_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "elevations": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -100000,
+                "maximum": 1000000
+              },
+              "minItems": 1,
+              "maxItems": 200
+            }
+          },
+          "required": [
+            "elevations"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "grid_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            },
+            "origin": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -10000000,
+                "maximum": 10000000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "angle": {
+              "type": "number",
+              "minimum": -360,
+              "maximum": 360
+            },
+            "u": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "spacing": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 100
+                      },
+                      "maxItems": 100
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "v": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "spacing": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 100
+                      },
+                      "maxItems": 100
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "extend": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 20000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "live": [
+      {
+        "name": "elements_find",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "class": {
+              "type": "string",
+              "description": "IFC class, e.g. IfcWall (case does not matter)."
+            },
+            "storey": {
+              "type": "string",
+              "description": "Storey name, exactly as the model names it."
+            },
+            "name": {
+              "type": "string",
+              "description": "Text the element name contains."
+            },
+            "property": {
+              "type": "object",
+              "description": "A property (or quantity) value. Without \"set\", any set holding a property of that name.",
+              "properties": {
+                "set": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "equals": {
+                  "type": "string"
+                },
+                "contains": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "rules": {
+              "type": "array",
+              "maxItems": 20,
+              "description": "BimCraft Find rules; field = cls, type, storey, material, name, longname, objtype, tag, predefined, guid or p:<Set>.<Property>.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "op": {
+                    "type": "string",
+                    "enum": [
+                      "is",
+                      "isnot",
+                      "contains",
+                      "notcontains",
+                      "starts",
+                      "gt",
+                      "lt",
+                      "gte",
+                      "lte",
+                      "has",
+                      "hasnot"
+                    ]
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "field",
+                  "op"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "all",
+                "any"
+              ],
+              "description": "all = every rule must match (default), any = one is enough."
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "elements_isolate",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "how": {
+              "type": "string",
+              "enum": [
+                "isolate",
+                "ghost",
+                "hide",
+                "show_all"
+              ]
+            },
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "maxItems": 100000
+            },
+            "class": {
+              "type": "string",
+              "description": "IFC class, e.g. IfcWall (case does not matter)."
+            },
+            "storey": {
+              "type": "string",
+              "description": "Storey name, exactly as the model names it."
+            },
+            "name": {
+              "type": "string",
+              "description": "Text the element name contains."
+            },
+            "property": {
+              "type": "object",
+              "description": "A property (or quantity) value. Without \"set\", any set holding a property of that name.",
+              "properties": {
+                "set": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "equals": {
+                  "type": "string"
+                },
+                "contains": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false
+            },
+            "rules": {
+              "type": "array",
+              "maxItems": 20,
+              "description": "BimCraft Find rules; field = cls, type, storey, material, name, longname, objtype, tag, predefined, guid or p:<Set>.<Property>.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "op": {
+                    "type": "string",
+                    "enum": [
+                      "is",
+                      "isnot",
+                      "contains",
+                      "notcontains",
+                      "starts",
+                      "gt",
+                      "lt",
+                      "gte",
+                      "lte",
+                      "has",
+                      "hasnot"
+                    ]
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "field",
+                  "op"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "all",
+                "any"
+              ],
+              "description": "all = every rule must match (default), any = one is enough."
+            }
+          },
+          "required": [
+            "how"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "element_properties",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "guid": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "app_info",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "model_describe",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "walls_list",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "walls_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            },
+            "points": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -10000000,
+                  "maximum": 10000000
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 2,
+              "maxItems": 500
+            },
+            "closed": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "ext-2x6",
+                "ext-2x4",
+                "brick-2x4",
+                "int-2x4",
+                "int-2x6",
+                "cmu-8",
+                "concrete-200",
+                "ext-300",
+                "int-100"
+              ]
+            },
+            "height": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 100000
+            }
+          },
+          "required": [
+            "points"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "opening_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "wall": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "door",
+                "window"
+              ]
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "door-single",
+                "door-double",
+                "door-sliding",
+                "door-pocket",
+                "door-garage",
+                "door-bifold",
+                "door-french",
+                "door-barn",
+                "door-entry-sidelites",
+                "win-fixed",
+                "win-single-hung",
+                "win-double-hung",
+                "win-casement",
+                "win-slider",
+                "win-awning",
+                "win-picture",
+                "win-basement-egress",
+                "win-transom"
+              ]
+            },
+            "offset": {
+              "type": "number",
+              "minimum": 0
+            },
+            "width": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 20000
+            },
+            "height": {
+              "type": "number",
+              "minimum": 100,
+              "maximum": 20000
+            },
+            "sill": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 20000
+            }
+          },
+          "required": [
+            "wall",
+            "kind"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "floor_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            },
+            "points": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": -10000000,
+                  "maximum": 10000000
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "minItems": 3,
+              "maxItems": 500
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "concrete",
+                "wood"
+              ]
+            },
+            "use": {
+              "type": "string",
+              "enum": [
+                "floor",
+                "slab"
+              ]
+            },
+            "thickness": {
+              "type": "number",
+              "minimum": 10,
+              "maximum": 3000
+            },
+            "offset": {
+              "type": "number",
+              "minimum": -10000,
+              "maximum": 10000
+            }
+          },
+          "required": [
+            "points"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "levels_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "elevations": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -100000,
+                "maximum": 1000000
+              },
+              "minItems": 1,
+              "maxItems": 200
+            }
+          },
+          "required": [
+            "elevations"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "grid_add",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "A level by its name or GlobalId (default: the level at elevation 0, else the lowest)."
+            },
+            "origin": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -10000000,
+                "maximum": 10000000
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "angle": {
+              "type": "number",
+              "minimum": -360,
+              "maximum": 360
+            },
+            "u": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "spacing": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 100
+                      },
+                      "maxItems": 100
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "v": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "spacing": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 100
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "minimum": 100
+                      },
+                      "maxItems": 100
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "extend": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 20000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "selection_get",
+        "group": "read",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "selection_set",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "guids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 64
+              },
+              "maxItems": 100000
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "replace",
+                "add",
+                "remove"
+              ]
+            }
+          },
+          "required": [
+            "guids"
+          ],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "undo",
+        "group": "edit",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "steps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "any": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "name": "model_save",
+        "group": "save",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    ]
+  },
+  "stdioProtocolAudit": {
+    "baseline": "3e42c21e33e642d1e07bea2fc3356344f91db00e",
+    "server": {
+      "name": "cadcraft",
+      "title": "CadCraft",
+      "version": "0.4.0-dev"
+    },
+    "catalogCount": 31,
+    "allToolNames": [
+      "files_list",
+      "drawing_open",
+      "drawing_new",
+      "drawing_describe",
+      "objects_list",
+      "object_get",
+      "drawing_check",
+      "command_run",
+      "script_run",
+      "undo",
+      "drawing_save",
+      "drawing_convert",
+      "drawing_plot",
+      "doc_close",
+      "ifc_open",
+      "ifc_query",
+      "ifc_properties",
+      "ifc_new",
+      "model_describe",
+      "walls_list",
+      "walls_add",
+      "opening_add",
+      "floor_add",
+      "levels_add",
+      "grid_add",
+      "ifc_save",
+      "takeoff_open",
+      "takeoff_quantities",
+      "takeoff_estimate",
+      "takeoff_export",
+      "markups_list"
+    ],
+    "customTypesObserved": {
+      "wall-f04-rainscreen": 7,
+      "wall-f04-partition": 2
+    },
+    "modelDescribeAdvertisedTypes": [
+      "ext-2x6",
+      "ext-2x4",
+      "brick-2x4",
+      "int-2x4",
+      "int-2x6",
+      "cmu-8",
+      "concrete-200",
+      "ext-300",
+      "int-100"
+    ],
+    "customTypeWallAddResult": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Invalid arguments: arguments.type must be one of \"ext-2x6\", \"ext-2x4\", \"brick-2x4\", \"int-2x4\", \"int-2x6\", \"cmu-8\", \"concrete-200\", \"ext-300\", \"int-100\"."
+        }
+      ],
+      "isError": true
+    },
+    "basicBuiltinAddListUndo": {
+      "pass": true,
+      "added": {
+        "level": "Level 1",
+        "walls": [
+          "0T_5vo3Jr6PO6O5nozj9iM"
+        ]
+      },
+      "wallsAfterAdd": 1,
+      "undone": {
+        "undone": [
+          "Assistant: add 1 wall"
+        ]
+      },
+      "wallsAfterUndo": 0
+    },
+    "writes": "Only transient in-memory edits to a new synthetic model; no IFC file saved or uploaded."
+  }
+}
