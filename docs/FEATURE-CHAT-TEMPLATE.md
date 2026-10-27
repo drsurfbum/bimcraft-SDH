@@ -15,7 +15,7 @@ Implement **[feature ID — title]** in my residential BIM fork.
 - Isolated checkout/worktree: [absolute path, or create a separate checkout for this feature]
 - Development server port: [unique port; do not take over an existing preview]
 - Prerequisites and their integrated commits: [IDs and SHAs]
-- Read: `docs/RESIDENTIAL-ROADMAP.md`, `docs/WALL-PRECISION.md`, applicable repository instructions and [feature-specific design notes].
+- Read: `docs/PROJECT-STATUS.md`, `docs/RESIDENTIAL-ROADMAP.md`, `docs/WALL-PRECISION.md`, applicable repository instructions and [feature-specific design notes].
 
 Verify these paths and Git state first. Do not reset user changes, work in another chat's checkout, or assume a default branch includes an unmerged prototype. Inspect the existing implementation before replacing a capability. If the base does not contain a prerequisite, identify that concrete blocker before dependent edits.
 
@@ -62,7 +62,7 @@ node .cc-test/bin/test-bimcraft.mjs --comforts
 node .cc-test/bin/test-bimcraft.mjs --views2
 ```
 
-Do not claim all checks ran if some were skipped. The standalone checkout's broader residential suite previously stopped on a missing TakeoffCraft dependency; external IFC validators were unavailable. Inspect whether F01 has resolved either limitation. Add meaningful regression tests for new data/geometry behavior. Verify UI work in a separate test tab and inspect exported drawings when printing is affected. Preserve the user's open model and preview. Measure performance when the change affects a profiled hot path.
+Do not claim all checks ran if some were skipped. F01 provides `npm run test:baseline`; use its report to distinguish executed passes, failures and optional sibling/service/reader availability notices. Independent reader setup is documented in `docs/features/F01-INTEGRATION-BASELINE.md`. Verify the current environment instead of carrying forward old missing-dependency claims. Add meaningful regression tests for new data/geometry behavior. Verify UI work in a separate test tab and inspect exported drawings when printing is affected. Preserve the user's open model and preview. Measure performance when the change affects a profiled hot path.
 
 Typical startup, after inspecting the checkout's current instructions:
 

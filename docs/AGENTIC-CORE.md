@@ -19,7 +19,7 @@ Before PM acceptance, each capability must be classified:
 - Typed, documented arguments and structured results identify document/session, stable source/element/type/material IDs, units and supported categories. A tool name is not proof that UI-supported inputs work.
 - Return raw numerical values needed for precision checks; human display rounding must not be the only machine-readable representation. Preserve F02 migration, tolerance, reference and unsupported-record contracts.
 - Bind operations to the intended source/document. Do not silently substitute the currently selected element or active drawing. Refuse stale/foreign IDs and conflicting or busy state before changes.
-- Use existing atomic transactions and undo ownership. Reads do not mutate; failed edits leave no partial changes. Verify supported Undo/Redo and save/reopen behavior.
+- Use existing atomic transactions and Undo ownership. Reads do not mutate; preflight refusals and failed atomic domain mutations leave no partial changes. If a confirmed commit is followed by a person edit, Undo, project switch, closure or notification failure, report the request’s own confirmed progress honestly; distinguish captured commit-time data from current state and stop further work. Do not infer progress from net history growth, advertise Undo over a person-owned step, silently retry or undo the person’s work. Verify supported Undo/Redo and save/reopen behavior.
 - Preserve read/edit/save/export permissions, allowed file roots and actionable errors. No silent permission expansion, file overwrite or bypass of an editing refusal.
 - Document live versus headless support. Share the domain implementation; purely live state can be live-only with a discoverable explanation elsewhere.
 - Verify the actual loaded/packaged fork modules and version. Source code, built package, MCP registration and a connected agent session are different states. An upstream package is not assumed to contain fork changes.
@@ -36,10 +36,10 @@ Add regression checks for missing registration, schema drift and live/headless/p
 
 The handoff lists tool names, arguments, permissions, structured output, transport/build and test evidence. PM reviews the real catalog and an agent-driven workflow alongside UI evidence. Track planned, implemented, registered, transport-tested and connected separately.
 
-This is a standing PM requirement. Repository template changes remain proposed until their documentation PR merges. This document does not claim legacy gaps are fixed, change the approved baseline, authorize feature merges or configure client credentials/permissions.
+This is a standing PM requirement reflected in the feature and PM templates. It does not claim legacy gaps are fixed, authorize feature merges, change a feature’s approved base or configure client credentials/permissions. Explicit user instructions and existing authorization govern the work; a gap does not create a new approval requirement for unrelated already-authorized steps.
 
 ## Catch-up work
 
-The [October 24 audit](features/agentic-core/2026-10-24-AUDIT.md) records gaps. Start with custom materials/assemblies and wall-instance parity, then references/view settings and documentation/export operations. Include F08 join/end controls in that feature's agent contract. Assess pending F28 work by its actual operation delta and keep inherited gaps visible.
+The [October 24 audit](features/agentic-core/2026-10-24-AUDIT.md) is historical evidence at `3e42c21`, not the current catalog. MCP-01 material/assembly/custom-type/wall-instance coverage and F08 join/end tools are now adopted; their exact evidence and remaining limits are in [PROJECT-STATUS.md](PROJECT-STATUS.md). References/view settings and documentation/export parity remain catch-up work, including the separately owned F28-C slice. Assess actual operation deltas and keep inherited gaps visible. Preserve the old audit/catalog unchanged apart from a dated supersession notice; do not present its old gaps as current or regenerate evidence retroactively.
 
 This is cross-cutting product work, not optional final polish. Extend the existing shared dispatcher rather than replace it.
