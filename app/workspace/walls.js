@@ -115,7 +115,7 @@ export function mountWallWorkflow({ root, A, commands, defaults, unitsHost, opti
     A.ask('openAssembly', ctx.key, ctx.assign);
   }
   function key(event) {
-    if (!mounted || A.S.tool !== 'wall' || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || isTextEntry(event.target) || document.querySelector('dialog[open]')) return;
+    if (!mounted || A.S.tool !== 'wall' || event.defaultPrevented || event.isComposing || event.repeat || event.altKey || event.ctrlKey || event.metaKey || isTextEntry(event.target) || document.querySelector('dialog[open]')) return;
     if (/^[0-9@'"<.,\-\/]$/.test(event.key)) { event.preventDefault(); A.workspaceTyped(event.key); }
   }
   root.addEventListener('click', e => {

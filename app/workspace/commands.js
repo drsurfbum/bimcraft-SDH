@@ -38,10 +38,10 @@ export function createCommands({ state, actions, explain = () => {}, t = (k) => 
 }
 
 export function isTextEntry(target) {
-  return !!target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), dialog, [data-help-panel], [data-app-settings]');
+  return !!target?.closest?.('input, textarea, select, [role="menu"], [contenteditable]:not([contenteditable="false"]), dialog, [data-help-panel], [data-app-settings]');
 }
 export function shortcutCommand(event, state = {}) {
-  if (event.defaultPrevented || event.altKey || isTextEntry(event.target)) return null;
+  if (event.defaultPrevented || event.isComposing || event.repeat || event.altKey || isTextEntry(event.target)) return null;
   const key = event.key.toLowerCase(), mod = event.ctrlKey || event.metaKey;
   if (mod) {
     if (key === 'o' && !event.shiftKey) return 'open';

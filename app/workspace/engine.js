@@ -57,14 +57,18 @@ export function engineWhy(root, spec, state, t) {
  * A left-panel section opens in the Model palette (showModel) and scrolls into view; a right-panel tab is picked.
  */
 export async function engineRun(root, spec, { activatePlan, showModel, state }) {
+  const owner = state().document;
+  const valid = () => state().document === owner && !state().busy;
   const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
   if ((spec.tool || spec.kind) && state().view?.kind !== 'plan') { activatePlan(); await frame(); }
+  if (!valid()) return false;
   if (spec.tool || spec.draw) {
     const toggle = root.querySelector('[data-model-toggle]');
     if (toggle && toggle.getAttribute('aria-pressed') !== 'true') { toggle.click(); await frame(); }
   }
+  if (!valid()) return false;
   const b = engineTarget(root, spec);
-  if (!b) return false;
+  if (!b || b.disabled || b.getAttribute('aria-disabled') === 'true') return false;
   if (spec.kind) {   // a select, not a button: pick the kind and say so, as a person changing it would
     if (b.value !== spec.kind) { b.value = spec.kind; b.dispatchEvent(new Event('change', { bubbles: true })); }
     return true;

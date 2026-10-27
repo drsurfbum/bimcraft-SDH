@@ -2133,7 +2133,7 @@ function init(root) {
   ui.undo.addEventListener('click', () => { if (coreCommands) coreCommands.execute('undo'); else undo(); });
   ui.save.addEventListener('click', () => { if (coreCommands) coreCommands.execute('save'); else saveIfc(); });
   document.addEventListener('keydown', (e) => {
-    if (document.querySelector('dialog[open]')) return;
+    if (e.isComposing || e.repeat || document.querySelector('dialog[open]')) return;
     if (!coreCommands) {   // no workspace commands (no Draw extension): the keys as they were
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && unsavedIn(editor)) { e.preventDefault(); saveIfc(); }
       if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && editor && editor.dirty && !e.target.closest('input, textarea, select')) { e.preventDefault(); undo(); }
@@ -4540,9 +4540,9 @@ function init(root) {
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.defaultPrevented || e.altKey) return;
+    if (e.defaultPrevented || e.isComposing || e.repeat || e.altKey) return;
     const t = e.target;
-    if (t.closest?.('input, textarea, select, [contenteditable="true"], dialog, [data-help-panel], [data-app-settings]')) return;
+    if (t.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), dialog, [data-help-panel], [data-app-settings]')) return;
     if (document.querySelector('dialog[open]')) return;
     if (workspace?.active) return;   // F28-A exposes only its bounded commands; no hidden wall delete/copy.
     const mod = e.ctrlKey || e.metaKey, k = e.key.toLowerCase();
@@ -4728,6 +4728,19 @@ function init(root) {
   window.ccInputHooks = {
     status: (text, isError) => status(text, isError),
     download: (name, text, type) => download(name, text, type),
+    command: (id) => {
+      if (id === 'model.dimension') return {
+        reason: workspace?.active ? t('f09.documentation') : !editor || mode !== 'ifc' ? t('ws.why.open') : modelUi?.ask('canAlignedDimension') === false ? t('ws.why.busy') : '',
+        run: () => modelUi?.ask('startAlignedDimension'),
+      };
+      if (!workspace?.active) return null;
+      const engineCommand = workspace.inputCommand(id);
+      if (engineCommand) return engineCommand;
+      const mapped = { 'model.wall': 'wall', 'model.select': 'select', 'file.open': 'open', 'file.save': 'save', 'edit.undo': 'undo', 'edit.redo': 'redo', 'view.planfit': 'fit', 'edit.select-none': 'clear' }[id];
+      if (!mapped) return null;
+      const d = coreCommands.describe(mapped);
+      return { reason: d.reason, run: () => coreCommands.execute(mapped) };
+    },
     busy: () => !!placing || walking,   // a running tool keeps its own letter keys (R, Tab; W A S D Q E)
   };
 
