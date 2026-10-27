@@ -1,13 +1,14 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 import { el } from './ui-util.js';
 import { WALL_REFERENCES } from './wall-dimensions.js';
-import { wallTargetCandidates } from './wall-targets.js';
+import { targetCandidateId } from './wall-targets.js';
+import { snapPoint } from './model-tools.js';
 import { captureInteraction, sameInteraction } from './interaction-context.js';
 
 /** F09 owns only plan interaction. Commands still belong to the input registry/domain adapters. */
 export function mountInteractions(A) {
   const t = k => A.t('f09.' + k), label = ref => A.t('dimension.ref.' + ref.toLowerCase());
-  let mode = 'existing', candidate = null, menu = null, owner = null, lastPointer = null, picked = '', choicesKey = '';
+  let session = [], mode = 'existing', candidate = null, menu = null, owner = null, lastPointer = null, picked = '', choicesKey = '';
   const canvas = A.root.querySelector('[data-plan-canvas]');
   const select = el('select', { 'data-f09-target': '', 'aria-label': t('target') },
     ...['existing', 'off', ...WALL_REFERENCES].map(v => el('option', { value: v }, WALL_REFERENCES.includes(v) ? label(v) : t(v))));
@@ -21,7 +22,11 @@ export function mountInteractions(A) {
   canvas.parentElement.append(controls);
   const style = el('style', {}, '.bc-f09-controls{position:absolute;bottom:2.6rem;left:.5rem;z-index:5;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;max-width:calc(100% - 1rem);padding:.4rem .6rem;background:var(--sheet,#fff);color:var(--ink,#222);border:1px solid var(--line,#aaa);border-radius:.3rem;font:12px system-ui}.bc-f09-controls select{max-width:15rem}.bc-f09-menu{position:fixed;z-index:10050;background:var(--sheet,#fff);color:var(--ink,#222);box-shadow:0 4px 20px #0004;border:1px solid var(--line,#aaa);padding:.3rem;max-width:min(25rem,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto}.bc-f09-menu button{display:block;text-align:left;width:100%;padding:.45rem}.bc-f09-menu [aria-disabled="true"]{opacity:.65}.bc-f09-menu small{display:block}.bc-f09-help{max-width:45rem;max-height:80vh;overflow:auto}.bc-f09-help table{border-collapse:collapse;width:100%}.bc-f09-help td,.bc-f09-help th{padding:.4rem;border-bottom:1px solid #8885;text-align:left}');
   A.root.append(style);
-  function reset() { picked = ''; choicesKey = ''; choices.hidden = true; mode = 'existing'; select.value = mode; candidate = null; feedback.textContent = ''; dismiss(false); }
+  function sync() {
+    const next = [A.ed(), A.S.level, A.S.kind, A.S.callout];
+    if (next.some((value, i) => value !== session[i])) { reset(); session = next; }
+  }
+  function reset() { window.ccInput?.resetSequence(); picked = ''; choicesKey = ''; choices.hidden = true; mode = 'existing'; select.value = mode; candidate = null; feedback.textContent = ''; dismiss(false); }
   function properties() {
     A.renderProps();
     const field = A.root.querySelector('[data-mp-height]');
@@ -51,6 +56,7 @@ export function mountInteractions(A) {
     if (restore && focus?.isConnected) focus.focus({ preventScroll: true });
   }
   function open(p, e) {
+    sync();
     if (!A.S.on || !A.ed() || A.S.busy || A.S.reloading || A.S.queue.length) return;
     dismiss(false); window.ccInput?.resetSequence();
     candidate = null; // context opening must not commit a pointer preview
@@ -99,7 +105,11 @@ export function mountInteractions(A) {
   });
   window.addEventListener('keydown', e => {
     if (e.isComposing) return;
-    if (e.key === 'Escape') { candidate = null; if (mode !== 'existing') { mode = 'existing'; select.value = mode; feedback.textContent = ''; A.drawOverlay(); } }
+    if (e.key === 'Escape') {
+      if (menu) { reset(); e.preventDefault(); e.stopImmediatePropagation(); canvas.focus(); A.drawOverlay(); return; }
+      if (A.S.drag) { reset(); A.cancelInteraction(); e.preventDefault(); e.stopImmediatePropagation(); return; }
+      if (mode !== 'existing') { reset(); A.drawOverlay(); }
+    }
     if (!menu) return;
     if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); e.stopImmediatePropagation(); dismiss(); return; }
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopImmediatePropagation(); document.activeElement?.click(); return; }
@@ -112,13 +122,15 @@ export function mountInteractions(A) {
   window.addEventListener('blur', () => { reset(); A.cancelInteraction(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { reset(); A.cancelInteraction(); } });
   return {
-    open, reset, active: () => mode !== 'existing',
+    open, reset, sync, active: () => mode !== 'existing',
     snap(p, walls) {
+      sync();
       candidate = null;
       if (mode === 'existing') return null;
-      if (mode === 'off') { feedback.textContent = t('off'); return { p: [...p], kind: 'free' }; }
-      const candidates = wallTargetCandidates(p, walls, mode, A.pv().pxToMm(12));
-      const id = c => c.reference.wall + ':' + c.kind + ':' + (c.kind === 'on' ? '' : c.reference.station);
+      if (mode === 'off') { feedback.textContent = t('off'); return snapPoint(p, {}, { enabled: false }); }
+      if (A.S.busy || A.S.reloading || A.S.queue.length) return { p: [...p], kind: 'free', ambiguous: true };
+      const result = snapPoint(p, { walls }, { tol: A.pv().pxToMm(12), reference: mode, candidateId: picked });
+      const candidates = result.candidates, id = targetCandidateId;
       const key = candidates.map(id).join('|');
       if (key !== choicesKey) {
         choicesKey = key;
@@ -128,17 +140,16 @@ export function mountInteractions(A) {
         choices.value = picked;
       }
       choices.hidden = candidates.length < 2;
-      // Multiple hosts require an explicit choice. Within one reference on one host retain endpoint/midpoint precedence.
-      const multipleHosts = new Set(candidates.map(c => c.reference.wall)).size > 1;
-      candidate = picked ? candidates.find(c => id(c) === picked) || null : multipleHosts ? null : candidates[0] || null;
-      if (multipleHosts && !candidate) {
+      candidate = result.reference ? result : null;
+      if (result.ambiguous) {
         feedback.textContent = t('choosecandidate');
         return { p: [...p], kind: 'free', ambiguous: true };
       }
       feedback.textContent = candidate ? label(mode) + ' · ' + t('analytic') + (candidates.length > 1 ? ' · ' + t('nearby') : '') : t('nocandidate');
-      return candidate || { p: [...p], kind: 'free' };
+      return result;
     },
     overlay(o) {
+      sync();
       if (!candidate) return;
       o.lines.push([...candidate.segment[0], ...candidate.segment[1]]);
       o.hud = { p: candidate.p, text: label(candidate.reference.reference) + ' · ' + t('analytic') };

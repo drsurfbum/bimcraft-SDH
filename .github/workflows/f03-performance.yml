@@ -3,7 +3,7 @@
 name: F03 performance evidence
 on:
   push:
-    branches: [feature/f08-wall-joins, candidate/f08-07-20261026, integration/upstream-0.7-20261025]
+    branches: [feature/f09-interaction-foundation, feature/f08-wall-joins, candidate/f08-07-20261026, integration/upstream-0.7-20261025]
   workflow_dispatch:
 permissions:
   contents: read

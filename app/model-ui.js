@@ -174,6 +174,7 @@ export function mountModel(host) {
 
   // ---- data ----
   function refresh(fitToo = false) {
+    interactions?.sync();
     if (!S.on || !ed()) return;
     S.data = snapshotModel(ed());
     const levels = S.data.levels;

@@ -39,3 +39,6 @@ export function wallTargetCandidates(p, walls, reference, radius) {
   }
   return out.sort((a, b) => a.rank - b.rank || a.distance - b.distance || a.reference.wall.localeCompare(b.reference.wall));
 }
+
+// Presentation identity for a transient candidate. A nearest-point station is recomputed from authoritative geometry.
+export const targetCandidateId = c => c.reference.wall + ':' + c.kind + ':' + (c.kind === 'on' ? '' : c.reference.station);

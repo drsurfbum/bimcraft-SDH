@@ -7,7 +7,8 @@ import { readWalls, locationLine } from '../../../app/model-walls.js';
 import { readOpenings } from '../../../app/model-openings.js';
 import { referencePoint, WALL_REFERENCES, readWallDimensions, resolveDimension } from '../../../app/wall-dimensions.js';
 import { changeWall } from '../../../app/model-ops.js';
-import { wallTarget, wallTargetCandidates } from '../../../app/wall-targets.js';
+import { snapPoint } from '../../../app/model-tools.js';
+import { wallTarget, wallTargetCandidates, targetCandidateId } from '../../../app/wall-targets.js';
 import { modelTools } from '../../../app/agents.js';
 import { documentState } from '../../../app/material-wall-agent.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<.005,`${a} vs ${b}`);
@@ -61,4 +62,17 @@ test('new semantic resolver requires revision/document binding, is read-only, an
   assert.throws(()=>tool.run({...args,expectedRevision:state.revision+1}),/Revision/);
   assert.throws(()=>tool.run({...args,wall:'0F09W00000000000000001'}),/foreign/);
   m.change(changeWall(wall.guid,{bulge:.1}));assert.throws(()=>tool.run({...args,...documentState(m.ed)}),/Unsupported/);m.ed.undo();
+});
+
+test('shared snap engine resolves explicit references, exposes ambiguous hosts and respects temporary snap-off', async () => {
+  const m=await model(),walls=readWalls(m.w()),wall=walls[0],ref={wall:wall.guid,reference:'coreInterior',station:.3728282828};
+  const p=referencePoint(ref,walls),raw=[p[0],p[1]+.000123],result=snapPoint(raw,{walls},{reference:ref.reference,tol:.001});
+  assert.deepEqual(result.p,p);assert.equal(result.reference.wall,wall.guid);
+  assert.deepEqual(snapPoint(raw,{walls},{enabled:false}),{p:raw,kind:'free'});
+  const coincident=[wall,{...wall,guid:'0F09W00000000000000001'}];
+  const ambiguous=snapPoint(raw,{walls:coincident},{reference:ref.reference,tol:.001});
+  assert.equal(ambiguous.ambiguous,true);assert.deepEqual(ambiguous.p,raw);
+  const chosen=ambiguous.candidates.find(c=>c.reference.wall!==wall.guid);
+  const resolved=snapPoint(raw,{walls:coincident},{reference:ref.reference,tol:.001,candidateId:targetCandidateId(chosen)});
+  assert.equal(resolved.reference.wall,chosen.reference.wall);assert.deepEqual(resolved.p,p);
 });

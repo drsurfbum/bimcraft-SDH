@@ -17,10 +17,19 @@
  *   loopSide(points) → 'right' | 'left': where the outside is for walls drawn along this closed loop (anticlockwise
  *   loop: outside on the right)
  */
+import { wallTargetCandidates, targetCandidateId } from './wall-targets.js';
 const D2R = Math.PI / 180;
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
-export function snapPoint(p, ctx = {}, { tol = 150, from = null, ortho = false, step = 15, round = 0, align = false } = {}) {
+export function snapPoint(p, ctx = {}, { tol = 150, from = null, ortho = false, step = 15, round = 0, align = false, reference = null, candidateId = '', enabled = true } = {}) {
+  if (!enabled) return { p: [...p], kind: 'free' };
+  // Explicit authored-wall references use F02 coordinates; all pointer snap routing stays in this engine.
+  if (reference !== null) {
+    const candidates = wallTargetCandidates(p, ctx.walls || [], reference, tol);
+    const multipleHosts = new Set(candidates.map(c => c.reference.wall)).size > 1;
+    const chosen = candidates.find(c => targetCandidateId(c) === candidateId) || (!multipleHosts ? candidates[0] : null);
+    return chosen ? { ...chosen, candidates } : { p: [...p], kind: 'free', candidates, ambiguous: multipleHosts };
+  }
   const walls = ctx.walls || [], extra = ctx.points || [], lines = (ctx.lines || []).map((l) => ({ a: l.a, b: l.b, t: 0, grid: true }));
   let best = null;
   const anchors = [];
