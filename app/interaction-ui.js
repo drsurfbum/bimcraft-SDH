@@ -23,6 +23,11 @@ export function mountInteractions(A) {
   const style = el('style', {}, '.bc-f09-controls{position:absolute;bottom:2.6rem;left:.5rem;z-index:5;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;max-width:calc(100% - 1rem);padding:.4rem .6rem;background:var(--sheet,#fff);color:var(--ink,#222);border:1px solid var(--line,#aaa);border-radius:.3rem;font:12px system-ui}.bc-f09-controls select{max-width:15rem}.bc-f09-menu{position:fixed;z-index:10050;background:var(--sheet,#fff);color:var(--ink,#222);box-shadow:0 4px 20px #0004;border:1px solid var(--line,#aaa);padding:.3rem;max-width:min(25rem,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow:auto}.bc-f09-menu button{display:block;text-align:left;width:100%;padding:.45rem}.bc-f09-menu [aria-disabled="true"]{opacity:.65}.bc-f09-menu small{display:block}.bc-f09-help{max-width:45rem;max-height:80vh;overflow:auto}.bc-f09-help table{border-collapse:collapse;width:100%}.bc-f09-help td,.bc-f09-help th{padding:.4rem;border-bottom:1px solid #8885;text-align:left}');
   A.root.append(style);
   function sync() {
+    const keys = A.S.tool === 'select' ? A.selectedKeys() : [];
+    const chosen = keys.length === 1 ? A.S.data?.walls.find(w => A.kb() + w.id === keys[0]) : null;
+    const supported = A.S.tool === 'wall' ? A.S.wall.shape === 'straight' : A.S.tool === 'select' && !chosen?.bulge;
+    select.disabled = !supported; select.title = supported ? '' : t('snaphelp');
+    if (!supported && mode !== 'existing') reset();
     const next = [A.ed(), A.S.level, A.S.kind, A.S.callout];
     if (next.some((value, i) => value !== session[i])) { reset(); session = next; }
   }

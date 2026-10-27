@@ -17,7 +17,10 @@ export async function inputMode({ APP, ROOT }) {
   const M = await import(path.join(APP, 'input-mouse.js'));
   const en = JSON.parse(fs.readFileSync(path.join(APP, 'lang/en.json'), 'utf8'));
   const ui = fs.readFileSync(path.join(APP, 'ui.inc'), 'utf8');
-  const bar = fs.readFileSync(path.join(ROOT, 'public_html/core/components/app-bar.inc'), 'utf8');
+  const barPath = path.join(ROOT, 'public_html/core/components/app-bar.inc');
+  const fallback = path.resolve(ROOT, '../devshell/index.html');
+  const bar = fs.existsSync(barPath) ? fs.readFileSync(barPath, 'utf8') : fs.readFileSync(fallback, 'utf8').match(/<header class="app-bar">[\s\S]*?<\/header>/)?.[0];
+  if (!bar) throw new Error('Required real app-bar markup is unavailable in both source and packaged dev shell.');
   let good = 0, bad = 0;
   const ok = (c, m) => { if (c) good++; else bad++; if (!c || process.argv.includes('--verbose')) console.log((c ? '  ok   ' : '  FAIL ') + m); };
   const eq = (a, b, m) => ok(JSON.stringify(a) === JSON.stringify(b), m + (JSON.stringify(a) === JSON.stringify(b) ? '' : ' — got ' + JSON.stringify(a)));

@@ -30,6 +30,7 @@ jobs:
           key: vendor-${{ hashFiles('devshell/vendor.json') }}
       - run: npm run fetch-vendor
       - name: Browser and independent reader
+        id: dependencies
         run: |
           npm install --prefix .cc-test/f09-deps --no-package-lock playwright@1.56.1
           .cc-test/f09-deps/node_modules/.bin/playwright install --with-deps chromium
@@ -46,8 +47,11 @@ jobs:
           node .cc-test/bin/test-bimcraft.mjs --input
           node tests/features/f09/package.mjs
       - name: Both layouts and real live HTTP
+        id: browser
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: node tests/features/f09/browser.mjs
       - name: Independently inspect actual UI and all MCP saved outputs
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         env:
           F09_REQUIRE_UI_OUTPUT: '1'
         run: .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
