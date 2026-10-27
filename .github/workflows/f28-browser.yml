@@ -1,7 +1,7 @@
 name: F28 live workspace acceptance
 on:
   push:
-    branches: [integration/upstream-0.7-20261025]
+    branches: [candidate/f08-07-20261026, integration/upstream-0.7-20261025]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -51,3 +51,8 @@ jobs:
           path: |
             .cc-test/f28-browser/report.json
             evidence/f28/performance-node.json
+            !**/*.ifc
+            !**/*.pdf
+            !**/*.csv
+            !**/expected.json
+            !**/*-expected.json

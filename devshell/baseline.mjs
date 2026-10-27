@@ -17,6 +17,8 @@ export const stages = [
   { name: 'f04-graphics', args: ['--test', '--test-reporter=tap', 'tests/features/f04/graphics.test.mjs'], minimum: 13, tap: true },
   { name: 'f05-sections', args: ['--test', '--test-reporter=tap', 'tests/features/f05/sections.test.mjs'], minimum: 18, tap: true },
   { name: 'f06-schedules', args: ['--test', '--test-reporter=tap', 'tests/features/f06/schedules.test.mjs'], minimum: 23, tap: true },
+  { name: 'f08-joins', args: ['--test', '--test-reporter=tap', 'tests/features/f08/joins.test.mjs'], minimum: 17, tap: true },
+  { name: 'f08-foundation07', args: ['--test', '--test-reporter=tap', 'tests/features/f08/foundation07.test.mjs'], minimum: 3, tap: true },
   { name: 'fixture', args: ['tests/features/f01/fixture.mjs', '--verify'], minimum: 1 },
   { name: 'source-sync-contract', args: ['--test', '--test-reporter=tap', 'tests/features/f01/source-sync.test.mjs'], minimum: 44, tap: true },
   { name: 'runner-contract', args: ['--test', '--test-reporter=tap', 'tests/features/f01/runner.test.mjs'], minimum: 19, tap: true },
@@ -41,6 +43,7 @@ export function runStages(plan, { cwd = ROOT, reportDir = path.join(ROOT, '.cc-t
     if (row.status !== 'PASS') for (const line of ((result.stdout || '') + (result.stderr || '')).split(/\r?\n/)) if (/^\s*FAIL\s/.test(line)) console.error(line);
     console.log(`${row.status} ${row.name}: ${row.passed} passed, ${row.failed} failed; ${row.skipped.length} skip/availability notices${row.error ? '; ' + row.error : ''}`);
     for (const skip of row.skipped) console.log(skip);
+    if(row.status==='FAIL') console.log(((result.stdout||'')+(result.stderr||'')).split(/\r?\n/).filter(l=>/FAIL|not ok|error:|Error:| at |location:/.test(l)).slice(0,40).join('\n'));
   }
   const report = { runtime: process.version, dirty: Boolean(spawnSync('git', ['status', '--porcelain'], { cwd, encoding: 'utf8' }).stdout?.trim()), head: spawnSync('git', ['rev-parse', 'HEAD'], { cwd, encoding: 'utf8' }).stdout?.trim(), results, exitCode: results.some(r => r.status !== 'PASS') ? 1 : 0 };
   fs.writeFileSync(path.join(reportDir, 'summary.json'), JSON.stringify(report, null, 2) + '\n');

@@ -41,6 +41,8 @@ import { planLoops } from './model-rooms.js';
 import { t as tr } from './i18n.js';
 import { wallGeom, arcOf, arcLength, chordFor, flatPoly, arcAxisCurve, profileCurve, profileKeyPoints, BULGE_MAX } from './model-arcs.js';   // 0.6 round 2 (bim-comforts_PART_2): curved walls
 
+import { straightWallJoins, endJoins } from './wall-joins.js';
+import { readJoinRecord, writeJoinSettings } from './wall-join-records.js';
 import { readAssemblies, readAssemblyRecords } from './wall-assemblies.js';
 
 /** Where a plan cuts, mm above its level (the Draw plan's CUT; rooms close against what the cut meets). */
@@ -149,7 +151,7 @@ export function enclosingWalls(walls, { tol = 1 } = {}) {
  * else every wall, as before.
  */
 export function buildingOutlines(walls) {
-  const loopsOf = (list) => planLoops([...wallOutlines(list.map((x) => ({ key: x.guid, a: x.a, b: x.b, t: x.t, bulge: x.bulge }))).values()]).outlines.filter((o) => o.area > 1);
+  const loopsOf = (list) => planLoops([...wallOutlines(list.map((x) => ({ ...x, key: x.guid }))).values()]).outlines.filter((o) => o.area > 1);
   const ext = walls.filter((x) => (x.assembly || wallType(x.typeKey))?.exterior);
   for (const list of [enclosingWalls(ext), enclosingWalls(walls)]) {
     if (!list.length) continue;
@@ -168,7 +170,12 @@ function prepare(walls) {
   }).filter((w) => w.L > 0 && w.h > 0);
 }
 
-export function wallOutlines(walls, { tol = 1 } = {}) {
+export function wallOutlines(walls, options = {}) {
+  // Generic preview rows retain legacy behavior; authoritative callers pass full rows.
+  if (walls.some(w => Object.hasOwn(w, 'assembly') || w.joinSettings || w.joinIssue)) return straightWallJoins(walls, legacyWallOutlines, options);
+  return legacyWallOutlines(walls, options);
+}
+export function legacyWallOutlines(walls, { tol = 1 } = {}) {
   const W = prepare(walls);
   const nodes = wallNodes(W, tol);
   const ends = W.map(() => ({ a: null, b: null }));
@@ -340,9 +347,12 @@ export function readWalls(w, storey = null) {
       name: val(line.Name) || '',
       bulge, justification: JUSTIFICATIONS.includes(ps.Justification) ? ps.Justification : 'center',
     };
+    const join = readJoinRecord(w, id);
+    wall.joinSettings = join.settings; wall.joinIssue = join.issue || null;
     wall.referenceIssue = records.find(r=>r.key===wall.typeKey && r.issue)?.issue || null;
     wall.assembly = wall.referenceIssue ? null : wallType(wall.typeKey, assemblies);
     if(!wall.assembly) wall.referenceIssue ||= 'corrupt';
+    if(join.issue) wall.referenceIssue ||= join.issue;
     wall.height = wallHeight(wall, levels, base);
     out.push(wall);
   }
@@ -457,6 +467,17 @@ export function updateWall(w, guid, changes = {}, { carryJoined = true, previous
   const all = readWalls(w);
   const wall = all.find((x) => x.guid === guid);
   if (!wall) throw Object.assign(new Error('model.err.nowall'), { key: 'model.err.nowall' });
+  if (changes.joinSettings !== undefined) {
+    if (wall.bulge) throw new Error(tr('join.curvedControl'));
+    // Keep the inherited mixed-curve algorithm unchanged; refuse ambiguous control scope.
+    if (all.some(q => {
+      if(!q.bulge || q.storey !== wall.storey) return false;
+      const hits=(a,b)=>{const g=wallGeom(b);return [a.a,a.b].some(p=>{const r=g.param(p);return r.s>=-1&&r.s<=g.L+1&&Math.abs(r.off)<=(a.t+b.t)/2+1;});};
+      return hits(wall,q)||hits(q,wall);
+    })) throw new Error(tr('join.curvedControl'));
+    writeJoinSettings(w, wall.id, changes.joinSettings);
+    wall.joinSettings = readJoinRecord(w, wall.id).settings;
+  }
   const touched = new Set([guid]);
   const moveEnd = (x, end, to) => {
     const na = end === 'a' ? to : x.a, nb = end === 'b' ? to : x.b;
@@ -479,7 +500,8 @@ export function updateWall(w, guid, changes = {}, { carryJoined = true, previous
       if (!wall.bulge && !bulgeChanged) {
         const u = mul(sub(b, a), 1 / dist(a, b)), na = a, nb = b;
         for (const [end, old] of [['a', wall.a], ['b', wall.b]]) {
-          const nbs = all.filter((o) => o.guid !== guid && o.storey === wall.storey && (dist(o.a, old) <= 1 || dist(o.b, old) <= 1));
+          if (!endJoins(wall, end)) continue;
+          const nbs = all.filter((o) => o.guid !== guid && o.storey === wall.storey && ((endJoins(o, 'a') && dist(o.a, old) <= 1) || (endJoins(o, 'b') && dist(o.b, old) <= 1)));
           if (nbs.length !== 1 || nbs[0].bulge) continue;
           const o = nbs[0], X = meet(na, u, o.a, mul(sub(o.b, o.a), 1 / (dist(o.a, o.b) || 1)));
           if (X && dist(X, end === 'a' ? na : nb) < 4 * Math.max(wall.t, tNew, o.t)) { if (end === 'a') a = X; else b = X; }
@@ -491,10 +513,10 @@ export function updateWall(w, guid, changes = {}, { carryJoined = true, previous
   if (dist(a, wall.a) > 1e-6 || dist(b, wall.b) > 1e-6 || bulgeChanged) {
     if (carryJoined) {
       for (const [end, old, to] of [['a', wall.a, a], ['b', wall.b, b]]) {
-        if (dist(old, to) <= 1e-6) continue;
+        if (dist(old, to) <= 1e-6 || !endJoins(wall, end)) continue;
         for (const o of all) {
           if (o.guid === guid || o.storey !== wall.storey) continue;
-          if (dist(o.a, old) <= 1) { moveEnd(o, 'a', to); touched.add(o.guid); } else if (dist(o.b, old) <= 1) { moveEnd(o, 'b', to); touched.add(o.guid); }
+          if (endJoins(o, 'a') && dist(o.a, old) <= 1) { moveEnd(o, 'a', to); touched.add(o.guid); } else if (endJoins(o, 'b') && dist(o.b, old) <= 1) { moveEnd(o, 'b', to); touched.add(o.guid); }
         }
       }
     }
@@ -583,7 +605,7 @@ const SHAPE_TOL_MM = 0.001;
 export function regenWalls(w, storey, force = null) {
   const walls = readWalls(w, storey);
   if (!walls.length) return { walls: 0 };
-  const outlines = wallOutlines(walls.map((x) => ({ key: x.guid, a: x.a, b: x.b, t: x.t, bulge: x.bulge })));
+  const outlines = wallOutlines(walls.map((x) => ({ ...x, key: x.guid })));
   const forced = new Set(force || []);
   const host = w.hostIndex();
   let n = 0;

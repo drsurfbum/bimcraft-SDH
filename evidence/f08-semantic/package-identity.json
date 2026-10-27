@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "head": "9f9be939212be29fa2d3851fe2f44ac4eaff61a2",
+  "package": "@drsurfbum/bimcraft-mcp",
+  "version": "0.7.0-mcp01.1",
+  "files": [
+    {
+      "file": "agents.js",
+      "sha256": "8488e627be3b6d7e4ac213301f62f9adbca8be14a2f952baeee0c67d01a0712c"
+    },
+    {
+      "file": "wall-join-agent.js",
+      "sha256": "791d144f17fbfda40af4022f2d76b30ec9f5cb7385dab7bcd551c9e5f140c39c"
+    },
+    {
+      "file": "agent-history.js",
+      "sha256": "26762fc82172ec080535d8366a4d0ad1bfdecac85ad929314f1c301930988c19"
+    },
+    {
+      "file": "material-wall-agent.js",
+      "sha256": "aa2906fa8dda3b8e2c4ee1d62f0f3e232760933fe3897bcb4d6688c080b94eda"
+    },
+    {
+      "file": "model-ops.js",
+      "sha256": "26227b2f0207c81b21aaaaa3e5ca2bfd34923919e86073b559874766845192ed"
+    },
+    {
+      "file": "model-walls.js",
+      "sha256": "7831e5cee31bd0f3cea22893273bb20d2cbd07e664d8bdb0015efb92416033b6"
+    },
+    {
+      "file": "wall-joins.js",
+      "sha256": "9e29ac77e78d6e0b13750bee236afa33864c6f2ff74bf101bafae1768633acbf"
+    },
+    {
+      "file": "wall-join-records.js",
+      "sha256": "f69fa369b0e6efc472fe201bdcccb8fdb0d61cfc7d7ea253f4fd3f456aabe40d"
+    },
+    {
+      "file": "ifc-edit.js",
+      "sha256": "3f6d5edd4c0df75f6df01b9a0a0f08a4416a94deb82f211a165c9cf4c271a221"
+    }
+  ],
+  "archiveSha256": "67ab0a65b53e642c0dd806bfd8a52eba8da3317d5114c767f0e1399b860d5e3b",
+  "missingModuleStartupRefused": true
+}

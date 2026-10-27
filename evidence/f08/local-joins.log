@@ -1,0 +1,29 @@
+(node:81980) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f08/app/ifc/api.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ supported angle/core/orientation matrix is deterministic under order and regeneration (12.964667ms)
+✔ true T and four-arm X have common core-first seams and no ordering dependence (0.833209ms)
+✔ endpoint matching uses 1 mm distinct from measurement precision (0.288ms)
+✔ unsupported angle, height, topology and degenerate inputs keep finite safe geometry and reasons (0.146291ms)
+✔ curved components retain inherited envelope and bulge data (0.982042ms)
+✔ fixture actual IFC profiles match the same plan envelopes at 0.005 mm (15.850792ms)
+✔ allow/disallow and square caps affect both physical/drawing envelopes and undo/redo/reopen (33.470625ms)
+✔ legacy metadata reads without writes and explicit edit migrates only the edited record (9.393125ms)
+✔ unknown and corrupt end records refuse model writes atomically and preserve saved payloads (22.13375ms)
+✔ missing payload and duplicate settings are not hidden by default records (4.039625ms)
+✔ finish cycles preserve core reference lines, identities, openings, cavity and zero-membrane semantics (309.45575ms)
+✔ fine/medium/coarse pieces share physical envelope and layer areas conserve disjoint T parts (8.871291ms)
+✔ material-default edit never resizes layers or moves anchors (4.970583ms)
+✔ unrelated regeneration is idempotent and unrelated isolated original is unchanged (2.244458ms)
+✔ unknown join metadata leaves affected persistent references unresolved without a stale value (2.07575ms)
+✔ retained X and T topology survives disallow, finish offsets, reallow, Undo Redo and reopen (38.125125ms)
+✔ selection order does not alter final type assignment, core axes or physical seams (10.1365ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 596.276333

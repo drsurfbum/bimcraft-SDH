@@ -1,0 +1,76 @@
+{
+  "retention": "Full failures/logs/snapshots remain private; CI attempts retain their public run history. No failures were erased.",
+  "attempts": [
+    {
+      "check": "new typed end tests first run",
+      "result": "4 failures",
+      "reason": "assertion treated automatic capture of previously absent node membership as preexisting topology; seeded explicit topology, retaining strict other-end/relation comparisons",
+      "retry": "14/14, then combined 76/76"
+    },
+    {
+      "check": "parallel schema tests first combined run",
+      "result": "2 ENOTEMPTY failures",
+      "reason": "two test files rebuilt the same mirror; moved headless schema comparison to genuine transport runs; no assertions removed",
+      "retry": "76/76"
+    },
+    {
+      "check": "new source overwrite case first run",
+      "result": "failed expected refusal",
+      "reason": "existing policy permits rewriting a path already owned by that session; corrected fixture to a preexisting unowned target",
+      "retry": "specific overwrite and root refusals pass"
+    },
+    {
+      "check": "new saved IFC overlap comparison first run",
+      "result": "0.00005351539079774059 mm\u00b2 exceeded accidentally applied unrounded matrix bound",
+      "reason": "new saved-file check now uses existing saved-IFC serialization bound 0.05 mm\u00b2 and 0.005 mm profile comparison; existing strict 28-case matrix remains <0.00001 mm\u00b2 overlap and <0.001 mm\u00b2 union",
+      "retry": "three independent semantic saves pass; strict existing matrix passes unchanged"
+    },
+    {
+      "check": "new native live legacy migration Undo raw-byte comparison",
+      "result": "failed twice",
+      "reason": "same STEP entities, IDs, values and multiplicity restored in different DATA row order",
+      "retry": "exact full-entity comparison after DATA-row-order normalization passes; refusal bytes remain strict/unmodified"
+    },
+    {
+      "check": "local first baseline/DF25",
+      "result": "reader import failures",
+      "reason": "host npm runner chose Python 3.9 environment without IfcOpenShell; preserved failed environment and used isolated pinned Python 3.12 reader; existing sibling venv link not changed",
+      "retry": "709 baseline checks and 32 DF25 checks pass; optional-reader/sibling/Poppler notices explicit"
+    },
+    {
+      "check": "required local F08 browser",
+      "result": "FAIL",
+      "reason": "php executable absent; required published CI unchanged"
+    },
+    {
+      "check": "local browser with PHP explicitly unavailable",
+      "result": "14 functional checks pass; strict console gate FAIL",
+      "reason": "24 locale/unit checks unavailable; Mac Chromium 151 SwiftShader ReadPixels warnings; no app exceptions; warnings not suppressed"
+    },
+    {
+      "check": "final participating-neighbor duplicate audit on interim a6a525a",
+      "result": "unique target accepted one edit despite ambiguous neighbor ID",
+      "fix": "ae9e639 checks every participating storey wall identity before reads/commit; seventh negative fixture passes through source/package/live; specific ambiguity refusal with unchanged IFC"
+    },
+    {
+      "check": "closed-owner receipt audit",
+      "result": "one confirmed mutation lost structured progress when original IFC closed",
+      "fix": "6d75937 and a1da34e preserve synchronous commit readback plus original history receipts; no post-await read through a rebound model handle; 9f9be93 also detects closure before editor pointer changes"
+    },
+    {
+      "check": "new native full-project replacement harness",
+      "result": "file-input attempt waited for existing unsaved-edit handling; later proof accidentally reread the rebound handle",
+      "fix": "existing live-open entrypoint exercises true project replacement; proof captures original API/handle at open entry, confirms closure and zero replacement history; all retries retained privately"
+    },
+    {
+      "check": "new handle-rebinding unit fixture first run",
+      "result": "fixture reader retained its closed original numeric handle",
+      "fix": "read replacement through actual editor/model handle; precommit refusal and postcommit original snapshot assertions pass"
+    },
+    {
+      "check": "interim a6a525a F03 run 40406146086",
+      "result": "cancelled at 30.3-minute job limit after small and medium; large incomplete",
+      "evidence": "artifact 12692752035 retained; no workload reduction or passing claim; corrected final evidence head reruns full workload"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "runtime": "v26.9.0",
+  "dirty": false,
+  "head": "4866e5c5c7af05c5dab7c7a7e9a0451e2cce18da",
+  "results": [
+    {
+      "name": "precision",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 7,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "materials",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 8,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "model",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 126,
+      "failed": 0,
+      "skipped": [
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   poppler not installed: PDF checks skipped (spawnSync pdfinfo ENOENT)"
+      ],
+      "error": null
+    },
+    {
+      "name": "comforts",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 104,
+      "failed": 0,
+      "skipped": [
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped"
+      ],
+      "error": null
+    },
+    {
+      "name": "views2",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 105,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "res",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 200,
+      "failed": 0,
+      "skipped": [
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   no library repo at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-07-candidate/repos/library: item checks skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "SKIP terrain live source comparison: civilcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-07-candidate/.cc-test/public_html/assets/apps/civilcraft; bundled integrity checked separately",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   poppler not installed: PDF reader checks skipped (spawnSync pdfinfo ENOENT)",
+        "  --   web-ifc not installed: oracle check skipped",
+        "SKIP electrical live source comparison: cadcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-07-candidate/.cc-test/public_html/assets/apps/cadcraft; bundled integrity checked separately",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  SKIP RC.8 cross-app reader, quantities, estimate and pack sync: TakeoffCraft directory absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-07-candidate/.cc-test/public_html/assets/apps/takeoffcraft/dev",
+        "  --   poppler: spawnSync pdfinfo ENOENT"
+      ],
+      "error": null
+    },
+    {
+      "name": "f02-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 21,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f04-graphics",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 13,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f05-sections",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 18,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f06-schedules",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 23,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f08-joins",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 17,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f08-foundation07",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 3,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "fixture",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 1,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "source-sync-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 44,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "runner-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 19,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    }
+  ],
+  "exitCode": 0
+}

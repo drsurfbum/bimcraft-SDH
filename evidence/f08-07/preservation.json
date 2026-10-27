@@ -1,0 +1,74 @@
+{
+  "checked": "2026-10-26",
+  "unchanged": true,
+  "checkouts": [
+    {
+      "checkout": "bimcraft-f08",
+      "head": "6aad54dafb65909f6f2585c36e8c419cbbaad4ae",
+      "trackedStatusUnchanged": true,
+      "untrackedFiles": [
+        {
+          "path": "app/wall-join-records 2.js",
+          "bytes": 1560,
+          "sha256": "ad0d67d55d1adad59805080389b6aae216980eaf9cb0ad6b82a9007720bb8fd9"
+        },
+        {
+          "path": "app/wall-joins 2.js",
+          "bytes": 6771,
+          "sha256": "0e44faaf401a83e1326fe19062650d0d5ecc76504509b16ffea1703e17a6d507"
+        },
+        {
+          "path": "docs/features/F08-HANDOFF 2.md",
+          "bytes": 5979,
+          "sha256": "9c8c80e72dd2f84730acd1323dce52f589bdd3753a5617e26b6592cd619d8d30"
+        },
+        {
+          "path": "docs/features/f08/DECISIONS 2.md",
+          "bytes": 4249,
+          "sha256": "ebcb15cc20b0300cbaa926be07ac63823d38474b4cc2cd5e203c935b5a6b17b3"
+        },
+        {
+          "path": "evidence/f08/audit-before 2.json",
+          "bytes": 38765,
+          "sha256": "d58db3459177c9d91b88dcc66a260f0ad5502fb62ef166c21227d654ef08cc3d"
+        },
+        {
+          "path": "evidence/f08/seed 2.ifc",
+          "bytes": 65927,
+          "sha256": "dd9f3d2c0f0d483604aabfb1000b156ac26cc4a41cb145433c628c8483f38aca"
+        },
+        {
+          "path": "fixtures/f08/straight-joins 2.ifc",
+          "bytes": 65927,
+          "sha256": "e71b36865a3c4cc5aaaab149f65b7cdb686b30fca0760e8769e462ae15eae1cd"
+        },
+        {
+          "path": "tests/features/f08/browser 2.mjs",
+          "bytes": 7119,
+          "sha256": "08860b461eefcc13c4e758e64c599b7c5cac52ad97fb97b3d1d91f4a5b213602"
+        },
+        {
+          "path": "tests/features/f08/fixture 2.mjs",
+          "bytes": 2381,
+          "sha256": "1707f670fd1930cf0c89ec9aac460d86bc549cbb0e536dabe7651f09e762c1fe"
+        },
+        {
+          "path": "tests/features/f08/independent 2.py",
+          "bytes": 1535,
+          "sha256": "0cb2333c5394c3aae2dbc38a3f9475146d41f7ae44df8d9450f23f1edd9d886a"
+        },
+        {
+          "path": "tests/features/f08/joins.test 2.mjs",
+          "bytes": 5120,
+          "sha256": "6d77922e9248d9d5cde3f94adf67b17b53b88ea843563445ebd133943ee65978"
+        }
+      ]
+    },
+    {
+      "checkout": "bimcraft-f08-upstream-candidate",
+      "head": "f929205133316b29a4551083792d5712d5ffcabd",
+      "trackedStatusUnchanged": true,
+      "untrackedFiles": []
+    }
+  ]
+}

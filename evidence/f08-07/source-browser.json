@@ -1,0 +1,91 @@
+{
+  "head": "f3126721650fd17c15c975b45bec7b17e529bd4c",
+  "base": "82da107dfd760199bc943249590812978c1a6082",
+  "featureCutoff": "f929205133316b29a4551083792d5712d5ffcabd",
+  "originalEvidenceBase": "3e42c21e33e642d1e07bea2fc3356344f91db00e",
+  "environment": {
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "platform": "linux",
+    "node": "v22.23.3"
+  },
+  "checks": [
+    "fixture opens in established default with complete core/height data",
+    "per-end controls are visible on a real selected straight wall",
+    "disallow changes the selected physical and drawing join",
+    "shared imperial finish edit preserves core line, persistent core dimension, hosted opening and identities",
+    "UI Undo Redo restores shared finish and end settings",
+    "reenabling the start restores eligible core-first cleanup",
+    "actual downloaded IFC reopens with per-end settings, neighbors, dimensions and openings",
+    "real UI exports current assembly CSV and vector plan PDF",
+    "separately opened original is unchanged in an independent browser context",
+    "es-MX: end controls use the actual language-pack catalog",
+    "es-MX/ftin: global display units preserve raw geometry and persisted end settings",
+    "es-MX/in: global display units preserve raw geometry and persisted end settings",
+    "es-MX/ftdec: global display units preserve raw geometry and persisted end settings",
+    "es-MX/mm: global display units preserve raw geometry and persisted end settings",
+    "es-MX/cm: global display units preserve raw geometry and persisted end settings",
+    "es-MX/m: global display units preserve raw geometry and persisted end settings",
+    "es-MX: translated end edit and Undo use the same raw allow/cap contract",
+    "id: end controls use the actual language-pack catalog",
+    "id/ftin: global display units preserve raw geometry and persisted end settings",
+    "id/in: global display units preserve raw geometry and persisted end settings",
+    "id/ftdec: global display units preserve raw geometry and persisted end settings",
+    "id/mm: global display units preserve raw geometry and persisted end settings",
+    "id/cm: global display units preserve raw geometry and persisted end settings",
+    "id/m: global display units preserve raw geometry and persisted end settings",
+    "id: translated end edit and Undo use the same raw allow/cap contract",
+    "en-XA: end controls use the actual language-pack catalog",
+    "en-XA/ftin: global display units preserve raw geometry and persisted end settings",
+    "en-XA/in: global display units preserve raw geometry and persisted end settings",
+    "en-XA/ftdec: global display units preserve raw geometry and persisted end settings",
+    "en-XA/mm: global display units preserve raw geometry and persisted end settings",
+    "en-XA/cm: global display units preserve raw geometry and persisted end settings",
+    "en-XA/m: global display units preserve raw geometry and persisted end settings",
+    "en-XA: translated end edit and Undo use the same raw allow/cap contract",
+    "upper-level through drawing retains authoritative F08 core/end outlines",
+    "upper-level cut does not inherit a lower opening cut outside its height",
+    "multi-level wall end changes on its own level survive three UI Undo Redo cycles",
+    "actual multi-level download reopens with offsets, joins, dimensions and opening identities",
+    "no application exceptions",
+    "no unexpected warning/error console entries"
+  ],
+  "errors": [],
+  "console": [
+    {
+      "type": "warning",
+      "text": "Failed to create WebGPU Context Provider"
+    },
+    {
+      "type": "warning",
+      "text": "Failed to create WebGPU Context Provider"
+    }
+  ],
+  "openFollowups": [
+    "PERF-F04-01",
+    "PERF-F05-01",
+    "TEST-F28-01"
+  ],
+  "browser": "141.0.7390.37",
+  "localeChecks": [
+    {
+      "locale": "es-MX",
+      "allowLabel": "Permitir unión",
+      "units": 6,
+      "rawRecordsPreserved": true
+    },
+    {
+      "locale": "id",
+      "allowLabel": "Izinkan sambungan",
+      "units": 6,
+      "rawRecordsPreserved": true
+    },
+    {
+      "locale": "en-XA",
+      "allowLabel": "[Åļļöŵ ĵöîñ ···]",
+      "units": 6,
+      "rawRecordsPreserved": true
+    }
+  ],
+  "expectedWebGPUFallbackWarnings": 2,
+  "status": "PASS"
+}
