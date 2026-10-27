@@ -1,3 +1,5 @@
+> Subsequent adoption: PR #13 is merged into main `0329eec`. Fresh local validation passes; all eleven exact-main workflow types are running or awaiting final verification. F28-C remains separate. [Integrated status](F08-INTEGRATED.md). The review/snapshots below are historical.
+
 # F08 PR #13 — PM receipt correction review, October 26, 2026
 
 **Verdict: ready for an authorized merge of the bounded F08-A slice at delivery `b3e768e9c2e45ce47e62f35f4befc687dcca2cdf`. F08-PM-02 is CLOSED. F08-PM-01 remains CLOSED.** No new merge-blocking finding was identified. PR #13 remains draft/unmerged; approved main remains `21ff2842e1925f148e9b75c404476b59333f7475`. This review does not mark the PR ready or authorize adoption.

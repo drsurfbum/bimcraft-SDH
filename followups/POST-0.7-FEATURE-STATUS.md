@@ -1,3 +1,5 @@
+> Subsequent adoption: PR #13 is merged into main `0329eec`. Fresh local validation passes; all eleven exact-main workflow types are running or awaiting final verification. F28-C remains separate. [Integrated status](F08-INTEGRATED.md). The review/snapshots below are historical.
+
 > Latest PM verification: delivery `b3e768e` closes F08-PM-02. F08-PM-01 stays CLOSED. The bounded F08-A slice is ready for an authorized merge on approved main `21ff284`; PR #13 stays draft/unmerged. All eleven exact-head workflow types pass; 81 + 39 focused tests and native interleaving checks pass. Full F08 remains partial. [Correction review](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/F08-PM02-REVIEW.md). Earlier findings below are historical.
 
 > Latest F08 PM status: delivery `7880004` closes F08-PM-01 and implements/tests all three join tools. F08-PM-02 remains OPEN for incorrect progress/Undo receipts after a person interleaves an edit or Undo. All eleven exact-head workflow types pass; PR #13 stays draft/unmerged. [Semantic re-review](F08-SEMANTIC-PM-REVIEW.md). Earlier snapshots are historical.
