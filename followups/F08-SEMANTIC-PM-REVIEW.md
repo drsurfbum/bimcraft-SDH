@@ -1,3 +1,5 @@
+> Latest PM verification: delivery `b3e768e` closes F08-PM-02. F08-PM-01 stays CLOSED. The bounded F08-A slice is ready for an authorized merge on approved main `21ff284`; PR #13 stays draft/unmerged. All eleven exact-head workflow types pass; 81 + 39 focused tests and native interleaving checks pass. Full F08 remains partial. [Correction review](https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/F08-PM02-REVIEW.md). Earlier findings below are historical.
+
 # F08 PR #13 — PM semantic re-review, October 26, 2026
 
 **Verdict: not ready for merge yet. F08-PM-01 is CLOSED at delivery `78800041c6960d4081b5bcdacae3ca6a432ff591`. The three join tools are implemented, registered and exercised through real live/source/package transports. One new P2 receipt correctness finding, F08-PM-02, remains OPEN.** PR #13 stays draft/unmerged; main remains `21ff2842e1925f148e9b75c404476b59333f7475`.
