@@ -114,17 +114,27 @@ function mount(cfg, reg) {
     return '';
   }
   const why = (c, b) => (H.why ? H.why(c, b, generic) : generic(c, b));
-  async function run(id) {
+  async function run(id, validContext = () => true) {
+    if (!validContext()) return false;
     const c = byId.get(id);
     if (!c) return false;
     closeMenus();
+    const context = H.context?.();
     const w = why(c, target(c));
     if (w) { status(T('shell.input.cant', { cmd: label(id), why: w }), true); return false; }
     if (H.prepare) {
       const p = await H.prepare(c);
       if (p) { status(T('shell.input.cant', { cmd: label(id), why: p }), true); return false; }
     }
-    target(c)?.click();
+    if (!validContext() || (H.context && H.context() !== context)) return false;
+    if (why(c, target(c))) return false;
+    const handled = H.run ? await H.run(c) : undefined;
+    if (handled === false) return false;
+    if (handled === undefined) {
+      if (!validContext() || (H.context && H.context() !== context)) return false;
+      if (why(c, target(c))) return false;
+      target(c)?.click();
+    }
     last = id;
     if (rememberSplit(id)) {   // the used tool is now the split's face
       const inBar = bar.contains(document.activeElement);
@@ -420,15 +430,23 @@ function mount(cfg, reg) {
   });
 
   // ---- keys ----
-  const inField = (n) => n?.closest?.('input, textarea, select, [contenteditable="true"], dialog, [data-help-panel], [data-app-settings]');
+  const inField = (n) => n?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="menu"], dialog, [data-help-panel], [data-app-settings]');
+  const resetSequence = () => { clearTimeout(waitTimer); if (matcher?.buf.length) status(''); matcher?.reset(); };
+  window.addEventListener('blur', resetSequence);
+  window.addEventListener('focusin', resetSequence);
+  window.addEventListener('compositionstart', resetSequence);
+  document.addEventListener('visibilitychange', resetSequence);
   window.addEventListener('keydown', (e) => {
+    if (e.repeat) return;
     if (!prof || e.defaultPrevented || e.isComposing || recording) return;
-    if (prof.id === OWN && !matcher.text.size) return;   // the app's own style, unchanged: nothing at all happens
+    if (H.inScope && !H.inScope(e.target)) { resetSequence(); return; }
+    if (prof.id === OWN && !matcher.text.size && !H.nativeKey?.(IP.eventCombo(e))) return;   // native app bindings stay with the app unless explicitly delegated
     // hooks.keysIn(node): the app's own command line takes a style's keys while it is empty (CadCraft; 0.5 IP.3)
     if (e.target === cmdInput || (inField(e.target) && !(H.keysIn && H.keysIn(e.target))) || document.querySelector('dialog[open]')) return;
     const combo = IP.eventCombo(e);
     if (!combo) return;
-    if (PASS.has(combo)) { matcher.reset(); return; }
+    if (combo === 'Escape' && matcher.buf.length) { resetSequence(); status(''); e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if (PASS.has(combo)) { resetSequence(); return; }
     // a running tool keeps its own keys (the app says which: placing, walking, typed lengths …)
     const plain = !/^(Ctrl|Alt)\+/.test(combo) && !/^F\d/.test(combo);
     if (plain && appHooks().busy && appHooks().busy()) return;
@@ -441,7 +459,8 @@ function mount(cfg, reg) {
     }
     const r = matcher.press(combo);
     clearTimeout(waitTimer);
-    if (!r || r.native) return;
+    if (!r || (r.native && !H.nativeKey?.(combo))) return;
+    if (r.native) r.run = r.native;
     e.preventDefault(); e.stopImmediatePropagation();
     if (r.wait) {
       status(T('shell.input.key.wait', { keys: IP.showSeq(r.wait) }));
@@ -777,6 +796,7 @@ function mount(cfg, reg) {
   if (toolbar) new MutationObserver((recs) => { if (prof.layout !== 'toolbar' && recs.some((r) => !bar.contains(r.target) && r.target !== bar)) render(); }).observe(toolbar, { childList: true });
   const api = {
     app: cfg.app, current: () => prof, setStyle, run, why: (id) => (byId.has(id) ? why(byId.get(id), target(byId.get(id))) : T('shell.input.why.nothere')), get state() { return S; }, styles: STYLES, commands: COMMANDS,
+    resetSequence,
     keysOf: (id) => (matcher ? matcher.keysOf(id).map(IP.showSeq) : []), paletteItems, covers, macros, setMacros,
     family: () => IP.familyOf(reg, S, S.style), useEverywhere, importText,
     // 0.6 DF.8 (app-settings.js "Reset the layout"): the style this app starts with; the person's own styles stay listed

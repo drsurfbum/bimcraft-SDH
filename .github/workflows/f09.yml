@@ -1,0 +1,76 @@
+name: F09 interaction foundation
+on:
+  pull_request:
+  push:
+    branches: [feature/f09-interaction-foundation]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: f09-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: devshell/vendor
+          key: vendor-${{ hashFiles('devshell/vendor.json') }}
+      - run: npm run fetch-vendor
+      - name: Browser and independent reader
+        id: dependencies
+        run: |
+          npm install --prefix .cc-test/f09-deps --no-package-lock playwright@1.56.1
+          .cc-test/f09-deps/node_modules/.bin/playwright install --with-deps chromium
+          python -m venv .cc-test/f09-reader
+          .cc-test/f09-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
+          .cc-test/f09-reader/bin/python -m pip install -r tests/features/f04/requirements-independent.txt
+      - name: F09 and inherited precision/model regressions
+        run: |
+          node --test tests/features/f09/*.test.mjs
+          node --test tests/features/f28/*.test.mjs tests/unit/*.test.mjs tests/features/f08/*.test.mjs
+          .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
+      - name: Actual source and isolated packaged MCP
+        run: |
+          node tests/features/f09/semantic.mjs
+          node .cc-test/bin/test-bimcraft.mjs --input
+          node tests/features/f09/package.mjs
+      - name: Both layouts and real live HTTP
+        id: browser
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: node tests/features/f09/browser.mjs
+      - name: Independently inspect actual UI and all MCP saved outputs
+        if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
+        env:
+          F09_REQUIRE_UI_OUTPUT: '1'
+        run: |
+          node tests/features/f09/outputs.mjs
+          .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
+      - name: Candidate discovery on unchanged F03 fixture sizes
+        run: node tests/features/f09/measure.mjs
+      - name: Retain summary evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f09-evidence
+          path: |
+            .cc-test/f09-browser/report.json
+            .cc-test/f09-browser/*.png
+            .cc-test/f09-source/report.json
+            .cc-test/f09-source/catalog.json
+            .cc-test/f09-package/consumer/report.json
+            .cc-test/f09/independent.json
+            .cc-test/f09/performance.json
+          retention-days: 90

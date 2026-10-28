@@ -124,7 +124,13 @@ export class PlanView {
       const r = c.getBoundingClientRect();
       this.zoomAt(e.clientX - r.left, e.clientY - r.top, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0015) * (e.ctrlKey ? 1 : wheelFactor())));
     }, { passive: false });
-    c.addEventListener('contextmenu', (e) => { e.preventDefault(); if (!this._panned) this.h.contextmenu?.(this.toPlan(e.clientX, e.clientY), e); });
+    const context = e => this.h.contextmenu?.(this.toPlan(e.clientX, e.clientY), e);
+    c.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      // Some platforms dispatch on button-down, before a possible pan drag. Wait for release there.
+      if (this._press?.button === 2) { this._context = e; return; }
+      if (!this._panned) context(e);
+    });
     c.addEventListener('pointerdown', (e) => {
       c.setPointerCapture?.(e.pointerId);
       this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -134,7 +140,7 @@ export class PlanView {
       // which buttons pan: the input profile's (input-mouse.js; middle and right unless changed); Space or Drag pan: left too
       const pan = (e.button !== 0 && panButton(e.button)) || (e.button === 0 && !claimed && (this.space || this.dragPan || panButton(0)));
       this._press = { x: e.clientX, y: e.clientY, button: e.button, pan, panning: false, cx: this.cx, cy: this.cy, touch: e.pointerType === 'touch', claimed };
-      this._panned = false;
+      this._panned = false; this._context = null;
     });
     c.addEventListener('pointermove', (e) => {
       if (this._pointers.has(e.pointerId)) this._pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -156,7 +162,9 @@ export class PlanView {
       if (this._pinch) { if (this._pointers.size < 2) this._pinch = null; this._press = null; return; }
       const p = this._press;
       this._press = null;
+      const pending = this._context; this._context = null;
       if (!p || p.panning) return;
+      if (pending && e.type === 'pointerup') context(pending);
       const moved = Math.hypot(e.clientX - p.x, e.clientY - p.y);
       if (p.claimed) this.h.up?.(this.toPlan(e.clientX, e.clientY), e, { moved, cancel: e.type !== 'pointerup' });
       if (e.type === 'pointerup' && p.button === 0 && Math.hypot(e.clientX - p.x, e.clientY - p.y) <= (p.touch ? 10 : 4)) this.h.click?.(this.toPlan(e.clientX, e.clientY), e);
@@ -165,7 +173,8 @@ export class PlanView {
     c.addEventListener('pointercancel', up);
     c.addEventListener('dblclick', (e) => this.h.dblclick?.(this.toPlan(e.clientX, e.clientY), e));
     c.addEventListener('pointerleave', () => this.h.leave?.());
-    window.addEventListener('keydown', (e) => { if (e.code === 'Space' && !e.target.closest?.('input, textarea, select, button')) { this.space = true; } });   // i18n-ignore: CSS selectors
+    window.addEventListener('keydown', (e) => { if (!e.defaultPrevented && !e.isComposing && e.code === 'Space' && !e.target.closest?.('input, textarea, select, button, dialog, [contenteditable]:not([contenteditable="false"])')) { this.space = true; } });   // i18n-ignore: CSS selectors
+    window.addEventListener('blur', () => { this.space = false; this._press = null; this._context = null; this._pointers.clear(); this._pinch = null; });
     window.addEventListener('keyup', (e) => { if (e.code === 'Space') this.space = false; });
   }
   pinchState() {

@@ -39,6 +39,17 @@ export const COMMANDS = [
   C('edit.delete', 'edit', 'bi-trash', '[data-edit-menu] [data-act="delete"]', { defKeys: ['Delete'], fixed: true }),
   C('edit.select-all', 'edit', 'bi-check2-all', '[data-edit-menu] [data-act="select-all"]', { defKeys: ['Ctrl+A'] }),
   C('edit.select-none', 'edit', 'bi-x-square', '[data-edit-menu] [data-act="select-none"]', { defKeys: ['Escape'], fixed: true }),
+  // F09: distinct meanings; clipboard Copy and automatic-dimension visibility retain their stable IDs.
+  C('model.dimension', 'model', 'bi-rulers', '[data-mtool="wallDimension"]', { draw: true, keyOnly: true, mount: 'wall-dimensions-ui.js' }),
+  C('model.detail-line', 'model', 'bi-pencil', '[data-mtool="dline"]', { draw: true, keyOnly: true }),
+  C('model.move', 'model', 'bi-arrows-move', '', { keyOnly: true }),
+  C('model.copy', 'model', 'bi-files', '', { keyOnly: true }),
+  C('model.rotate', 'model', 'bi-arrow-clockwise', '', { keyOnly: true }),
+  C('model.align', 'model', 'bi-align-start', '', { keyOnly: true }),
+  C('model.trim', 'model', 'bi-scissors', '[data-mtool="trim"]', { draw: true, keyOnly: true }),
+  C('app.properties', 'app', 'bi-card-list', '[data-f09-properties]', { keyOnly: true, mount: 'interaction-ui.js' }),
+  C('app.shortcuts', 'app', 'bi-keyboard', '[data-f09-shortcuts]', { keyOnly: true, mount: 'interaction-ui.js' }),
+  C('view.graphics', 'view', 'bi-eye', '', { keyOnly: true }),
   C('model.draw', 'model', 'bi-bricks', '[data-model-toggle]'),
   C('model.select', 'model', 'bi-cursor', '[data-mtool="select"]', { draw: true, defKeys: ['V'] }),
   C('model.wall', 'model', 'bi-bricks', '[data-mtool="wall"]', { draw: true, defKeys: ['W'] }),
@@ -98,7 +109,7 @@ export const COMMANDS = [
   C('library.credits', 'library', 'bi-c-circle', '[data-lib-tool="credits"]'),
   C('tools.handoff', 'tools', 'bi-box-arrow-up-right', '[data-handoff-ifc]', { optional: true }),
   C('app.settings', 'app', 'bi-gear', '[data-settings-open]', { defKeys: ['Ctrl+,'], keyOnly: true }),
-  C('app.palette', 'app', 'bi-search', '[data-palette-open]', { defKeys: ['Ctrl+K'], keyOnly: true }),
+  C('app.palette', 'app', 'bi-search', '[data-palette-open]', { defKeys: ['Ctrl+K'], keyOnly: true, mount: 'interaction-ui.js' }),
   C('app.help', 'app', 'bi-question-circle', '[data-help-open]', { defKeys: ['F1'], keyOnly: true }),
 ];
 export const GROUPS = ['file', 'edit', 'model', 'view', 'show', 'tools', 'library', 'app'];
@@ -152,7 +163,9 @@ export const STYLES = {
     keys: {
       ...CTRL_KEYS,
       'model.select': ['M D'], 'model.wall': ['W A'], 'model.door': ['D R'], 'model.window': ['W N'], 'model.floor': ['F L'],
-      'model.ceiling': ['C L'], 'model.roof': ['R F'], 'view.dims': ['D I'], 'tools.measure': ['M E'], 'view.section': ['S C'],
+      'model.ceiling': ['C L'], 'model.roof': ['R F'], 'model.dimension': ['D I'], 'model.detail-line': ['D L'],
+      'model.move': ['M V'], 'model.copy': ['C O', 'C C'], 'model.rotate': ['R O'], 'model.align': ['A L'], 'model.trim': ['T R'],
+      'app.properties': ['P P'], 'app.shortcuts': ['K S'], 'view.graphics': ['V G', 'V V'], 'tools.measure': ['M E'], 'view.section': ['S C'],
       'view.secbox': ['B X'], 'vis.hide': ['H H'], 'vis.isolate': ['H I'], 'vis.ghost': ['H G'], 'vis.all': ['H R'],
       'view.fit': ['Z F'], 'view.3d': ['3 D'], 'view.plan': ['P L'], 'view.walk': ['W K'],
     },
@@ -223,15 +236,30 @@ export function hooks({ root, t }) {
   const toggle = () => root.querySelector('[data-model-toggle]');
   const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
   return {
+    nativeKey: combo => combo === 'Ctrl+K',
+    context: () => window.bimcraftLive?.editor,
+    inScope: node => node === document.body || root.contains(node) || !!node?.closest?.('[data-input-bar], [data-ws-options]'),
     toolbar: () => root.querySelector('[data-toolbar]'),
     why(c, b, generic) {
+      const mapped = window.ccInputHooks?.command?.(c.id);
+      if (mapped) return mapped.reason || '';
+      if (c.id === 'app.properties' && (!root.querySelector('[data-mp-height]') || window.bimcraftWorkspace?.snapshot().selection.length !== 1)) return t('f09.onewall');
+      if (['model.move', 'model.copy', 'model.rotate', 'model.align', 'view.graphics'].includes(c.id)) return t('f09.unavailable.' + c.id.split('.').at(-1));
+      if (root.classList.contains('ws-active') && ['model.dimension', 'model.detail-line'].includes(c.id)) return t('f09.documentation');
       if (!b || b.disabled || b.getAttribute('aria-disabled') === 'true') return generic(c, b);
       const hid = b.closest('[hidden]');
       if (hid && !(c.draw && hid.matches('[data-plan-wrap], [data-plan-wrap] *'))) return hid.matches('[data-toolbar]') ? t('input.why.model') : t('shell.input.why.off');
       if (c.draw && !drawOn() && (!toggle() || toggle().closest('[hidden]'))) return t('input.why.model');
       return '';
     },
+    run(c) {
+      const mapped = window.ccInputHooks?.command?.(c.id);
+      if (!mapped) return undefined;
+      if (mapped.reason) return false;
+      return mapped.run();
+    },
     async prepare(c) {
+      if (root.classList.contains('ws-active') && window.ccInputHooks?.command?.(c.id)) return '';
       if (!c.draw || drawOn()) return '';
       toggle()?.click();
       await frame();
@@ -242,7 +270,7 @@ export function hooks({ root, t }) {
       const st = window.bimcraftPlan?.state, tool = st?.on ? st.tool : 'select';
       // 2026-10-24: Esc ends a running Draw tool (or its chain) — the engine's fixed Esc (Select none) took it first, in every layout
       if (combo === 'Escape' && st?.on && (tool !== 'select' || st.chain)) return true;
-      return plain && tool !== 'select' && (/^[0-9]$/.test(combo) || ((tool === 'door' || tool === 'window') && combo === 'H'));
+      return plain && tool !== 'select' && (/^[0-9@'"<.,\-\/]$/.test(combo) || ((tool === 'door' || tool === 'window') && combo === 'H'));
     },
     mouse: (m) => setMouse(m),
   };

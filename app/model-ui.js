@@ -45,6 +45,8 @@ import { ModelWriter } from './model-write.js';
 import { openingFamilies, readFamilies, setFamilySize, familyWriter } from './family-ops.js';   // 0.6 DC.114: families and their sizes
 import { familyFor, sizeValues, sizeKey } from './family-model.js';
 import { placementReference, placementPath } from './wall-placement.js';
+import { mountInteractions } from './interaction-ui.js';
+import { captureInteraction, sameInteraction } from './interaction-context.js';
 
 const CUT = 1200;   // mm above the level: where the plan cuts (4'-0")
 const RCP_CUT = 2300;   // 0.6 DC.117: where a ceiling plan cuts and looks up from (about 7'-6")
@@ -79,7 +81,7 @@ export function mountModel(host) {
     loops: null, dims: true, sched: 'doors',
   };
   S.callout = null;   // 0.6 DC.117 (c): the callout shown (its id; views-ui.js) — it draws S.level's S.kind cropped — else null
-  let pv = null;
+  let pv = null, interactions = null;
   // tools other modules add (0.5 part 4, bim-residential: res-ui.js) — see extend() at the end
   const exts = [];
   const extTool = (name) => exts.find((x) => x.tools?.includes(name)) || null;
@@ -99,7 +101,7 @@ export function mountModel(host) {
     applyLayout();
     if (!S.on) { endChain(); setTool('select'); return; }
     if (!pv) {
-      pv = new PlanView(ui.canvas, { move: onMove, click: onClick, dblclick: onDbl, down: onDown, up: onUp, leave: () => { S.last = null; S.hover = null; host.coords?.()?.plan(null, level(), S.planM); drawOverlay(); }, contextmenu: () => endChain() });
+      pv = new PlanView(ui.canvas, { move: onMove, click: onClick, dblclick: onDbl, down: onDown, up: onUp, leave: () => { S.last = null; S.hover = null; host.coords?.()?.plan(null, level(), S.planM); drawOverlay(); }, contextmenu: (p, e) => interactions?.open(p, e) });
       pv.padBottom = 40;   // the status line
       // the Draw bar changes height with the tool; content it now covers is brought back into view (only a plan you have not moved)
       pv.barBoxFn = () => { const c = ui.canvas.getBoundingClientRect(), b = ui.bar.getBoundingClientRect(); return b.width > 0 ? { w: b.right - c.left + 12, h: b.bottom - c.top + 12 } : null; };
@@ -172,6 +174,7 @@ export function mountModel(host) {
 
   // ---- data ----
   function refresh(fitToo = false) {
+    interactions?.sync();
     if (!S.on || !ed()) return;
     S.data = snapshotModel(ed());
     const levels = S.data.levels;
@@ -526,6 +529,7 @@ export function mountModel(host) {
 
   // ---- tools ----
   function setTool(name) {
+    interactions?.reset();
     S.tool = name;
     for (const b of ui.tools) b.setAttribute('aria-pressed', b.dataset.mtool === name ? 'true' : 'false');
     if (ui.wallOpts) ui.wallOpts.hidden = name !== 'wall';
@@ -799,7 +803,7 @@ export function mountModel(host) {
     if (gw) {
       const tol = pv.pxToMm(9);
       const g = gripsOf(gw).find((x) => Math.hypot(p[0] - x.p[0], p[1] - x.p[1]) <= tol);
-      if (g) { S.drag = { kind: 'grip', wall: gw, end: g.end, from: p, key: kb() + gw.id }; return true; }
+      if (g) { S.drag = { kind: 'grip', wall: gw, end: g.end, from: p, key: kb() + gw.id }; S.drag.context = captureInteraction(api); return true; }
     }
     const k = pv.hit(e.clientX, e.clientY);
     const o = k !== null ? (S.data?.openings || []).find((x) => kb() + x.id === k) : null;
@@ -810,6 +814,16 @@ export function mountModel(host) {
   /** Where a wall grip dragged to `p` puts the wall: { a, b } (snapped; a middle grip moves the whole wall). */
   function gripMove(d, p, e) {
     const w = d.wall;
+    const target = !w.bulge && interactions?.snap(p, wallsHere().filter(x => x.guid !== w.guid));
+    if (target) {
+      if (d.end === 'mid') {
+        // Anchor translation to the exact grip, not the press's sub-pixel acquisition offset.
+        const mid = [(w.a[0] + w.b[0]) / 2, (w.a[1] + w.b[1]) / 2];
+        const dx = target.p[0] - mid[0], dy = target.p[1] - mid[1];
+        return { a: [w.a[0] + dx, w.a[1] + dy], b: [w.b[0] + dx, w.b[1] + dy], snap: target };
+      }
+      return d.end === 'a' ? { a: target.p, b: w.b, snap: target } : { a: w.a, b: target.p, snap: target };
+    }
     const others = snapWalls(wallsHere().filter((x) => x.guid !== w.guid), []);
     if (d.end === 'bend') {
       const s0 = snapPoint(p, others, { tol: pv.pxToMm(SNAP_PX) });
@@ -827,12 +841,13 @@ export function mountModel(host) {
   }
   function onUp(p, e, { moved, cancel }) {
     const d = S.drag;
+    if (d?.context && !sameInteraction(api, d.context)) { S.drag = null; interactions?.reset(); host.status(t('f09.stale'), true); drawOverlay(); return; }
     S.drag = null;
     if (!d) return;
     if (d.kind === 'ext') { d.x.up?.(p, e, { moved, cancel }); drawOverlay(); return; }
     if (d.kind === 'grip') {
       const m = d.at;
-      if (cancel || moved <= 4 || !m) { drawOverlay(); return; }
+      if (cancel || moved <= 4 || !m || m.snap?.ambiguous) { drawOverlay(); return; }
       if (Math.hypot(m.b[0] - m.a[0], m.b[1] - m.a[1]) < 10) { host.status(t('model.err.short'), true); drawOverlay(); return; }
       if (d.end === 'bend') { commit(changeWall(d.wall.guid, { bulge: m.bulge }), { label: t('model.wall'), verb: t('model.verb.changed'), select: [d.key] }); return; }
       commit(changeWall(d.wall.guid, d.end === 'a' ? { a: m.a } : d.end === 'b' ? { b: m.b } : { a: m.a, b: m.b }), { label: t('model.wall'), verb: t('model.verb.moved'), select: [d.key] });
@@ -862,6 +877,10 @@ export function mountModel(host) {
   }
   S.queuedSegs = () => S.queue.flatMap(([, meta]) => meta.preview || []);
   function snapAt(p, e) {
+    if (S.tool === 'wall' && S.wall.shape === 'straight') {
+      const target = interactions?.snap(p, wallsHere());
+      if (target) return target;
+    }
     const from = S.chain?.points[S.chain.points.length - 1] || null;
     return snapPoint(p, snapCtx(), { tol: pv.pxToMm(SNAP_PX), from, ortho: !!e?.shiftKey, step: 15, round: from ? round() : 0, align: S.tool === 'wall' });
   }
@@ -880,7 +899,7 @@ export function mountModel(host) {
     if (extTool(S.tool)) { extTool(S.tool).move?.(p, e); drawOverlay(); return; }
     if (S.tool === 'door' || S.tool === 'window') { S.last = { raw: p }; S.hover = hoverOpening(p, S.tool, S.open[S.tool].width); drawOverlay(); return; }
     if (S.tool === 'floor' || S.tool === 'ceiling' || S.tool === 'roof') { S.hover = hoverSlab(p, S.tool); drawOverlay(); return; }
-    if (S.tool === 'select') { const k = pv.hit(e.clientX ?? 0, e.clientY ?? 0); if (k !== pv.hover) { pv.hover = k; pv.render(); } return; }
+    if (S.tool === 'select') { const targeting = interactions?.active(); if (targeting) { const excluded = new Set(pickedWalls()); interactions.snap(p, wallsHere().filter(w => !excluded.has(w.guid))); } const k = pv.hit(e.clientX ?? 0, e.clientY ?? 0); if (k !== pv.hover) { pv.hover = k; pv.render(); } if (targeting) drawOverlay(); return; }
     S.last = { raw: p, snap: snapAt(p, e), shift: !!e?.shiftKey };
     drawOverlay();
   }
@@ -909,6 +928,7 @@ export function mountModel(host) {
       return;
     }
     const s = snapAt(p, e);
+    if (s.ambiguous) { host.status(t('f09.choosecandidate'), true); return; }
     if (S.tool === 'wall') wallPoint(s.p);
   }
   function onDbl(p, e) { if (S.tool === 'wall') endChain(); else extTool(S.tool)?.dbl?.(p, e); }
@@ -1097,6 +1117,7 @@ export function mountModel(host) {
     }
     for (const x of exts) x.overlay?.(o);
     if (S.hiEdge) o.lines.push(S.hiEdge);   // a roof's wall row hovered in Properties (RC.1)
+    interactions?.overlay(o);
     pv.setOverlay(o);
   }
   /** The preview wall joined to the walls already there (so a corner looks as it will). */
@@ -1164,14 +1185,15 @@ export function mountModel(host) {
 
   // ---- keys (capture: the plan's own keys win while Draw is on) ----
   document.addEventListener('keydown', (e) => {
-    if (!S.on || root.classList.contains('ws-active') || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (!S.on || root.classList.contains('ws-active') || e.defaultPrevented || e.isComposing || e.repeat || e.altKey || e.ctrlKey || e.metaKey) return;
     const tgt = e.target;
     if (tgt.closest?.('dialog, [data-help-panel], [data-app-settings]') || document.querySelector('dialog[open]')) return;   // i18n-ignore: CSS selectors
     if (tgt === ui.typed) return;
-    const inField = tgt.closest?.('input, textarea, select, [contenteditable="true"]');
+    const inField = tgt.closest?.('input, textarea, select, [role="menu"], [contenteditable]:not([contenteditable="false"])');
     if (inField) return;
     const k = e.key;
     if (k === 'Escape') {
+      if (S.drag) { e.preventDefault(); e.stopImmediatePropagation(); api.cancelInteraction(); return; }
       if (exts.some((x) => x.escape?.())) { e.preventDefault(); e.stopImmediatePropagation(); drawOverlay(); return; }
       if (S.chain) { e.preventDefault(); e.stopImmediatePropagation(); endChain(); host.status(t('model.chain.ended')); return; }
       if (S.tool !== 'select') { e.preventDefault(); e.stopImmediatePropagation(); setTool('select'); return; }
@@ -1499,6 +1521,9 @@ export function mountModel(host) {
   /** What an extension (extend()) may use. */
   const api = {
     S, root, host, t, ed, kb, commit, refresh, buildScene, drawOverlay, setTool, level, levelAbove, wallsHere, wallsOn, snapAt,
+    previewInteraction(p) { onMove(p, {}); },
+    placeInteractionPalette(host, workspace = false) { interactions?.placePalette(host, workspace); },
+    cancelInteraction() { S.drag = null; S.hover = null; S.last = null; setTool('select'); drawOverlay(); },
     workspaceWallControls: () => ({ row: ui.wallOpts, type: ui.wallType, reference: ui.wallRef, side: ui.wallSide, shape: ui.wallShape, top: ui.wallTop, height: ui.wallH, typedRow: ui.typedRow, typed: ui.typed, units: ui.units }),
     workspaceCancel(finishOnly = false) { if (S.chain) { endChain(); host.status(t('model.chain.ended')); } else if (!finishOnly) setTool('select'); for (const x of exts) x.toolChanged?.(S.tool); },
     workspaceTyped(key) { ui.typed.focus(); ui.typed.value += key; },
@@ -1524,7 +1549,7 @@ export function mountModel(host) {
     },
     /** Snap as the Wall tool does, from a point of the extension's own (0.6: outlines drawn by hand): angles, Shift, lengths. */
     snapFrom: (p, e, from) => snapPoint(p, snapCtx(), { tol: pv.pxToMm(SNAP_PX), from, ortho: !!e?.shiftKey, step: 15, round: from ? round() : 0 }),
-    pv: () => pv, units: () => S.units, round, selectedKeys, renderProps: () => renderProps(), loopsOf: (st) => loopsOf(ed(), st), fitPlan, mergeJournals,
+    pv: () => pv, units: () => S.units, round, selectedKeys, wallsPicked: pickedWalls, renderProps: () => renderProps(), loopsOf: (st) => loopsOf(ed(), st), fitPlan, mergeJournals,
     /** The plan scene of any level (the sheets' plans), the level shown left as it was. */
     sceneFor(levelId, kind = 'plan', callout = null) {
       const keep = { level: S.level, kind: S.kind, callout: S.callout, loops: S.loops, outlines: S.outlines, cut: S.cut, cutFor: S.cutFor };
@@ -1542,11 +1567,16 @@ export function mountModel(host) {
     ask(method, ...args) { for (const x of exts) if (typeof x[method] === 'function') return x[method](...args); return undefined; },
     viewRange, rangeChanged() { S.cutFor = null; if (S.on && S.data) { cutPlan(); buildScene(); } },
   };
+  interactions = mountInteractions(api);
   return {
     decorate,
+    // Command presentation queries the same extension dispatcher as native tool UI.
+    ask: (method, ...args) => api.ask(method, ...args),
     // another file: its 3D view first (Draw off); New building turns Draw on again right after
-    opened() { S.cutFor = null; S.level = null; S.autoFit3d = false; endChain(); S.queue = []; S.empty3d = !(host.viewer()?.allKeys?.().size); if (S.on) show(false); },
-    stage(which) { if (which !== 'ifc' && S.on) show(false); },
+    opened() {
+      S.drag = null; interactions?.reset(); S.cutFor = null; S.level = null; S.autoFit3d = false; endChain(); S.queue = []; S.empty3d = !(host.viewer()?.allKeys?.().size); if (S.on) show(false); },
+    stage(which) {
+      interactions?.reset(); if (which !== 'ifc' && S.on) show(false); },
     rebuilding() { S.reloading = true; S.reloadT = Date.now(); },
     rebuilt() {
       S.reloading = false; S.cutFor = null;

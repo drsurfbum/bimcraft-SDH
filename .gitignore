@@ -12,3 +12,6 @@ dist/
 /evidence/f08/*.ifc
 /evidence/f08/audit-*.json
 /evidence/f08/matrix.json
+
+# Private preservation inventory; public handoff contains a summary only.
+/evidence/f09/preservation-start.json

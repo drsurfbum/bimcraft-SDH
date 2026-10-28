@@ -236,6 +236,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     },
     entered(c) {
       ctx = c;
+      A.placeInteractionPalette(document.querySelector('.ws-titlebar'), true);
       launch.hidden = true;
       if (c.has('palettes')) {
         elementProps.append(props);
@@ -247,6 +248,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
       if (c.has('toolbox') && current().editor) needDraw();
     },
     leaving(c) {
+      A.placeInteractionPalette(null);
       if (c.has('palettes')) {
         browserForClassic = browserEl();
         walls.setActive(false); rememberCamera(); propsHome.after(props); restoreBrowser();
@@ -365,6 +367,12 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
 
   const api = {
     get active() { return docked(); },
+    inputCommand(id) {
+      const key = { 'model.door': 'door', 'model.window': 'window', 'model.trim': 'trim' }[id];
+      if (!key) return null;
+      const can = adapter.can(key);
+      return { reason: can.reason, run: () => { const now = adapter.can(key); return now.enabled ? adapter.run(key) : false; } };
+    },
     attach(e) { engine = e; },
     refresh: soon, stageChanged: soon, opened: () => { if (engine?.has('palettes')) opened(); else soon(); }, state: snapshot,
     propertiesChanged: soon,
