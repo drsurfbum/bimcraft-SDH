@@ -1,3 +1,5 @@
+> **Superseded for current readiness:** PM re-review at delivery `731fa6604418b20eaea7253a8e331ba5b4049450` verifies these gates and finds the bounded F09-A slice ready to merge. PR #18 remains draft/unmerged. See [current PM review](F09-PM-REVIEW.md). This earlier failure/recovery record is retained.
+
 # F09-A PR #18 — PM readiness triage, October 28, 2026
 
 **Disposition: not ready for acceptance, demo sign-off or merge. Keep PR #18 draft.** This is an evidence/readiness triage, not a completed independent functional/code acceptance review. Main remains `60dbd3abff0d1d98ce1a85375de7b6087709c8ee`; F28-C #12 remains draft and separate.
