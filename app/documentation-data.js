@@ -105,7 +105,7 @@ export function documentationSources(ed) {
   for(const c of callouts){const root=calloutRoot(callouts,c.id,new Set(levels.map(l=>l.guid)));sources.push({id:'callout:'+c.id,kind:'callout',ref:c.id,name:c.name,level:root?.level||null,rootKind:root?.kind||null,missing:!root});}
   for(const s of readSectionLines(w))sources.push({id:'section:'+s.guid,kind:'section',ref:s.guid,name:s.name,level:s.level});
   for(const side of ['north','east','south','west'])sources.push({id:'elevation:'+side,kind:'elevation',ref:side,name:side});
-  for(const [key,table] of Object.entries(tables))sources.push({id:'schedule:'+key,kind:'schedule',ref:key,name:table.title||key,derived:true,configuration:'existing fixed domain columns; nominal mm'});
+  for(const [key,table] of Object.entries(tables))sources.push({id:'schedule:'+key,kind:'schedule',ref:key,name:table.title||key,derived:true,placeable:!['assemblies','materialLegend'].includes(key),configuration:'existing fixed domain columns; nominal mm'});
   for(const page of tablePages(tables))if(!sources.some(s=>s.id==='schedule:'+page.ref))sources.push({id:'schedule:'+page.ref,kind:'schedule',ref:page.ref,name:page.title,continuation:true,derived:true});
   for(const s of readSheets(w))sources.push({id:'sheet:'+s.id,kind:'sheet',ref:s.id,name:[s.number,s.title].filter(Boolean).join(' '),paper:s.paper});
   return sources;

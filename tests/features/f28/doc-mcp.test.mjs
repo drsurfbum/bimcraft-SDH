@@ -93,3 +93,10 @@ test('authored page overflow refuses before output rather than silently changing
  for(const units of ['mm','cm','m','in','ftdec','ftin']){const r=await call(d,m,'documentation_export',{source:info.plan,format:'pdf',units});assert.equal(r.exported,true);assert.deepEqual(fingerprint(m),before);}
  assert.equal(writes,6);
 });
+
+
+test('complete table discovery distinguishes multi-page export from explicit placement pages; ambiguous new placements refuse atomically',async()=>{
+ const m=await open(),d=dispatcher(m),before=fingerprint(m),sources=await call(d,m,'documentation_sources');
+ assert.equal(sources.sources.find(s=>s.id==='schedule:assemblies').placeable,false);assert.equal(sources.sources.find(s=>s.id==='schedule:materialLegend').placeable,false);assert.equal(sources.sources.find(s=>s.id==='schedule:f06-assemblies:2').continuation,true);
+ const r=await d.call('documentation_sheet_save',{...binding(m),patch:{number:'BAD',views:[{kind:'schedule',ref:'assemblies',x:210,y:160,ratio:0}]}});assert.equal(r.isError,true);assert.match(JSON.stringify(r),/PLACEMENT_PAGE_REQUIRED/);assert.deepEqual(fingerprint(m),before);
+});

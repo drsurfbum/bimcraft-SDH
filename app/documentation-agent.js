@@ -55,7 +55,7 @@ export function documentationTools(env){
  };
  const sheetRead=(ed,id)=>{
   const sheets=readSheets(docWriter(ed));if(!id)return{sheets};const sheet=sheets.find(s=>s.id===id);if(!sheet)docFail('SHEET_MISSING','No sheet with this ID.');
-  return{sheet,placements:sheet.views.map((v,index)=>{const sourceId=v.kind+':'+v.ref;let missing=false;try{documentationSource(ed,sourceId);}catch{missing=true;}return{...v,index,sourceId,missing,indexRevisionScoped:true};})};
+  return{sheet,placements:sheet.views.map((v,index)=>{const sourceId=v.kind+':'+v.ref;let missing=false;try{const source=documentationSource(ed,sourceId);if(source.placeable===false)missing=true;}catch{missing=true;}return{...v,index,sourceId,missing,indexRevisionScoped:true};})};
  };
  return[
   read('documentation_sources','Discover document-owned stable source IDs, diagnostics, continuation IDs and ordinary history ownership labels. Duplicate labels never select a source. UI activation is explicitly live-only.',{},[],ed=>({sources:documentationSources(ed),diagnostics:documentationIssues(docWriter(ed)),history:{changes:ed.changes.map(c=>({kind:c.kind,label:c.label,owner:String(c.label||c.kind).startsWith('Assistant: ')?'assistant':'person'})),undone:ed.undone.map(c=>({kind:c.kind,label:c.label,owner:String(c.label||c.kind).startsWith('Assistant: ')?'assistant':'person'}))},activation:{available:!!env.activateDocumentation,headlessCode:'LIVE_ONLY'},scope:'existing C documentation; no full-application parity claim'})),
@@ -116,7 +116,7 @@ export function documentationTools(env){
   read('documentation_sheets_get','Read persisted sheet IDs and placements; placement indices are explicitly revision-scoped, not invented persistent IDs. Missing source references remain visible.',{sheet:{type:'string',pattern:'^sheet-[0-9]+$'}},[],(ed,a)=>sheetRead(ed,a.sheet)),
   edit('documentation_sheet_save','Create/edit a native sheet. Explicit views replaces placements, allowing source/continuation addition, scale/move/removal. Existing dangling refs may be retained and diagnosed, never silently rebound.',{sheet:{type:'string',pattern:'^sheet-[0-9]+$'},patch:nonempty({number:{type:'string',maxLength:20},title:{type:'string',maxLength:120},paper:{type:'string',enum:Object.keys(PAPERS)},views:{type:'array',items:placement,maxItems:500}})},['patch'],(ed,a)=>{
    const old=a.sheet?sheetRead(ed,a.sheet).sheet:null,next={...(old||{number:'',title:'',paper:'a3',views:[]}),...a.patch,...(a.sheet?{id:a.sheet}:{})};
-   for(const v of next.views){try{documentationSource(ed,v.kind+':'+v.ref);}catch(e){if(!old?.views.some(p=>p.kind===v.kind&&p.ref===v.ref))throw e;}}
+   for(const v of next.views){try{const source=documentationSource(ed,v.kind+':'+v.ref);if(source.placeable===false)docFail('PLACEMENT_PAGE_REQUIRED','A complete table exports multiple pages. Place an explicit page ID returned by documentation_table_prepare.');}catch(e){if(!old?.views.some(p=>p.kind===v.kind&&p.ref===v.ref))throw e;}}
    return[task(a.sheet||'new-sheet',saveSheet(next),(e,r)=>sheetRead(e,r?.sheet||a.sheet),!!old&&patchSame(old,a.patch))];
   }),
   edit('documentation_sheet_remove','Delete one native sheet; source records remain owned by their document.',{sheet:{type:'string',pattern:'^sheet-[0-9]+$'}},['sheet'],(ed,a)=>{sheetRead(ed,a.sheet);return[task(a.sheet,deleteSheet(a.sheet),e=>sheetRead(e))];}),
