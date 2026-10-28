@@ -50,7 +50,7 @@ test('targeted wall translation preserves host, orientation, anchors, IDs and re
   const actual=readWalls(reopened.w()).find(w=>w.guid===wall.guid);actual.a.forEach((x,i)=>near(x,move.a[i]));
   for(const d of readWallDimensions(reopened.w()))assert.equal(resolveDimension(d,readWalls(reopened.w())).status,'ok');
   fs.mkdirSync('.cc-test/f09',{recursive:true});fs.writeFileSync('.cc-test/f09/targeted.ifc',bytes);
-  fs.writeFileSync('.cc-test/f09/expected-private.json',JSON.stringify({wall:wall.guid,a:move.a,b:move.b,openings:openings.map(o=>o.guid),dimensions:readWallDimensions(reopened.w()).map(d=>({guid:d.guid,...resolveDimension(d,readWalls(reopened.w()))}))}));
+  fs.writeFileSync('.cc-test/f09/expected-private.json',JSON.stringify({wall:wall.guid,a:move.a,b:move.b,openings:openings.map(o=>o.guid),hosts:readOpenings(reopened.w()).map(o=>({guid:o.guid,wallGuid:o.wallGuid})),dimensions:readWallDimensions(reopened.w()).map(d=>({guid:d.guid,...resolveDimension(d,readWalls(reopened.w()))}))}));
 });
 test('new semantic resolver requires revision/document binding, is read-only, and refuses stale/foreign/curved targets', async () => {
   const m=await model(),state=documentState(m.ed),wall=readWalls(m.w())[0],before=m.ed.changes.length;

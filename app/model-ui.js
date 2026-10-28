@@ -1569,6 +1569,8 @@ export function mountModel(host) {
   interactions = mountInteractions(api);
   return {
     decorate,
+    // Command presentation queries the same extension dispatcher as native tool UI.
+    ask: (method, ...args) => api.ask(method, ...args),
     // another file: its 3D view first (Draw off); New building turns Draw on again right after
     opened() {
       S.drag = null; interactions?.reset(); S.cutFor = null; S.level = null; S.autoFit3d = false; endChain(); S.queue = []; S.empty3d = !(host.viewer()?.allKeys?.().size); if (S.on) show(false); },
