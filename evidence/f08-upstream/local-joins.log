@@ -1,0 +1,29 @@
+(node:62950) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f08-upstream-candidate/app/ifc/api.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-upstream-candidate/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ supported angle/core/orientation matrix is deterministic under order and regeneration (17.138584ms)
+✔ true T and four-arm X have common core-first seams and no ordering dependence (0.661208ms)
+✔ endpoint matching uses 1 mm distinct from measurement precision (0.258042ms)
+✔ unsupported angle, height, topology and degenerate inputs keep finite safe geometry and reasons (0.138875ms)
+✔ curved components retain inherited envelope and bulge data (1.003417ms)
+✔ fixture actual IFC profiles match the same plan envelopes at 0.005 mm (17.245958ms)
+✔ allow/disallow and square caps affect both physical/drawing envelopes and undo/redo/reopen (33.25625ms)
+✔ legacy metadata reads without writes and explicit edit migrates only the edited record (11.280208ms)
+✔ unknown and corrupt end records refuse model writes atomically and preserve saved payloads (23.353ms)
+✔ missing payload and duplicate settings are not hidden by default records (4.012666ms)
+✔ finish cycles preserve core reference lines, identities, openings, cavity and zero-membrane semantics (330.713042ms)
+✔ fine/medium/coarse pieces share physical envelope and layer areas conserve disjoint T parts (8.939292ms)
+✔ material-default edit never resizes layers or moves anchors (5.771208ms)
+✔ unrelated regeneration is idempotent and unrelated isolated original is unchanged (1.850084ms)
+✔ unknown join metadata leaves affected persistent references unresolved without a stale value (1.518416ms)
+✔ retained X and T topology survives disallow, finish offsets, reallow, Undo Redo and reopen (37.727375ms)
+✔ selection order does not alter final type assignment, core axes or physical seams (9.751209ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 622.350792

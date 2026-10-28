@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "head": "4252c13d0d27b4ec693ba311e261f26e9e1c686f",
+  "catalogCount": 31,
+  "toolNames": [
+    "files_list",
+    "drawing_open",
+    "drawing_new",
+    "drawing_describe",
+    "objects_list",
+    "object_get",
+    "drawing_check",
+    "command_run",
+    "script_run",
+    "undo",
+    "drawing_save",
+    "drawing_convert",
+    "drawing_plot",
+    "doc_close",
+    "ifc_open",
+    "ifc_query",
+    "ifc_properties",
+    "ifc_new",
+    "model_describe",
+    "walls_list",
+    "walls_add",
+    "opening_add",
+    "floor_add",
+    "levels_add",
+    "grid_add",
+    "ifc_save",
+    "takeoff_open",
+    "takeoff_quantities",
+    "takeoff_estimate",
+    "takeoff_export",
+    "markups_list"
+  ],
+  "independent": [
+    {
+      "file": "created.ifc",
+      "walls": 1,
+      "schemaFindings": 0
+    },
+    {
+      "file": "undone.ifc",
+      "walls": 0,
+      "schemaFindings": 0
+    }
+  ],
+  "publication": "No raw IFC artifact upload. This basic lifecycle does not establish audited MCP parity.",
+  "sourceTree": "3d978d3cf7b964c65bda0641ab2c69fc0138f815",
+  "canonicalCandidate": "6c0220b46af594a8b5c02a36ad1b79dab39b5d1e",
+  "joinSemanticCoverage": "GAP"
+}

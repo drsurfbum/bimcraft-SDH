@@ -46,3 +46,12 @@ test('executed outcomes support every upstream trailer, retain failures and neve
   assert.deepEqual(executedAssertions('all ok\n  --   reader unavailable'), []);
   assert.deepEqual(executedAssertions('  FAIL schema check (["private diagnostic"])\nall ok'), [{ passed: false, name: 'schema check' }]);
 });
+
+test('stair label ignores only transient STEP references and retains values and required occurrence',()=>{
+ const a='the flight says 16 risers, 15 treads, 187.5 riser (3000 / 16), 254 tread (IFC4 attributes): 602,#770,$,16,15,187.5,254.,.STRAIGHT.);';
+ const b=a.replace('602,#770','728,#896');
+ assert.equal(assertionName('res',a),assertionName('res',b));
+ for(const changed of [b.replace(',16,15,',',15,15,'),b.replace('187.5,254.','187.6,254.'),b.replace('254.,.STRAIGHT.','255.,.STRAIGHT.')])assert.notEqual(assertionName('res',a),assertionName('res',changed));
+ assert.equal(compareAssertions([assertionName('res',a)],[]).status,'FAIL');
+ assert.equal(compareAssertions([assertionName('res',a),assertionName('res',a)],[assertionName('res',b)]).status,'FAIL');
+});

@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "head": "83a61859e8b734139498cbb041b31dbb12e0a963",
+  "package": "@drsurfbum/bimcraft-mcp",
+  "version": "0.4.0-mcp01.1",
+  "isolatedConsumer": "temporary directory outside repository; CADCRAFT_APPS and NODE_PATH unset",
+  "sha256": "3617db5f713c38255496f669dec709fd7341887ecd1186d9bf7464891009a90a",
+  "files": [
+    {
+      "file": "agents.js",
+      "sha256": "4aef90caefe9cc4d38367d2318849391e95e0978f14de649646212ae80b97ffc"
+    },
+    {
+      "file": "material-wall-agent.js",
+      "sha256": "cddbcf13d0b10e493206ee424dfb3f715a2543e90260fc88a26a908b5f7e0354"
+    },
+    {
+      "file": "model-ops.js",
+      "sha256": "152b92b2e3dd2a70466a349f7c535463a0ecc362b6395c6ab4c2ecebe4dc55fe"
+    },
+    {
+      "file": "model-walls.js",
+      "sha256": "9ac88741ecb00923a65fe54cd94895604ec7503b2e76ea97b7dc321c1181d1fb"
+    },
+    {
+      "file": "wall-assemblies.js",
+      "sha256": "baf191804741ef6c2a6bba961a2c959c9bc27cbc727ac141b9e608bc1d09be54"
+    },
+    {
+      "file": "project-materials.js",
+      "sha256": "1ad6a692a418421747665f4e02e5946f9f3a70c0e02ba36545f6bfcb83deea28"
+    },
+    {
+      "file": "ifc-edit.js",
+      "sha256": "0f3178aa5277f7adec27120a7def02423856cd8a44a55b1d6e8c9daf1d018941"
+    }
+  ],
+  "checks": [
+    "npm pack and isolated extraction outside repository",
+    "complete semantic MCP workflow on extracted fork with CADCRAFT_APPS/NODE_PATH removed",
+    "fork version and required module bytes match",
+    "missing required module fails startup; no silent catalog skip"
+  ],
+  "skips": []
+}

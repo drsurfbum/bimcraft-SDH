@@ -165,7 +165,9 @@ export async function modelMode({ APP, ROOT, WebIFC, IfcModel, quiet, require, a
   const w0 = new ModelWriter(WebIFC, engine.api, engine.modelID);
   const tShape = MW.storedShape(w0, tw.id);
   const xs = tShape.points.map((p) => p[0]);
-  ok(near(Math.min(...xs), th / 2, 0.01) && near(Math.max(...xs), 4000 - th / 2, 0.01), 'the T wall runs face to face: ' + Math.min(...xs).toFixed(2) + ' → ' + Math.max(...xs).toFixed(2));
+  // F08: asymmetric exterior layers put the host core midline 3/8 in
+  // behind its analytic axis. Core-first T seams reach that common core point.
+  ok(near(Math.min(...xs), -0.375 * IN, 0.005) && near(Math.max(...xs), 4000 + 0.375 * IN, 0.005), 'the T wall meets both host core midlines: ' + Math.min(...xs).toFixed(2) + ' → ' + Math.max(...xs).toFixed(2));
   ed.modelChange(OPS.changeLevel(L1, { height: 3600 }));
   snap = OPS.snapshotModel(ed);
   ok(near(snap.levels[1].elevation, 3600) && snap.walls.every((x) => near(x.height, 3600)), 'Level 1 made 3600 tall: Level 2 moves up, every wall follows to 3600');

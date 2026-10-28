@@ -1,0 +1,52 @@
+npm notice run test:baseline
+npm notice run node devshell/baseline.mjs --offline
+▶ precision: node --test --test-reporter=tap tests/unit/wall-precision.test.mjs
+PASS precision: 7 passed, 0 failed; 0 skip/availability notices
+▶ materials: node --test --test-reporter=tap tests/unit/material-library.test.mjs
+PASS materials: 8 passed, 0 failed; 0 skip/availability notices
+▶ model: node .cc-test/bin/test-bimcraft.mjs --model
+PASS model: 124 passed, 0 failed; 4 skip/availability notices
+  --   web-ifc not installed: oracle check skipped
+  --   web-ifc not installed: oracle check skipped
+  --   web-ifc not installed: oracle check skipped
+  --   no venv with ifcopenshell: skipped
+▶ comforts: node .cc-test/bin/test-bimcraft.mjs --comforts
+PASS comforts: 103 passed, 0 failed; 3 skip/availability notices
+  --   web-ifc not installed: oracle check skipped
+  --   web-ifc not installed: oracle check skipped
+  --   no venv with ifcopenshell: skipped
+▶ views2: node .cc-test/bin/test-bimcraft.mjs --views2
+PASS views2: 104 passed, 0 failed; 1 skip/availability notices
+  --   no venv with ifcopenshell: schema validation skipped
+▶ res: node .cc-test/bin/test-bimcraft.mjs --res
+PASS res: 197 passed, 0 failed; 13 skip/availability notices
+  --   web-ifc not installed: oracle check skipped
+  --   web-ifc not installed: oracle check skipped
+  --   no library repo at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/repos/library: item checks skipped
+  --   web-ifc not installed: oracle check skipped
+  --   web-ifc not installed: oracle check skipped
+  --   web-ifc not installed: oracle check skipped
+SKIP terrain live source comparison: civilcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/.cc-test/public_html/assets/apps/civilcraft; bundled integrity checked separately
+  --   web-ifc not installed: oracle check skipped
+  --   web-ifc not installed: oracle check skipped
+SKIP electrical live source comparison: cadcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/.cc-test/public_html/assets/apps/cadcraft; bundled integrity checked separately
+  --   web-ifc not installed: oracle check skipped
+  SKIP RC.8 cross-app reader, quantities, estimate and pack sync: TakeoffCraft directory absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/.cc-test/public_html/assets/apps/takeoffcraft/dev
+  --   no venv with ifcopenshell (or nothing saved): skipped
+▶ f02-contract: node --test --test-reporter=tap tests/features/f02/contract.test.mjs
+PASS f02-contract: 21 passed, 0 failed; 0 skip/availability notices
+▶ f04-graphics: node --test --test-reporter=tap tests/features/f04/graphics.test.mjs
+PASS f04-graphics: 13 passed, 0 failed; 0 skip/availability notices
+▶ f05-sections: node --test --test-reporter=tap tests/features/f05/sections.test.mjs
+PASS f05-sections: 18 passed, 0 failed; 0 skip/availability notices
+▶ f06-schedules: node --test --test-reporter=tap tests/features/f06/schedules.test.mjs
+PASS f06-schedules: 23 passed, 0 failed; 0 skip/availability notices
+▶ f08-joins: node --test --test-reporter=tap tests/features/f08/joins.test.mjs
+PASS f08-joins: 17 passed, 0 failed; 0 skip/availability notices
+▶ fixture: node tests/features/f01/fixture.mjs --verify
+PASS fixture: 1 passed, 0 failed; 0 skip/availability notices
+▶ source-sync-contract: node --test --test-reporter=tap tests/features/f01/source-sync.test.mjs
+PASS source-sync-contract: 44 passed, 0 failed; 0 skip/availability notices
+▶ runner-contract: node --test --test-reporter=tap tests/features/f01/runner.test.mjs
+PASS runner-contract: 19 passed, 0 failed; 0 skip/availability notices
+Evidence: /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/.cc-test/baseline/summary.json (optional skips are not passes)

@@ -1,12 +1,12 @@
 # Residential BIM development roadmap
 
-Planning baseline: 2026-10-21. This is the proposed product roadmap for the user's fork, not an assertion of complete Revit, Fusion 360 or Rhino compatibility. Update statuses as work lands; do not infer completion from the existence of a module.
+Planning baseline: 2026-10-21. **Current progress and approved application evidence: [PROJECT-STATUS.md](PROJECT-STATUS.md); published PM roadmap: https://drsurfbum.github.io/bimcraft-SDH/. The feature cards and original prototype observations below retain their planning context; use the current status ledger for adoption decisions.** This is the proposed product roadmap for the user's fork, not an assertion of complete Revit, Fusion 360 or Rhino compatibility. Update statuses as work lands; do not infer completion from the existence of a module.
 
 ## Product outcome
 
 A lightweight, responsive residential BIM application with precise model geometry, dependable Properties and assembly editing, associative dimensions, strong construction-document and detailing tools, flexible roofs, and a more direct parametric component-authoring experience.
 
-The primary user designs houses and prepares residential construction documents. Optimize that complete workflow before pursuing broad commercial BIM parity. Architecture, Modify and Annotate are workflow groupings; the interface need not reproduce another application's ribbon.
+The primary user designs houses and prepares residential construction documents. Optimize that complete workflow before pursuing broad commercial BIM parity. F28 uses the user-approved Revit-familiar layout as its structural baseline, adapted to actual BimCraft capabilities; unavailable commands have honest disabled explanations and roadmap mappings.
 
 ### Product rules
 
@@ -18,15 +18,15 @@ The primary user designs houses and prepares residential construction documents.
 - Work locally, preserve portable IFC output, and avoid a mandatory service for everyday modeling.
 - Reuse the existing code where it meets the need. Isolate expensive computation before choosing another language.
 
-## Verified starting point
+## Original prototype starting point (historical)
 
-Repository: https://github.com/achartt/bimcraft-SDH
+Repository: https://github.com/drsurfbum/bimcraft-SDH
 
 Development checkout on the current computer: `/Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-dev`.
 
 The original checkout `/Users/austinhartt/Documents/GitHub/bimcraft` is separate and was not the implementation workspace. Do not assume changes in one are in the other.
 
-Prototype branch: `feature/wall-assemblies-dimensions`. Feature baseline: `bb2b8d2`. Draft PR: https://github.com/achartt/bimcraft-SDH/pull/1. **Verify current branch/PR state before starting; this document does not declare that PR merged.** Roadmap-only commits may follow this baseline.
+Historical prototype branch: `feature/wall-assemblies-dimensions`, feature baseline `bb2b8d2`. PR #2 integrated into that branch at `994e4168609316d17ada992bb0dbef473f52ed18`, then PR #1 merged into main at `1c35f47d69af2214b4747f541703224d0a4a4742`. See the [historical integration record](INTEGRATION-2026-10-21.md) and [current snapshot](PROJECT-STATUS.md). These old prototype pins are not the next feature baseline; do not reset existing checkouts to them.
 
 Implemented and tested as a prototype:
 
@@ -39,7 +39,7 @@ Implemented and tested as a prototype:
 
 Verification at the feature baseline: 8 material tests, 7 wall-precision tests; existing model/comforts/views2 suites reported 122/103/104 passes. Browser workflows were exercised. These are historical results: rerun relevant checks on the implementation being delivered. Optional external IFC schema validators were unavailable. The broad residential suite has a missing cross-application TakeoffCraft dependency in this standalone checkout.
 
-Important limits:
+Prototype limits at that historical date (subsequent bounded F04/F05/F06/F08 work is recorded in the current snapshot):
 
 - Material fills currently appear in the assembly editor, not as authored per-layer plan/section graphics.
 - Wall geometry remains an envelope. Existing wall quantities are envelope quantities, not solid-material takeoffs.
@@ -194,7 +194,9 @@ Profile the real bottleneck. First evaluate algorithmic improvements, caching, i
 
 Verify offline installation/startup, save/recovery, migrations, distribution and upgrade behavior on the chosen initial platform. Capture a reference drawing set and release checklist. Before distribution, review the repository's existing LICENSE/NOTICE/THIRD_PARTY/TRADEMARKS documentation and track fork naming/assets as release work. Done: install/open/revise/export/recover is demonstrated on a fresh setup, limitations are documented and the user has reviewed the residential set. Choose other platforms later from actual need.
 
-## Recommended first dispatches
+## Original dispatch sequence (historical planning)
+
+This sequence explains the original dependencies. F01–F04/F06 and the recorded partial slices are already adopted; follow [current priorities](PROJECT-STATUS.md) instead of dispatching them again. Later roadmap additions are F27 (deferred capture-to-parametric BIM discovery) and F28 (partially integrated Revit-familiar workspace).
 
 1. **F01**: establish and record the integration baseline. A new chat starting from upstream main would otherwise miss the prototype.
 2. **F02 + F03 as separate features**: precision/reference contract and performance baseline; coordinate fixture ownership.
@@ -211,6 +213,7 @@ F06 can proceed alongside F04 once baseline contracts are settled, but they must
 - Negative/degenerate cases handled visibly. Tests cover behavior and regressions, not merely implementation structure.
 - Appropriate unit/integration checks plus browser verification for UI changes; inspect actual exported drawings for output changes.
 - Precision/performance impact reported with evidence relevant to the change. No unsupported claims of parity or speed.
+- Registered, transport-tested agent coverage for new/changed domain operations under [AGENTIC-CORE.md](AGENTIC-CORE.md), with live/headless/package state and gaps explicit.
 - One reviewable feature branch/PR, concise handoff, documented limitations and updated roadmap status after integration.
 - User-facing workflow and labels explain design choices without exposing implementation internals.
 
@@ -228,9 +231,14 @@ Keep this small and factual. Detailed scope lives in the feature cards; implemen
 
 | Item | State | Evidence / next action |
 |---|---|---|
-| Wall/material/dimension prototype | Implemented on feature branch; draft PR awaiting integration review at baseline | PR #1, feature commit `bb2b8d2`, `WALL-PRECISION.md` |
-| F01 | Ready for baseline inspection | Confirm PR status, branch and standalone checks |
-| F02–F03 | Planned; depend on F01 | Precision contract and measured baseline |
-| F04–F26 | Proposed; follow card dependencies | PM schedules after prerequisite acceptance |
+| Prototype, F01–F04 and F06 | Integrated for their accepted scope | Historical prototype record and current adopted evidence in [PROJECT-STATUS.md](PROJECT-STATUS.md) |
+| F05 | Partial: straight-wall section/elevation slice integrated | Broader scope and PERF-F05-01 stay open |
+| F08 | Partial: bounded straight-wall join slice and semantic tools integrated | PR #13, application baseline `0329eec`; F08-PM-01/02 closed, broader geometry deferred |
+| F28 | Partial: A/B integrated; C separate draft | PR #12 needs its own MCP/current-main reconciliation and review gates; established layout default/fallback |
+| MCP-01 | Adopted | PR #16, merge `21ff284`; broader MCP parity remains catch-up work |
+| F07, F09, F10–F26 | Planned | Follow prerequisites and current user priorities; no implicit dispatch |
+| F27 | Deferred | Capture-to-parametric BIM discovery retained for future planning |
+
+Snapshot date: October 27, 2026. Reverify remote main/PR heads before dispatch. Detailed acceptance and open follow-ups remain in the current snapshot and feature handoffs.
 
 Allowed states: proposed, ready, in progress, blocked (with concrete blocker), review, integrated, validated. A feature may be implemented without yet being integrated or validated in the reference project.

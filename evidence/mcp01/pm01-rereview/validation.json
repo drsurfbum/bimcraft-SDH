@@ -1,0 +1,62 @@
+{
+  "finding": "MCP01-PM-01",
+  "status": "correction and deterministic browser regression submitted for PM re-review; final CI pending at capture",
+  "closedByImplementation": false,
+  "base": "1afe80e78a42aa27ee9af5d1ac937cd38cd1b711",
+  "reviewedDelivery": "64000d39e6a194e83053a84c90c95d349125ef6c",
+  "fixSource": "e1cda96ec15bcf5e1fd0e5a2342d9bf2c31e26bc",
+  "regressionSource": "c81775e39d3ad4954abc72e7d83f875e29174ab8",
+  "applicationTree": "1dd64b17cacb7ee0e1dfdf7124029c74a3f27ca0",
+  "counts": {
+    "baseline": 707,
+    "mandatoryTests": 32,
+    "newHistoryTests": 19,
+    "mandatorySkips": 0,
+    "headlessChecks": 11,
+    "packageChecks": 4,
+    "liveChecks": 16,
+    "newLiveChecks": 3,
+    "independentFindings": [
+      0,
+      0,
+      0
+    ]
+  },
+  "firstCI": {
+    "head": "16dd01625c862f60815cbc0a98210a4f5d99dd38",
+    "run": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40155979727",
+    "result": "FAIL",
+    "historyIsolationAssertions": "PASS: A one completed step, B byte/history equality, normal Redo",
+    "failure": "strict zero-browser-error assertion observed No IFC model is open with id null when switching inside transient IFC unload",
+    "resolution": "native switch moved to real UI-refresh microtask after the first rebuild is ready and before the pending Undo continuation; zero-error and byte/history assertions retained"
+  },
+  "proof": {
+    "switch": {
+      "armed": false,
+      "switched": true,
+      "observedSteps": 1,
+      "uiIdle": true
+    },
+    "AChanges": 1,
+    "BChanges": 1,
+    "BBytesUnchanged": true,
+    "BHistoryUnchanged": true,
+    "replacementIsActive": true
+  },
+  "open": [
+    "MCP01-PM-01 awaiting PM re-review",
+    "PERF-F04-01",
+    "PERF-F05-01",
+    "TEST-F28-01",
+    "broader semantic MCP catch-up"
+  ],
+  "limitations": [
+    "draw06 still lacks sibling civilcraft/dev/landxml.js; not passing",
+    "no expanded guarantee for switching inside a transient IFC-handle unload",
+    "successful original-project history steps remain completed after interruption",
+    "private callbacks must bracket engine mutations; unconfirmed progress is separate",
+    "no persistent user client setup"
+  ],
+  "publication": "Reports only; historical evidence preserved; no IFC, expected model JSON or package archive uploaded",
+  "finalDelivery": "subsequent evidence commit, identified by PR and exact-head CI"
+}

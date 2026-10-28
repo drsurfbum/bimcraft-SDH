@@ -1,0 +1,90 @@
+[
+  {
+    "file": ".cc-test/f08/seed.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapChecked": true,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "file": ".cc-test/f08/edited.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapChecked": true,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "file": ".cc-test/f08-07/multilevel.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapChecked": true,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "file": ".cc-test/f08-07/copied.ifc",
+    "schemaFindings": 0,
+    "walls": 32,
+    "overlapChecked": false,
+    "overlapAreaToleranceMm2": null,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "copiedWallPairs": 16,
+    "intentionalSquareDisallowOverlapPreservedMm2": 59878.9125535147,
+    "copyOverlapDifferenceMm2": 0
+  },
+  {
+    "file": ".cc-test/f08/browser/saved.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapChecked": true,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "file": ".cc-test/f08/browser/multilevel-saved.ifc",
+    "schemaFindings": 0,
+    "walls": 16,
+    "overlapChecked": true,
+    "overlapAreaToleranceMm2": 0.05,
+    "zeroMembranes": true,
+    "ventilatedCavities": true
+  },
+  {
+    "wholePlanPathVertices": 1292,
+    "outsideMediaBox": 0
+  },
+  {
+    "actualDownloadedPlanPDF": true,
+    "detailVectorFillPolygons": 65,
+    "maxVectorGeometryErrorMm": 0.0000023115138123376586,
+    "rasterImages": 0,
+    "csvLayers": 11
+  },
+  {
+    "idealEnvelopeDifferenceMm2": 6.313891375338436e-9,
+    "baselineEnvelopeDifferenceFromIdealMm2": 62095.30752973697,
+    "newOverlapAreaMm2": 0
+  },
+  {
+    "independentAngleCoreOrientationCases": 28,
+    "angles": [
+      30,
+      45,
+      60,
+      90,
+      120,
+      135,
+      150
+    ],
+    "maxAllowedOverlapMm2": 0.00001
+  }
+]

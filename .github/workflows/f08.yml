@@ -1,0 +1,98 @@
+name: F08 straight-wall acceptance
+on:
+  pull_request:
+  push:
+    branches: [candidate/f08-07-20261026, main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: f08-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: devshell/vendor
+          key: vendor-${{ hashFiles('devshell/vendor.json') }}
+      - name: Poppler
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+      - name: PHP language-pack rendering
+        run: |
+          if ! command -v php; then sudo apt-get update -qq && sudo apt-get install -y -qq php-cli; fi
+          php -v
+      - name: Verify vendors
+        run: npm run fetch-vendor
+      - name: Browser and independent readers
+        run: |
+          npm install --prefix .cc-test/f08-deps --no-package-lock playwright@1.56.1
+          .cc-test/f08-deps/node_modules/.bin/playwright install --with-deps chromium
+          python -m venv .cc-test/f08-reader
+          .cc-test/f08-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt -r tests/features/f04/requirements-independent.txt shapely==2.1.2
+      - name: Generate F08 fixture and model tests
+        run: |
+          node tests/features/f08/fixture.mjs
+          node --test tests/features/f08/*.test.mjs
+      - name: Review legacy golden fixture changes
+        if: always()
+        run: node tests/features/f08/snapshot-audit.mjs
+      - name: Same-environment before and after audit and timing
+        run: node tests/features/f08/measure.mjs
+      - name: Real browser workflow and actual downloads
+        env:
+          F08_REVIEW_FRAMES: '1'
+          F08_REQUIRE_PHP: '1'
+        run: node tests/features/f08/browser.mjs
+      - name: Independent actual IFC and vector geometry
+        run: .cc-test/f08-reader/bin/python -I tests/features/f08/independent.py
+      - name: Actual semantic source stdio and isolated packaged consumer
+        run: |
+          node tests/features/f08/semantic-stdio.mjs
+          .cc-test/f08-reader/bin/python -I tests/features/f08/semantic-independent.py .cc-test/f08-semantic-stdio
+          node tests/features/f08/semantic-package.mjs
+          .cc-test/f08-reader/bin/python -I tests/features/f08/semantic-independent.py .cc-test/f08-semantic-package/consumer
+      - name: Actual semantic HTTP to live browser
+        run: |
+          node tests/features/f08/semantic-browser.mjs
+          .cc-test/f08-reader/bin/python -I tests/features/f08/semantic-independent.py .cc-test/f08-semantic-browser
+      - name: Render actual exported detail for review
+        if: ${{ always() && hashFiles('.cc-test/f08/browser/detail.pdf') != '' }}
+        run: |
+          pdftoppm -scale-to 1400 -singlefile -png .cc-test/f08/browser/detail.pdf .cc-test/f08/browser/detail-render
+          pdftoppm -scale-to 1400 -singlefile -png .cc-test/f08/browser/plan.pdf .cc-test/f08/browser/plan-render
+          node --input-type=module -e "import fs from 'node:fs'; for(const name of ['detail-render.png','plan-render.png'])console.log('F08_IMAGE '+name+' '+fs.readFileSync('.cc-test/f08/browser/'+name).toString('base64'));"
+      - name: Retain F08 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f08-evidence
+          path: |
+            .cc-test/f08/performance.json
+            .cc-test/f08/independent.json
+            .cc-test/f08/browser/report.json
+            .cc-test/f08/browser/*.png
+            .cc-test/f08-semantic-stdio/report.json
+            .cc-test/f08-semantic-stdio/catalog.json
+            .cc-test/f08-semantic-stdio/independent.json
+            .cc-test/f08-semantic-package/report.json
+            .cc-test/f08-semantic-package/consumer/report.json
+            .cc-test/f08-semantic-package/consumer/catalog.json
+            .cc-test/f08-semantic-package/consumer/independent.json
+            .cc-test/f08-semantic-browser/report.json
+            .cc-test/f08-semantic-browser/catalog.json
+            .cc-test/f08-semantic-browser/independent.json
+            .cc-test/f08-semantic-browser/*.png
+          retention-days: 90

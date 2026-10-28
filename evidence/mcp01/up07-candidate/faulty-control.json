@@ -1,0 +1,31 @@
+{
+  "requestedDocument": "A",
+  "documentIdsDistinct": true,
+  "before": {
+    "A": 1,
+    "B": 1
+  },
+  "actualTargets": [
+    "A",
+    "B"
+  ],
+  "after": {
+    "A": 0,
+    "B": 0
+  },
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n \"undone\": [\n  \"Assistant: material_edit\",\n  \"Assistant: material_edit\"\n ]\n}"
+      }
+    ],
+    "structuredContent": {
+      "undone": [
+        "Assistant: material_edit",
+        "Assistant: material_edit"
+      ]
+    }
+  },
+  "wrongDocumentChanged": true
+}

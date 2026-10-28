@@ -1,0 +1,130 @@
+{
+  "runtime": "v26.9.0",
+  "dirty": false,
+  "head": "83a61859e8b734139498cbb041b31dbb12e0a963",
+  "results": [
+    {
+      "name": "precision",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 7,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "materials",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 8,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "model",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 133,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "comforts",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 106,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "views2",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 105,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "res",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 209,
+      "failed": 0,
+      "skipped": [
+        "  --   no library repo at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/repos/library: item checks skipped",
+        "SKIP terrain live source comparison: civilcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/.cc-test/public_html/assets/apps/civilcraft; bundled integrity checked separately",
+        "SKIP electrical live source comparison: cadcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/.cc-test/public_html/assets/apps/cadcraft; bundled integrity checked separately",
+        "  SKIP RC.8 cross-app reader, quantities, estimate and pack sync: TakeoffCraft directory absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/.cc-test/public_html/assets/apps/takeoffcraft/dev"
+      ],
+      "error": null
+    },
+    {
+      "name": "f02-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 21,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f04-graphics",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 13,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f05-sections",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 18,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f06-schedules",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 23,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "fixture",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 1,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "source-sync-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 44,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "runner-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 19,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    }
+  ],
+  "exitCode": 0
+}

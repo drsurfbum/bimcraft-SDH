@@ -1,3 +1,5 @@
+import { assertWallJoinsEditable, writeJoinSettings, readJoinRecord } from './wall-join-records.js';
+import { endJoins } from './wall-joins.js';
 /* SPDX-License-Identifier: Apache-2.0 */
 /**
  * model-ops.js — what the building tools do to the model, as changes for IfcEditor.modelChange (0.5 part 3, track BM):
@@ -33,7 +35,7 @@ export function op(fn) {
     let n = 0;
     const fresh = w.guid.bind(w);
     w.guid = () => { if (n < seq.length) return seq[n++]; const g = fresh(); seq.push(g); n++; return g; };
-    return w.run(writer => { assertAssembliesEditable(writer); readMaterials(writer); const result = fn(writer); syncWallDimensions(writer); return result; });
+    return w.run(writer => { assertAssembliesEditable(writer); assertWallJoinsEditable(writer); readMaterials(writer); const result = fn(writer); syncWallDimensions(writer); return result; });
   };
 }
 const storeyId = (w, guid) => {
@@ -98,23 +100,37 @@ export function saveWallAssembly(input, assign = []) {
 // against a neighbour's old axis during each update would leave an open L corner.
 function rejoinAssemblyCorners(w, before, changed) {
   const changedSet = new Set(changed), after = new Map(readWalls(w).map(x => [x.guid, x]));
-  const buckets = new Map(), nodes = [];
-  for (const wall of before) for (const end of ['a', 'b']) {
+  const buckets = new Map(), nodes = [], linkedNodes = new Map();
+  for (const wall of [...before].sort((a,b)=>a.guid.localeCompare(b.guid))) for (const end of ['a', 'b']) {
+    if (!endJoins(wall, end)) continue;
     const p = wall[end], x = Math.floor(p[0]), y = Math.floor(p[1]);
-    let node = null;
+    const identity=wall.joinSettings?.[end]?.node;
+    let node = identity ? linkedNodes.get(identity) || null : null;
     for (let dx = -1; dx <= 1 && !node; dx++) for (let dy = -1; dy <= 1 && !node; dy++) {
       node = (buckets.get(`${wall.storey}:${x+dx}:${y+dy}`) || []).find(n => Math.hypot(n.p[0]-p[0],n.p[1]-p[1]) <= 1);
     }
     if (!node) {
-      node = { p, ends: [] }; nodes.push(node);
+      node = { p, identity, ends: [] }; nodes.push(node);
       const key = `${wall.storey}:${x}:${y}`;
       if (!buckets.has(key)) buckets.set(key, []);
       buckets.get(key).push(node);
     }
+    if(identity){node.identity=identity;linkedNodes.set(identity,node);}
     node.ends.push({ wall, end });
   }
   const edits = new Map();
   for (const node of nodes) {
+    if(node.ends.length>=2&&node.ends.length<=4&&node.ends.every(e=>!e.wall.bulge)&&node.ends.some(e=>changedSet.has(e.wall.guid))){
+      // Explicit edits retain the logical endpoint relation while finish offsets
+      // move analytic axes. The identity is derived from stable wall GUIDs/ends,
+      // so Undo/Redo cannot allocate a different node by accident.
+      const identity=node.identity||'join:'+node.ends.map(e=>e.wall.guid+':'+e.end).sort().join('|');
+      for(const e of node.ends){
+        const current=readWalls(w).find(x=>x.guid===e.wall.guid);
+        if(current&&!current.joinIssue&&current.joinSettings[e.end].node!==identity)
+          writeJoinSettings(w,current.id,{...current.joinSettings,[e.end]:{...current.joinSettings[e.end],node:identity}});
+      }
+    }
     if (node.ends.length !== 2 || !node.ends.some(e => changedSet.has(e.wall.guid))) continue;
     const [a, b] = node.ends, A = after.get(a.wall.guid), B = after.get(b.wall.guid);
     if (!A || !B || A.bulge || B.bulge) continue;
@@ -128,6 +144,31 @@ function rejoinAssemblyCorners(w, before, changed) {
       if (!edits.has(e.wall.guid)) edits.set(e.wall.guid, {});
       edits.get(e.wall.guid)[e.end] = p;
     }
+  }
+  // Retain an eligible pre-edit T relationship against the FINAL host axis.
+  // Sliding the stem endpoint along its own line preserves its core reference line;
+  // afterWallMove keeps hosted opening world stations when that start slides.
+  const beforeSorted = [...before].sort((a,b)=>a.guid.localeCompare(b.guid));
+  for (const stem of beforeSorted) for (const end of ['a','b']) {
+    if (stem.bulge || !endJoins(stem,end) || stem.joinSettings?.[end]?.node) continue;
+    const p = stem[end];
+    const hosts = beforeSorted.filter(host => {
+      if (host.guid === stem.guid || host.storey !== stem.storey || host.bulge) return false;
+      const dx=host.b[0]-host.a[0],dy=host.b[1]-host.a[1],s=((p[0]-host.a[0])*dx+(p[1]-host.a[1])*dy)/host.len;
+      return s>1 && s<host.len-1 && Math.abs((p[0]-host.a[0])*dy-(p[1]-host.a[1])*dx)/host.len<=1;
+    });
+    if (hosts.length !== 1 || ![stem.guid,hosts[0].guid].some(g=>changedSet.has(g))) continue;
+    const current=readWalls(w).find(x=>x.guid===stem.guid);
+    if(current&&!current.joinIssue&&current.joinSettings[end].tee!==hosts[0].guid)
+      writeJoinSettings(w,current.id,{...current.joinSettings,[end]:{...current.joinSettings[end],tee:hosts[0].guid}});
+    const A=after.get(stem.guid),B=after.get(hosts[0].guid);
+    if (!A || !B) continue;
+    const u=[A.b[0]-A.a[0],A.b[1]-A.a[1]],v=[B.b[0]-B.a[0],B.b[1]-B.a[1]],den=u[0]*v[1]-u[1]*v[0];
+    if (Math.abs(den)<1e-9*A.len*B.len) continue;
+    const s=((B.a[0]-A.a[0])*v[1]-(B.a[1]-A.a[1])*v[0])/den,q=[A.a[0]+s*u[0],A.a[1]+s*u[1]];
+    if (Math.hypot(q[0]-p[0],q[1]-p[1])>4*Math.max(A.t,B.t)) continue;
+    if (!edits.has(stem.guid)) edits.set(stem.guid,{});
+    edits.get(stem.guid)[end]=q;
   }
   for (const [guid, ch] of edits) { updateWall(w, guid, ch, { carryJoined: false }); changedSet.add(guid); }
   return [...changedSet];
@@ -177,6 +218,26 @@ export function copyLevel({ from, to, newLevel: spec = null }) {
       const r = addWall(w, { storey: dst, a: x.a, b: x.b, typeKey: x.typeKey, baseOffset: x.baseOffset, topLevel: nt ? nt.guid : '', topOffset: nt ? x.topOffset : 0, height: nt ? 0 : x.height, extSide: x.extSide, guid: g, bulge: x.bulge || 0, justification: x.justification });
       made.set(r.guid, r.id); map.set(x.guid, r.guid);
     }
+    // Copy explicit end controls only after every new wall identity is known.
+    // Retained topology belongs to the copied level, never to the source walls.
+    for (const x of walls) {
+      const record = readJoinRecord(w, x.id);
+      if (record.raw === undefined) continue; // absent legacy defaults stay absent
+      const settings = structuredClone(record.settings);
+      for (const end of ['a', 'b']) {
+        const e = settings[end];
+        if (e.tee) {
+          if (!map.has(e.tee)) throw new Error(tr('join.copyExternal'));
+          e.tee = map.get(e.tee);
+        }
+        if (e.node) e.node = 'join:' + e.node.slice(5).split('|').map(member => {
+          const guid = member.slice(0, -2), suffix = member.slice(-2);
+          if (!map.has(guid)) throw new Error(tr('join.copyExternal'));
+          return map.get(guid) + suffix;
+        }).sort().join('|');
+      }
+      writeJoinSettings(w, w.byGuid(map.get(x.guid)), settings);
+    }
     let openings = 0;
     for (const o of readOpenings(w, src, walls)) {
       const [g, og] = fresh(w, o.guid, 2);
@@ -223,6 +284,7 @@ export function changeWall(guid, changes, opts = {}) {
     if (!wall) throw Object.assign(new Error('model.err.nowall'), { key: 'model.err.nowall' });
     const ops0 = readOpenings(w, null, before);
     const r = updateWall(w, guid, changes, opts);
+    r.guids = rejoinAssemblyCorners(w, before, r.guids);
     afterWallMove(w, before, ops0, r.guids, !!changes.typeKey);
     settle(w, [wall.storey], r.guids);
     return { id: w.byGuid(guid), ids: [w.byGuid(guid)] };
@@ -257,7 +319,8 @@ export function changeWalls(guids, changes) {
       updateWall(w, g, changes, { carryJoined: false });
       storeys.add(wall.storey);
     }
-    afterWallMove(w, all, ops0, guids, !!changes.typeKey);
+    const touched = rejoinAssemblyCorners(w, all, guids);
+    afterWallMove(w, all, ops0, touched, !!changes.typeKey);
     settle(w, storeys, guids);
     const ids = guids.map((g) => w.byGuid(g)).filter(Boolean);
     return { id: ids[0] ?? null, ids };

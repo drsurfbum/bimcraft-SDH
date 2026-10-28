@@ -289,7 +289,7 @@ export function padShape(w, pd, levels = readLevels(w)) {
   const lv = levels.find((l) => l.guid === pd.level);
   if (!lv) return null;
   const walls = readWalls(w, lv.id);
-  const L = planLoops([...wallOutlines(walls.map((x) => ({ key: x.guid, a: x.a, b: x.b, t: x.t, bulge: x.bulge }))).values()]);
+  const L = planLoops([...wallOutlines(walls.map((x) => ({ ...x, key: x.guid }))).values()]);
   const o = loopAt(L.outlines, pd.seed);
   if (!o) return null;
   const M = w.storeyWorld(lv.id);

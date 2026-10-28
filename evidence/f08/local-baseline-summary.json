@@ -1,0 +1,159 @@
+{
+  "runtime": "v26.9.0",
+  "dirty": true,
+  "head": "3e42c21e33e642d1e07bea2fc3356344f91db00e",
+  "results": [
+    {
+      "name": "precision",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 7,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "materials",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 8,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "model",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 124,
+      "failed": 0,
+      "skipped": [
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   no venv with ifcopenshell: skipped"
+      ],
+      "error": null
+    },
+    {
+      "name": "comforts",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 103,
+      "failed": 0,
+      "skipped": [
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   no venv with ifcopenshell: skipped"
+      ],
+      "error": null
+    },
+    {
+      "name": "views2",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 104,
+      "failed": 0,
+      "skipped": [
+        "  --   no venv with ifcopenshell: schema validation skipped"
+      ],
+      "error": null
+    },
+    {
+      "name": "res",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 197,
+      "failed": 0,
+      "skipped": [
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   no library repo at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/repos/library: item checks skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "SKIP terrain live source comparison: civilcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/.cc-test/public_html/assets/apps/civilcraft; bundled integrity checked separately",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  --   web-ifc not installed: oracle check skipped",
+        "SKIP electrical live source comparison: cadcraft app absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/.cc-test/public_html/assets/apps/cadcraft; bundled integrity checked separately",
+        "  --   web-ifc not installed: oracle check skipped",
+        "  SKIP RC.8 cross-app reader, quantities, estimate and pack sync: TakeoffCraft directory absent at /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08/.cc-test/public_html/assets/apps/takeoffcraft/dev",
+        "  --   no venv with ifcopenshell (or nothing saved): skipped"
+      ],
+      "error": null
+    },
+    {
+      "name": "f02-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 21,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f04-graphics",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 13,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f05-sections",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 18,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f06-schedules",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 23,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "f08-joins",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 17,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "fixture",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 1,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "source-sync-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 44,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    },
+    {
+      "name": "runner-contract",
+      "status": "PASS",
+      "exitCode": 0,
+      "passed": 19,
+      "failed": 0,
+      "skipped": [],
+      "error": null
+    }
+  ],
+  "exitCode": 0
+}

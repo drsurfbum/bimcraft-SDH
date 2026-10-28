@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "source": "a370cf3c7b5c265af83c744b67bab33673e5068b",
+  "command": "node .cc-test/bin/test-bimcraft.mjs --draw06 --only df25",
+  "foundation": {
+    "head": "82da107dfd760199bc943249590812978c1a6082",
+    "passed": 31,
+    "failed": 0
+  },
+  "before": {
+    "head": "f43f40a9e1eeab47f38c145ed38f336b30f15f22",
+    "passed": 29,
+    "failed": 2,
+    "failures": [
+      "read catalog still expected two tools",
+      "edit catalog still expected 12 tools"
+    ]
+  },
+  "after": {
+    "passed": 31,
+    "failed": 0,
+    "catalogs": {
+      "read": 4,
+      "modelReadAndEdit": 20
+    }
+  },
+  "change": "Two exact catalog predicates expanded to the required named union. All 29 operation assertions retained. Explicit subsection added to mandatory MCP CI; no dependency bypass in production.",
+  "oracleNotice": "Optional DF.25 in-process IFC reader unavailable in this focused control. Separate required independent source/packaged/live saved-IFC workflows and retained 38-file validation remain mandatory.",
+  "broadDraw06": "Still unavailable for absent CivilCraft sibling; not passing."
+}

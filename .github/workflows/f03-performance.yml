@@ -4,7 +4,7 @@ name: F03 performance evidence
 on:
   pull_request:
   push:
-    branches: [integration/upstream-0.7-20261025]
+    branches: [feature/f08-wall-joins, candidate/f08-07-20261026, integration/upstream-0.7-20261025]
   workflow_dispatch:
 permissions:
   contents: read

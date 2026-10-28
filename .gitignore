@@ -7,5 +7,11 @@ dist/
 
 /evidence/f04/styled-reopened.ifc
 
+# F08 generated fixture and full evidence remain local.
+/fixtures/f08/*.ifc
+/evidence/f08/*.ifc
+/evidence/f08/audit-*.json
+/evidence/f08/matrix.json
+
 # Kept local: automatic approval rejected publication of the generated F28-C IFC fixture.
 /fixtures/f28/documentation.ifc

@@ -1,0 +1,71 @@
+(node:63414) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f08-upstream-candidate/app/i18n.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-upstream-candidate/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+small {
+  bytes: 94169,
+  sha256: '6e2112035bc9f5569d59ea28c191245f337a0a8c64b8dc361f43ee848a063ef8',
+  entities: 1576,
+  walls: 12,
+  openings: 3,
+  dimensions: 3,
+  roofs: 1,
+  bays: 3,
+  bayAreaM2: 72
+}
+medium {
+  bytes: 231188,
+  sha256: '7ca64cbe25ed8c36e773b5398437b3b5c505a2f462df6e7be65ce9c39aeac940',
+  entities: 3898,
+  walls: 36,
+  openings: 9,
+  dimensions: 9,
+  roofs: 1,
+  bays: 9,
+  bayAreaM2: 216
+}
+large {
+  bytes: 574872,
+  sha256: '749d34f26df9bda6ee41b2ba37bdea4940f4c9871e0bcfc7e70534e5be6bff53',
+  entities: 9703,
+  walls: 96,
+  openings: 24,
+  dimensions: 24,
+  roofs: 1,
+  bays: 24,
+  bayAreaM2: 576
+}
+✔ fixtures are byte deterministic including identities and header timestamp (4283.933542ms)
+✔ nearest-rank percentiles and insufficient/noisy flags are explicit (0.380792ms)
+✔ CLI smoke executes all three sizes/workloads and generates a valid report (11185.66025ms)
+✔ missing, malformed or empty evidence cannot look like a valid report (0.534834ms)
+(node:63415) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f08-upstream-candidate/app/workspace/commands.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-upstream-candidate/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ quick access, ribbon and shortcuts can share exactly one action and live enablement (0.425125ms)
+✔ selection, view type, undo history and template restrictions have distinct reasons (0.116417ms)
+✔ shortcuts respect typing, contenteditable, dialogs, modifiers and prior cancellation (0.083041ms)
+✔ drawing closure and re-opening retain document ownership; a new editor resets tabs (0.089791ms)
+✔ scope evidence never auto-enables inherited, planned, audit or uncertain commands (0.102334ms)
+(node:63416) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f08-upstream-candidate/app/ifc/api.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-upstream-candidate/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ F28 bounded height/base transactions preserve identities, core references, materials and persistent dimensions through undo/redo and actual bytes (44.151334ms)
+✔ detail/scale transactions preserve all other view settings and template semantics (4.7515ms)
+(node:63417) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f08-upstream-candidate/app/ifc/api.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f08-upstream-candidate/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all six placement lines and both exterior orientations use actual IFC axes and journals (113.246791ms)
+✔ shared type edits, duplicate assignment and layer reordering preserve identities, core anchors and dimensions (41.529625ms)
+✔ wall commands separate placement, instance type editing, missing records, busy state and cancellation (0.277375ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15591.889875

@@ -1,0 +1,50 @@
+npm notice run test:mcp01
+npm notice run node --test tests/features/mcp01/contract.test.mjs tests/features/mcp01/history.test.mjs
+(node:16296) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-mcp-01/app/ifc/api.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ required semantic registrations have strict schemas; authored selection has no static enum (15.58975ms)
+✔ real live installer and headless registry have the same semantic schemas and groups (106.897125ms)
+✔ read-only discovery does not migrate records, dirty the editor or alter saved bytes (11.913166ms)
+✔ separately opened copies have distinct document tokens even with identical IFC GlobalIds (3.156333ms)
+✔ concurrent calls and stale revision are rejected before changes (7.867917ms)
+✔ live busy and changed-document callbacks fail without applying to a replacement editor (2.455125ms)
+✔ wall batch with a valid ID followed by an unknown ID does not partially assign (2.553167ms)
+✔ invalid raw instance location line is diagnosed instead of silently falling back to center (4.586917ms)
+✔ unresolved top level is refused; stored IFC type and product GlobalIds are explicit (2.369708ms)
+✔ F02 exact machine read-back in mm file units retains sub-0.005 mm values (1.537459ms)
+✔ F02 exact machine read-back in m file units retains sub-0.005 mm values (1.213125ms)
+✔ F02 exact machine read-back in inch file units retains sub-0.005 mm values (1.347458ms)
+✔ F02 exact machine read-back in foot file units retains sub-0.005 mm values (1.477667ms)
+(node:16297) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-mcp-01/app/ifc/api.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-mcp-01/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ same-project multi-step Undo advances its own revision and subsequent Undo/Redo still work (28.613625ms)
+✔ switch after the first awaited Undo reports one completed A step and never changes B (9.958542ms)
+✔ an obsolete callback without a receipt stops after A and distinguishes unconfirmed from owned progress (6.220416ms)
+✔ switch during the initial idle settle refuses before invoking any history callback (9.466292ms)
+✔ undo: switch before an awaited application mutation is refused at the engine guard (9.231041ms)
+✔ redo: switch before an awaited application mutation is refused at the engine guard (7.520875ms)
+✔ Redo switching after mutation reports A, never replacement B, and does not claim full completion (7.2985ms)
+✔ wrong document and stale revision at entry leave both models and histories untouched (7.383459ms)
+✔ an unrelated history edit after one own step stops the request without undoing that edit (7.505583ms)
+✔ changing a lower history entry with unchanged count/top is detected (9.184583ms)
+✔ busy at entry and immediately before an awaited mutation refuses without changes (7.379375ms)
+✔ busy after one completed step reports partial progress and prevents the next step (6.127041ms)
+✔ person-owned steps stay protected at entry and between steps; any:true remains explicit (6.364875ms)
+✔ the guarded callback rechecks ownership after an intervening await (7.338375ms)
+✔ exhausted history explicitly reports requested versus completed steps (4.666292ms)
+✔ another pending Undo/Redo request is refused instead of sharing history ownership (6.454125ms)
+✔ switch while waiting for a real-style rebuild is detected before another history mutation (58.5405ms)
+✔ a post-mutation application error reports the completed step rather than claiming rollback (7.323542ms)
+✔ an unrelated Undo during a callback await is not credited to the refused request (6.467834ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 335.193833
