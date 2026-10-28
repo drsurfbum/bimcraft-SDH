@@ -125,12 +125,13 @@ export function mountInteractions(A) {
   canvas.tabIndex = 0;
   canvas.setAttribute('aria-label', t('drawing'));
   canvas.addEventListener('pointermove', e => { lastPointer = A.pv()?.toPlan(e.clientX, e.clientY); });
+  const menuKey = e => !e.isComposing && !e.ctrlKey && !e.altKey && !e.metaKey && (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10'));
   canvas.addEventListener('keydown', e => {
-    if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); e.stopPropagation(); open(lastPointer, e); }
+    if (menuKey(e)) { e.preventDefault(); e.stopPropagation(); open(lastPointer, e); }
   });
   window.addEventListener('keydown', e => {
     if (e.isComposing) return;
-    if ((e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) && e.target === canvas) { e.preventDefault(); e.stopImmediatePropagation(); open(lastPointer, e); return; }
+    if (menuKey(e) && e.target === canvas) { e.preventDefault(); e.stopImmediatePropagation(); open(lastPointer, e); return; }
     if (e.key === 'Escape') {
       if (menu) { reset(); e.preventDefault(); e.stopImmediatePropagation(); canvas.focus(); A.drawOverlay(); return; }
       if (A.S.drag) { reset(); A.cancelInteraction(); e.preventDefault(); e.stopImmediatePropagation(); return; }

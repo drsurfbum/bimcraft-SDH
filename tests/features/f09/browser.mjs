@@ -77,11 +77,13 @@ try{
   const beforeMenu=await state(page);await clickPlan(page,[(other.a[0]+other.b[0])/2,other.a[1]],{button:'right'});await page.locator('[data-f09-menu]').waitFor();assert.deepEqual(await state(page),beforeMenu);
   await page.locator('[data-f09-menu] button').first().click();await settle(page);assert.notDeepEqual((await state(page)).selection,beforeMenu.selection);assert.equal((await state(page)).changes,beforeMenu.changes);
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('ContextMenu');await settle(page);await page.locator('[data-f09-menu]').waitFor();await page.keyboard.press('Escape');assert.equal(await page.locator('[data-f09-menu]').count(),0);assert.equal(await page.evaluate(()=>document.activeElement===document.querySelector('[data-plan-canvas]')),true,'menu Escape restores canvas focus');await page.keyboard.press('Shift+F10');await page.locator('[data-f09-menu]').waitFor();await page.keyboard.press('ArrowDown');await page.keyboard.press('Escape');assert.equal(await page.locator('[data-f09-menu]').count(),0);
+  await page.evaluate(()=>document.querySelector('[data-plan-canvas]').dispatchEvent(new KeyboardEvent('keydown',{key:'F10',code:'F10',shiftKey:true,isComposing:true,bubbles:true,cancelable:true})));assert.equal(await page.locator('[data-f09-menu]').count(),0);
   await backgroundMenu(page);await page.locator('[data-f09-menu]').waitFor();await page.evaluate(()=>ccInput.run('edit.select-none'));const afterHuman=await state(page);await page.locator('[data-f09-menu] button').first().click();assert.deepEqual(await state(page),afterHuman);
   check('context menu preserves selection/history; keyboard navigation and stale-context refusal in '+(layout?'workspace':'established'));
   // Explicit core vs finish targeting and cancellation; numeric continuation retains the existing operation.
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('w');await page.keyboard.press('a');await settle(page);
   for(const reference of ['coreExterior','exterior','center']){
+    await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('w');await page.keyboard.press('a');await settle(page);assert.equal((await state(page)).tool,'wall');
     await page.locator('[data-f09-target]').selectOption(reference);
     const p=referencePoint({wall:target.guid,reference,station:.5},walls),q=await point(page,[p[0],p[1]+.000123]);await page.mouse.move(q.x,q.y);
     await page.waitForFunction(()=>document.querySelector('[data-f09-feedback]').textContent.includes('analytic'));
@@ -94,15 +96,19 @@ try{
       await typed.blur();await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('ControlOrMeta+z');await settle(page);assert.ok(!(await inspect(page)).walls.some(w=>w.guid===placed.guid));
       await page.keyboard.press('ControlOrMeta+Shift+z');await settle(page);assert.ok((await inspect(page)).walls.some(w=>w.guid===placed.guid));
       await page.keyboard.press('ControlOrMeta+z');await settle(page);
-      // Undo clears pending placement through the existing rebuild path; restart the supported tool explicitly.
-      await page.locator('[data-mtool="wall"]').click();await settle(page);
+      // The next iteration restarts Wall through the same native shortcut after Undo's rebuild.
     }
     await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('Escape');
   }
   const count=(await state(page)).changes;await backgroundMenu(page);await page.locator('[data-f09-menu] button').first().click();assert.equal((await state(page)).tool,'select');assert.equal((await state(page)).changes,count);
   // Do not steal native context menus in fields.
   await page.locator('[data-f09-target]').click({button:'right'});assert.equal(await page.locator('[data-f09-menu]').count(),0);
-  if(!layout){await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('d');await page.keyboard.press('i');assert.equal((await state(page)).tool,'wallDimension');assert.equal(await page.locator('[data-mopts="wallDimension"] select').nth(1).inputValue(),'aligned');await page.keyboard.press('Escape');}
+  if(!layout){
+    await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('d');await page.keyboard.press('i');assert.equal((await state(page)).tool,'wallDimension');assert.equal(await page.locator('[data-mopts="wallDimension"] select').nth(1).inputValue(),'aligned');
+    const history=(await state(page)).changes;
+    for(const reference of ['coreExterior','exterior']){await page.locator('[data-mopts="wallDimension"] select').first().selectOption(reference);const q=await point(page,referencePoint({wall:target.guid,reference,station:.5},walls));await page.mouse.move(q.x,q.y);assert.ok((await page.evaluate(()=>bimcraftPlan.view.overlay.hud?.text)).includes(reference==='exterior'?'Finish face: exterior':'Core face: exterior'));await page.mouse.click(q.x,q.y);}
+    await clickPlan(page,[3000,600],{button:'right'});await page.locator('[data-f09-menu]').waitFor();assert.equal((await state(page)).tool,'wallDimension');await page.keyboard.press('Escape');assert.equal((await state(page)).tool,'wallDimension');await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('Escape');await page.keyboard.press('Escape');assert.equal((await state(page)).changes,history);
+  }
   check('explicit analytic core/finish preview and cancellation; DI semantics and native field menus in '+(layout?'workspace':'established'));
   // A native midpoint grip consumes the same explicit reference as the semantic resolver.
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('Escape');await page.keyboard.press('Escape');await settle(page);
