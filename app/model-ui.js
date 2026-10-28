@@ -364,8 +364,8 @@ export function mountModel(host) {
     for (const x of exts) Object.assign(all, x.schedules?.() || {});   // extensions' schedules (res-ui.js: the lumber cut list)
     return all;
   }
-  function renderSchedule() {
-    if (!ui.sched || !S.on || !S.data) return;
+  function renderSchedule(workspace = false) {
+    if (!ui.sched || (!S.on && !workspace) || !S.data) return;
     const all = scheduleData(), sc = all[S.sched];
     for (const key of ['assemblies','materialLegend']) if (!ui.schedKind.querySelector('option[value="'+key+'"]')) ui.schedKind.append(el('option', {value:key}, all[key].title));
     if (!sc) return;
@@ -400,13 +400,14 @@ export function mountModel(host) {
     }},t('model.sch.full')):null;
     ui.sched.replaceChildren(...(sc.note?[el('p',{className:'bc-muted','data-schedule-note':''},sc.note)]:[]),...(expand?[expand]:[]), sc.rows.length ? table : el('p', { className: 'bc-muted' }, t('model.sch.none')));
   }
-  ui.schedCsv?.addEventListener('click', () => {
+  function exportSchedule() {
     if (!S.data) return;
     const sc = scheduleData()[S.sched];
     const base = String(host.fileName?.() || 'model').replace(/\.ifc$/i, '');
     host.download(base + ' ' + (sc.title || t('model.sch.' + S.sched)).toLowerCase() + '.csv', '\ufeff' + scheduleCsv(sc), 'text/csv');   // i18n-ignore: a file name
-  });
-  ui.print?.addEventListener('click', () => {
+  }
+  ui.schedCsv?.addEventListener('click', exportSchedule);
+  function exportPlan() {
     if (!pv || !S.data) return;
     const sc = { ...pv.scene, dims: (pv.scene.dims || []).map((d) => ({ ...d, offPx: undefined })) };
     const lv = level(), when = new Date().toISOString().slice(0, 10);
@@ -414,7 +415,8 @@ export function mountModel(host) {
     const r = planPdf(sc, { title: api.ask('viewTitle') || t(S.kind === 'rcp' ? 'model.print.rcpof' : 'model.print.titleof', { level: lv?.name || '' }), lines: [base, t('model.print.cut', { h: fmtLen(viewRange().cut, S.units) }), when], units: S.units, paper: isMetric(S.units) ? 'a4' : 'letter', scale: viewRange().scale || null });
     host.download(base + ' — ' + (lv?.name || '') + (S.kind === 'rcp' ? ' ' + t('model.rcp.file') : '') + '.pdf', r.bytes, 'application/pdf');   // i18n-ignore: a file name
     host.status(t('model.print.done', { scale: r.scale.label }) + (r.missing ? ' ' + t('model.print.missing', { n: r.missing }) : ''));
-  });
+  }
+  ui.print?.addEventListener('click', exportPlan);
 
   // ---- the level select and the Levels panel ----
   function fillLevelSelect() {
@@ -1497,11 +1499,17 @@ export function mountModel(host) {
 
   setTool('select');
   /** What an extension (extend()) may use. */
+  let workspaceActivation = 0;
   const api = {
     S, root, host, t, ed, kb, commit, refresh, buildScene, drawOverlay, setTool, level, levelAbove, wallsHere, wallsOn, snapAt,
-    workspaceWallControls: () => ({ row: ui.wallOpts, type: ui.wallType, reference: ui.wallRef, side: ui.wallSide, shape: ui.wallShape, top: ui.wallTop, height: ui.wallH, typedRow: ui.typedRow, typed: ui.typed, units: ui.units }),
-    workspaceCancel(finishOnly = false) { if (S.chain) { endChain(); host.status(t('model.chain.ended')); } else if (!finishOnly) setTool('select'); for (const x of exts) x.toolChanged?.(S.tool); },
+    workspaceWallControls: () => ({ row: ui.wallOpts, type: ui.wallType, reference: ui.wallRef, side: ui.wallSide, shape: ui.wallShape, top: ui.wallTop, height: ui.wallH, typedRow: ui.typedRow, typed: ui.typed, units: ui.units, hint: ui.hint }),
+    workspaceCancel(finishOnly = false) {
+      if (S.tool !== 'wall') { if (finishOnly) exts.some(x => x.key?.({key:'Enter'}, 'enter')); else { exts.some(x => x.escape?.()); setTool('select'); } drawOverlay(); return; }
+      if (S.chain) { endChain(); host.status(t('model.chain.ended')); } else if (!finishOnly) setTool('select'); for (const x of exts) x.toolChanged?.(S.tool);
+    },
     workspaceTyped(key) { ui.typed.focus(); ui.typed.value += key; },
+    workspaceSchedule(kind) { S.sched = kind; renderSchedule(true); if (ui.schedKind) ui.schedKind.value = kind; },
+    exportSchedule, exportPlan,
     /** F28: prepare real browser data without creating/replacing a canvas or activating a drawing tool. */
     prepareWorkspace() {
       S.data = ed() ? snapshotModel(ed()) : null;
@@ -1509,14 +1517,15 @@ export function mountModel(host) {
       for (const x of exts) x.refresh?.();
     },
     /** F28: a floor plan uses the existing PlanView and picking transform; a restored camera is in model mm. */
-    activateWorkspaceView(levelId, camera = null) {
+    activateWorkspaceView(levelId, camera = null, kind = 'plan', callout = null) {
+      const activation = ++workspaceActivation;
       if (levelId === null) { show(false); return; }
-      const same = S.on && S.level === levelId && S.kind === 'plan' && !S.callout;
+      const same = S.on && S.level === levelId && S.kind === kind && S.callout === callout;
       S.layout = 'plan';
-      if (!same) showKind(levelId, 'plan');
+      if (!same) showKind(levelId, kind, callout);
       applyLayout();
       requestAnimationFrame(() => {
-        if (!pv || !S.on || S.level !== levelId) return;
+        if (activation !== workspaceActivation || !pv || !S.on || S.level !== levelId || S.kind !== kind || S.callout !== callout) return;
         pv.resize();
         if (camera) { Object.assign(pv, camera); pv.render(); }
         else if (!same) fitPlan();

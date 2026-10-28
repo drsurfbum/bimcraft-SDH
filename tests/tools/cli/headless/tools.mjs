@@ -345,11 +345,15 @@ export function headlessTools(env) {
       // A close while apply awaits must not authorize a detached document's next commit.
       if (doc && get(env, doc, 'ifc').s !== s) throw new Error('Document changed during request.');
       return s.ed;
-    }, apply: (label, op) => s.apply(label, op) });
+    }, documentationOwner:()=>s.ifc.file(s.mid), apply: (label, op) => s.apply(label, op), exportDocumentation: async (a, output) => {
+      if (!a.path) throw new Error('Headless documentation exports require an explicit path in an allowed root.');
+      if (get(env, doc, 'ifc').s !== s) throw new Error('Document changed before export.');
+      return { path:write(env, a.path, output.bytes, { overwrite:a.overwrite === true, ext:output.extension }) };
+    } });
     for (const def of BIM.modelTools(bimEnv(null))) {
       const schema = def.inputSchema || obj({});
       T({ ...def, description: def.description + ' Works on an IFC model opened with ifc_open or ifc_new (doc).',
-        inputSchema: { ...schema, properties: { doc: S.doc, ...schema.properties }, required: ['doc', ...(schema.required || [])] },
+        inputSchema: { ...schema, properties: { doc: S.doc, ...schema.properties }, required: ['doc', ...(schema.required || []), ...(def.name === 'documentation_export' ? ['path'] : [])] },
         run: async (a) => {
           const d = get(env, a.doc, 'ifc');
           await d.s.editor();

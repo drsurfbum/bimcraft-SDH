@@ -1,0 +1,23 @@
+{
+  "artifacts": [
+    {
+      "id": 12561780295,
+      "name": "f28-c-browser",
+      "size_in_bytes": 2523974,
+      "url": "https://api.github.com/repos/drsurfbum/bimcraft-SDH/actions/artifacts/12561780295",
+      "archive_download_url": "https://api.github.com/repos/drsurfbum/bimcraft-SDH/actions/artifacts/12561780295/zip",
+      "expired": false,
+      "created_at": "2026-10-24T13:14:02Z",
+      "expires_at": "2027-01-22T13:12:22Z",
+      "updated_at": "2026-10-24T13:14:02Z",
+      "digest": "sha256:0ec73a3e951711a04c59f21099fe622972dd4092d593141957e9a83903b8fe1c",
+      "workflow_run": {
+        "id": 40097131799,
+        "repository_id": 1428509177,
+        "head_repository_id": 1428509177,
+        "head_branch": "feature/f28-c-documentation",
+        "head_sha": "b8388bd36fe69e54d483a688d1cb3fee4e94f1c9"
+      }
+    }
+  ]
+}

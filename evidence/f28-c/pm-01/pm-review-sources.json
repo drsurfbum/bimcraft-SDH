@@ -1,0 +1,27 @@
+[
+  {
+    "path": "../reviews/F28-C-PM-2026-10-23/PM-REVIEW.md",
+    "sha256": "3660b4db8f232fdc614a1129cbd1c3ae5c40f0d8247becace9642df1b43e5ded",
+    "bytes": 7098
+  },
+  {
+    "path": "../reviews/F28-C-PM-2026-10-23/pm-source-action-repro.json",
+    "sha256": "b1a561b7accf14190f23ee9d004219485ec1154b437f74039b157c5afa13e921",
+    "bytes": 1520
+  },
+  {
+    "path": "../reviews/F28-C-PM-2026-10-23/source-action-repro.mjs.txt",
+    "sha256": "b94cc988d7499e9ec6905d5e6c81a7a38f861befec0612f38285d731d3f90507",
+    "bytes": 3359
+  },
+  {
+    "path": "../reviews/F28-C-PM-2026-10-23/pm-source-action-sheet.png",
+    "sha256": "a92401bcf6a45c5da7aacb524b9e816f431f0db92de905279b2bd834157f4a0f",
+    "bytes": 188129
+  },
+  {
+    "path": "../reviews/F28-C-PM-2026-10-23/pm-source-action-csv.png",
+    "sha256": "04afecd67fc8bab340aeef8999858e7de78140c962eaa4d0af5c3dae2931790c",
+    "bytes": 264477
+  }
+]

@@ -120,9 +120,8 @@ function checkRange(r, levelHeight = 1e9) {
   if (!(r.bottom <= r.cut && r.cut <= top) || !(r.depth >= 0)) refuse('model.err.vr.order');
 }
 
-export function setPlanView(levelGuid, ch, kind = 'plan') {
-  const c = { ...ch };
-  return op((w) => {
+export function validatePlanViewChange(w, levelGuid, ch, kind = 'plan') {
+    const c = { ...ch };
     const L = readLevels(w).find((l) => l.guid === levelGuid);
     if (!L) refuse('model.err.nolevel');
     const cur = readPlanViews(w, kind).get(L.id) || { ...(kind === 'rcp' ? RCP_DEFAULTS : RANGE_DEFAULTS), hiddenClasses: [], hiddenGuids: [], template: '', crop: null, underlay: '' };
@@ -136,6 +135,12 @@ export function setPlanView(levelGuid, ch, kind = 'plan') {
     if ('scale' in c && !(Number.isFinite(Number(c.scale)) && Number(c.scale) >= 0 && Number(c.scale) <= 10000)) refuse('model.err.vr.scale');
     if (nv.underlay && (nv.underlay === levelGuid || !readLevels(w).some((l) => l.guid === nv.underlay))) refuse('model.err.vr.underlay');
     const crop = cropOf(nv.crop) || [0, 0, 0, 0];
+    return { L, nv, crop };
+}
+export function setPlanView(levelGuid, ch, kind = 'plan') {
+  const c = { ...ch };
+  return op((w) => {
+    const { L, nv, crop } = validatePlanViewChange(w, levelGuid, c, kind);
     w.upsertPset(L.id, PSET_OF[kind] || PLANVIEW_PSET, [
       ['Cut', 'IFCLENGTHMEASURE', round(w.u(nv.cut))], ['Top', 'IFCLENGTHMEASURE', round(w.u(nv.top || 0))], ['Bottom', 'IFCLENGTHMEASURE', round(w.u(nv.bottom))],
       ['Depth', 'IFCLENGTHMEASURE', round(w.u(nv.depth))], ['HiddenClasses', 'IFCTEXT', [...new Set(nv.hiddenClasses)].filter((x) => /^Ifc\w+$/.test(x)).join(',')],

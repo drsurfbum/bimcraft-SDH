@@ -1,0 +1,90 @@
+name: F28-C documentation workspace acceptance
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: f28-c-browser-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: devshell/vendor
+          key: vendor-${{ hashFiles('devshell/vendor.json') }}
+      - run: npm run fetch-vendor
+      - name: Browser and independent IFC/PDF readers
+        run: |
+          npm install --prefix .cc-test/f28-c-browser-deps --no-package-lock playwright@1.56.1
+          .cc-test/f28-c-browser-deps/node_modules/.bin/playwright install --with-deps chromium
+          python -m venv .cc-test/f28-c-reader
+          .cc-test/f28-c-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt -r tests/features/f04/requirements-independent.txt
+      - name: Exact delivery commit metadata (no model content)
+        run: |
+          for commit in $(git rev-list HEAD ^82da107dfd760199bc943249590812978c1a6082 ^f956fac00adf1d4d51ddc2e4253fe215a2c50acd); do
+            echo "COMMIT_OBJECT $commit $(git cat-file commit "$commit" | base64 -w0)"
+          done
+      - name: Focused state and documentation checks
+        run: npm run test:f28
+      - name: Real documentation and recovery browser acceptance
+        env:
+          F28_EMIT_REVIEW_FRAMES: '1'
+        run: node tests/features/f28/documentation-browser.mjs
+      - name: Independent actual IFC CSV and vector PDF downloads
+        if: ${{ always() && hashFiles('.cc-test/f28-c-browser/saved.ifc') != '' }}
+        run: .cc-test/f28-c-reader/bin/python -I tests/features/f28/documentation-independent.py
+      - name: Six units and real PHP locale controls on the shared host
+        if: always()
+        env:
+          F28_ALIGN_REQUIRE_PHP: '1'
+          F28_ALIGN_PLAYWRIGHT: .cc-test/f28-c-browser-deps/node_modules/playwright/index.mjs
+        run: node tests/features/f28/alignment-browser.mjs
+      - name: Comparable F04 and F05 geometry export workloads
+        env:
+          F28_COMPARE_BASE: 3e42c21e33e642d1e07bea2fc3356344f91db00e
+          F28_COMPARE_OUTPUT: evidence/f28-c/performance-node.json
+        run: node tests/features/f28/measure.mjs
+      - name: Render actual vector exports for review
+        if: ${{ always() && hashFiles('.cc-test/f28-c-browser/edited-section.pdf') != '' && hashFiles('.cc-test/f28-c-browser/drawing-sheet.pdf') != '' }}
+        env:
+          F28_EMIT_REVIEW_FRAMES: '1'
+        run: |
+          if ! command -v pdftoppm; then sudo apt-get install -y poppler-utils; fi
+          node tests/features/f28/render-documentation.mjs
+      - name: Retain review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f28-c-browser
+          path: |
+            .cc-test/f28-c-browser/report.json
+            .cc-test/f28-c-browser/independent.json
+            .cc-test/f28-c-browser/failure.png
+            .cc-test/f28-c-browser/plan.png
+            .cc-test/f28-c-browser/section.png
+            .cc-test/f28-c-browser/drawing-sheet.png
+            .cc-test/f28-c-browser/narrow.png
+            .cc-test/f28-c-browser/properties-source-sheet-inactive.png
+            .cc-test/f28-c-browser/properties-source-csv-inactive.png
+            .cc-test/f28-c-browser/properties-source-csv-active.png
+            .cc-test/f28-c-browser/export-edited-section.png
+            .cc-test/f28-c-browser/export-drawing-sheet.png
+            .cc-test/f28-c-browser/export-assemblies.png
+            .cc-test/f28-c-browser/export-legend.png
+            .cc-test/f28-c-alignment/report.json
+            .cc-test/f28-c-alignment/documentation-units.png
+            evidence/f28-c/performance-node.json

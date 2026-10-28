@@ -6,11 +6,11 @@ import { reviewAvailability } from './availability-review.js';
  * themselves; a tool BimCraft has (engine.js) asks the app's own button; anything else is not built yet.
  * ctx = { root, t } (the app root and its text function).
  */
-export function availability(id, commands, state, context) {
+export function availability(id, commands, state, context, target) {
   if (!context) return reviewAvailability(id, commands, state);
   const { root, t } = context;
   if (id === 'copy' && state.selection?.length && state.wall?.supported) return { enabled: false, reason: t('ws.why.wallcopy') };
-  if (commands.ids.includes(id)) return commands.describe(id);
+  if (commands.ids.includes(id)) return commands.describe(id, target);
   const spec = ENGINE[id];
   if (spec) { const why = engineWhy(root, spec, state, t); return { enabled: !why, reason: why }; }
   return { enabled: false, reason: t('ws.why.notbuilt') };

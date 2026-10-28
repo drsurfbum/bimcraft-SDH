@@ -2,6 +2,7 @@
 # Provisional Linux/headless reference, kept separate from local model measurements.
 name: F03 performance evidence
 on:
+  pull_request:
   push:
     branches: [feature/f08-wall-joins, candidate/f08-07-20261026, integration/upstream-0.7-20261025]
   workflow_dispatch:
@@ -48,6 +49,15 @@ jobs:
           node tests/features/f03/profile-report.mjs .cc-test/f03-ci
           node tests/features/f03/phase-report.mjs .cc-test/f03-ci
           node tests/features/f03/trace-report.mjs .cc-test/f03-ci
+      - name: Executed sample and unmeasured-group receipt (metadata only)
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';import assert from 'node:assert/strict';import {execFileSync} from 'node:child_process';
+          const root='.cc-test/f03-ci/',raw=JSON.parse(fs.readFileSync(root+'browser-raw.json')),report=JSON.parse(fs.readFileSync(root+'summary.json'));
+          const groups=report.summary.map(({key,n,invalidRun,insufficient,targetResult})=>({key,n,invalidRun,insufficient,targetResult}));
+          assert.equal(groups.reduce((n,g)=>n+g.n,0),raw.samples.length);
+          console.log('F03_RECEIPT '+JSON.stringify({head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),observations:raw.samples.length,groups,sourceErrors:raw.errors.length,warmups:raw.config.warmups,configuredRepetitions:raw.config.count,unmeasured:report.missing,modelObservations:raw.samples.filter(r=>r.domain==='model').length,conditions:raw.environment}));
+          NODE
       - name: Retain raw evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4

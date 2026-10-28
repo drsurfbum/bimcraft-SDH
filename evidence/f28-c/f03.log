@@ -1,0 +1,51 @@
+npm notice run test:f03
+npm notice run node --test tests/features/f03/harness.test.mjs
+(node:78973) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/austinhartt/Documents/ChatGPT/BimCraft%20Test/bimcraft-f28-c/app/i18n.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/austinhartt/Documents/ChatGPT/BimCraft Test/bimcraft-f28-c/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+small {
+  bytes: 90139,
+  sha256: 'b9afbb39b9dc563966e213e48a59e7f5a2e413fbbfc84f8f2b40042f019f9403',
+  entities: 1504,
+  walls: 12,
+  openings: 3,
+  dimensions: 3,
+  roofs: 1,
+  bays: 3,
+  bayAreaM2: 72
+}
+medium {
+  bytes: 219188,
+  sha256: '168be011e64585f757934c3775ce83ae47c86a97eda98734e720fcda3ffc7058',
+  entities: 3682,
+  walls: 36,
+  openings: 9,
+  dimensions: 9,
+  roofs: 1,
+  bays: 9,
+  bayAreaM2: 216
+}
+large {
+  bytes: 542426,
+  sha256: 'f583a575665ee0ecfced5ed9ff9053388f0e69f15aeabfd54c7a3c4ab45cf371',
+  entities: 9127,
+  walls: 96,
+  openings: 24,
+  dimensions: 24,
+  roofs: 1,
+  bays: 24,
+  bayAreaM2: 576
+}
+✔ fixtures are byte deterministic including identities and header timestamp (4044.147416ms)
+✔ nearest-rank percentiles and insufficient/noisy flags are explicit (0.39325ms)
+✔ CLI smoke executes all three sizes/workloads and generates a valid report (6033.475417ms)
+✔ missing, malformed or empty evidence cannot look like a valid report (0.468958ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10204.409959

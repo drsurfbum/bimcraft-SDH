@@ -20,8 +20,7 @@ export function readProjectedView(w,key) {
     return ps&&Object.hasOwn(ps,key)?validate(parseRecord(ps[key],'projected',false)):{...PROJECTED_DEFAULTS};
   }catch(e){return {...PROJECTED_DEFAULTS,issue:e.message};}
 }
-export function setProjectedView(key,changes) {
-  return op(w=>{
+export function validateProjectedViewChange(w,key,changes) {
     if(!validKey(key))throw recordError('projected','corrupt');
     const ps=records(w);
     // Refuse to rewrite any unknown/corrupt record in this scoped container.
@@ -29,6 +28,11 @@ export function setProjectedView(key,changes) {
     if(key.startsWith('section:')&&!readSectionLines(w).some(s=>s.guid===key.slice(8)))throw recordError('projected','missing');
     const next=validate({...readProjectedView(w,key),...changes,version:1});
     if(Object.hasOwn(changes,'version')&&changes.version!==1)throw recordError('projected','unsupported');
+    return next;
+}
+export function setProjectedView(key,changes) {
+  return op(w=>{
+    const next=validateProjectedViewChange(w,key,changes);
     const id=ids(w.api,w.mid,'IFCPROJECT')[0];
     w.upsertPset(id,PROJECTED_PSET,[[key,'IFCTEXT',JSON.stringify({version:1,detail:next.detail,scale:next.scale,crop:next.crop})]]);
     return {id,ids:[]};

@@ -53,7 +53,10 @@ function copyClosure(src, dst, entries, { staticOnly = [] } = {}) {
     if (!fs.existsSync(path.join(src, f))) throw new Error('Missing packed module: ' + f);
     if (f.startsWith('..') || path.isAbsolute(f)) throw new Error('Module escapes app closure: ' + f);
     seen.add(f);
-    const text = fs.readFileSync(path.join(src, f), 'utf8');
+    // JSDoc examples are relative to the caller, not this module. They are not
+    // imports (e.g. ifc/open-async.js documents a caller's './ifc/open-async.js').
+    // Keep all executable static/dynamic imports mandatory; omit only doc rows.
+    const text = fs.readFileSync(path.join(src, f), 'utf8').split('\n').filter(line => !/^\s*(?:\/\*|\*)/.test(line)).join('\n');
     const re = staticOnly.includes(f) ? /(?:from\s*|^\s*import\s+)['"](\.{1,2}\/[^'"]+\.m?js)['"]/gm : /(?:from\s*|import\(\s*|^\s*import\s+)['"](\.{1,2}\/[^'"]+\.m?js)['"]/gm;
     for (const m of text.matchAll(re)) todo.push(path.join(path.dirname(f), m[1]));   // + bare `import './x.js'` (cs-all.js)
   }

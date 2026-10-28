@@ -1,0 +1,76 @@
+name: F28-C semantic documentation MCP
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: f28-doc-mcp-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: devshell/vendor
+          key: vendor-${{ hashFiles('devshell/vendor.json') }}
+      - run: npm run fetch-vendor
+      - name: Required independent readers and browser
+        run: |
+          npm install --prefix .cc-test/doc-deps --no-package-lock playwright@1.56.1
+          .cc-test/doc-deps/node_modules/.bin/playwright install --with-deps chromium
+          python -m venv .cc-test/doc-reader
+          .cc-test/doc-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt -r tests/features/f04/requirements-independent.txt
+      - name: Retained contracts, exact receipts and domain controls
+        run: node --test tests/features/f28/doc-mcp.test.mjs tests/features/mcp01/*.test.mjs tests/features/f08/semantic.test.mjs tests/features/f08/foundation07.test.mjs
+      - name: Actual source stdio and independently read actual IFC CSV vector PDFs
+        run: |
+          node tests/features/f28/doc-mcp-stdio.mjs
+          .cc-test/doc-reader/bin/python -I tests/features/f28/doc-mcp-independent.py .cc-test/doc-mcp-stdio
+      - name: Isolated packaged transport, mandatory closure and independent outputs
+        run: |
+          node tests/features/f28/doc-mcp-package.mjs
+          .cc-test/doc-reader/bin/python -I tests/features/f28/doc-mcp-independent.py .cc-test/doc-mcp-package/consumer
+      - name: Real authenticated live HTTP, native interleavings and established layout
+        run: |
+          node tests/features/f28/doc-mcp-browser.mjs
+          .cc-test/doc-reader/bin/python -I tests/features/f28/doc-mcp-independent.py .cc-test/doc-mcp-browser
+      - name: Inspectable actual HTTP screenshots and vector-PDF renderings
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+          pdftoppm -f 1 -singlefile -scale-to 1400 -png .cc-test/doc-mcp-browser/section.pdf .cc-test/doc-mcp-browser/export-section
+          pdftoppm -f 1 -singlefile -scale-to 1400 -png .cc-test/doc-mcp-browser/sheet.pdf .cc-test/doc-mcp-browser/export-sheet
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          for(const name of ['documentation-http.png','export-section.png','export-sheet.png']){const b=fs.readFileSync('.cc-test/doc-mcp-browser/'+name).toString('base64'),n=Math.ceil(b.length/12000);for(let i=0;i<n;i++)console.log('DOC_FRAME '+name+' '+i+'/'+n+' '+b.slice(i*12000,(i+1)*12000));}
+          NODE
+      - name: Retain sanitized reports and named screenshots only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: f28-doc-mcp-evidence
+          path: |
+            .cc-test/doc-mcp-stdio/report.json
+            .cc-test/doc-mcp-stdio/independent.json
+            .cc-test/doc-mcp-stdio/catalog.json
+            .cc-test/doc-mcp-package/report.json
+            .cc-test/doc-mcp-package/consumer/report.json
+            .cc-test/doc-mcp-package/consumer/independent.json
+            .cc-test/doc-mcp-browser/report.json
+            .cc-test/doc-mcp-browser/independent.json
+            .cc-test/doc-mcp-browser/documentation-http.png
+            .cc-test/doc-mcp-browser/export-section.png
+            .cc-test/doc-mcp-browser/export-sheet.png
