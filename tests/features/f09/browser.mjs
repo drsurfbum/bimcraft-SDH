@@ -128,7 +128,7 @@ try{
   await exportExpected(page,target.guid,path.join(out,layout?'workspace-expected-private.json':'established-expected-private.json'));
   await page.locator('[data-file]').setInputFiles(path.join(out,layout?'workspace-saved.ifc':'established-saved.ifc'));await settle(page);assert.deepEqual(await inspect(page),afterGrip);
   check('native explicit placement/grip commit, cancellation, host/orientation/reference identity, Undo/Redo and actual save/reopen in '+(layout?'workspace':'established'));
-  if(layout)await page.locator('[data-pb-plan]').first().dblclick();else if(await page.locator('[data-model-toggle]').getAttribute('aria-pressed')!=='true')await page.locator('[data-model-toggle]').click();await settle(page);
+  if(layout)await page.locator('[data-pb-plan]').first().dblclick();else if(await page.locator('[data-model-toggle]').getAttribute('aria-pressed')!=='true'){const draw=page.locator('[data-input-bar] [data-cmd="model.draw"]');assert.ok(await draw.isVisible());assert.ok(await draw.isEnabled());await draw.click();}await settle(page);
   await page.locator('[data-f09-target]').selectOption('coreExterior');const demoPoint=await point(page,destination);await page.mouse.move(demoPoint.x,demoPoint.y);const demoChoice=page.locator('[data-f09-candidates]');if(await demoChoice.isVisible())await demoChoice.selectOption(walls[1].guid+':mid:0.5');
   await page.screenshot({path:path.join(out,layout?'workspace.png':'established.png')});
   if(layout){
@@ -147,6 +147,6 @@ try{
   await context.close();
  }
  assert.deepEqual(report.errors,[]);report.status='PASS';
-}catch(e){report.status='FAIL';report.error=e.stack;if(lastPage&&!lastPage.isClosed()){await lastPage.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});report.failureState=await lastPage.evaluate(()=>({early:window.__f09Early,events:window.__f09Events,tool:window.bimcraftPlan?.state.tool,focus:document.activeElement?.outerHTML,menus:document.querySelectorAll('[data-f09-menu]').length})).catch(()=>null);}throw e;}finally{
+}catch(e){report.status='FAIL';report.error=e.stack;if(lastPage&&!lastPage.isClosed()){await lastPage.screenshot({path:path.join(out,'failure.png')}).catch(()=>{});report.failureState=await lastPage.evaluate(()=>({early:window.__f09Early,events:window.__f09Events,tool:window.bimcraftPlan?.state.tool,focus:document.activeElement?.outerHTML?.slice(0,240),menus:document.querySelectorAll('[data-f09-menu]').length})).catch(()=>null);}throw e;}finally{
  console.log('F09_REPORT '+JSON.stringify(report));fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await live?.close();await browser?.close();await new Promise(r=>app?app.close(r):r());
 }
