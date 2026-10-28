@@ -36,6 +36,7 @@ jobs:
           .cc-test/f09-deps/node_modules/.bin/playwright install --with-deps chromium
           python -m venv .cc-test/f09-reader
           .cc-test/f09-reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
+          .cc-test/f09-reader/bin/python -m pip install -r tests/features/f04/requirements-independent.txt
       - name: F09 and inherited precision/model regressions
         run: |
           node --test tests/features/f09/*.test.mjs
@@ -54,7 +55,9 @@ jobs:
         if: ${{ !cancelled() && steps.browser.outcome == 'success' }}
         env:
           F09_REQUIRE_UI_OUTPUT: '1'
-        run: .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
+        run: |
+          node tests/features/f09/outputs.mjs
+          .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
       - name: Candidate discovery on unchanged F03 fixture sizes
         run: node tests/features/f09/measure.mjs
       - name: Retain summary evidence only
