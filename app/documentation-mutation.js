@@ -25,6 +25,7 @@ export async function documentationMutation(env, ed, name, tasks) {
     if((env.documentationOwner?env.documentationOwner():ed.api.file(ed.mid))!==owner)docFail('document_changed','Original document instance was replaced.');
     if(env.documentationContext&&env.documentationContext()!==sourceContext)docFail('source_changed','The person activated another drawing source. Further steps stopped.');
     if(!historyMatches())docFail('history_changed','History changed outside this request. Inspect again.');
+    if(env.documentationEditing?.())docFail('dirty_properties','Pending Properties input changed during this request. Finish or cancel it before continuing.');
     if(env.busy?.())docFail('busy','Document is busy.');
   };
   for(const task of tasks){
