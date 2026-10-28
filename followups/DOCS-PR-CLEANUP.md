@@ -1,3 +1,5 @@
+> Subsequent status, October 28: F09-A draft PR #18 is published with validation incomplete; F28-C #12 remains a separate draft. Main stays `60dbd3a`. [F09 readiness triage](F09-READINESS-TRIAGE.md). Earlier PR/status snapshots below describe their recorded date.
+
 # Documentation PR cleanup — October 27, 2026
 
 **PR #10 and PR #14 are merged. PR #3 is closed as superseded, with its useful integration record preserved. F28-C #12 is the only open PR and remains draft/separate.** Current main is `60dbd3abff0d1d98ce1a85375de7b6087709c8ee`; the application implementation is unchanged from validated F08-A baseline `0329eece15fedbfeb14025683d7fe9da78263ef2`.

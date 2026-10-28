@@ -1,3 +1,5 @@
+> Subsequent status, October 28: F09-A draft PR #18 is published with validation incomplete; F28-C #12 remains a separate draft. Main stays `60dbd3a`. [F09 readiness triage](F09-READINESS-TRIAGE.md). Earlier PR/status snapshots below describe their recorded date.
+
 > October 27 documentation adoption: PR #10/#14 merged on main `60dbd3a`, PR #3 superseded/closed with its history preserved, and only draft F28-C #12 remains open. The application is identical to validated `0329eec`; documentation-commit checks are recorded separately. [Documentation review](DOCS-PR-CLEANUP.md). Earlier feature snapshots below remain historical.
 
 > Current adoption status: PR #13 is merged and validated on main `0329eec`. All eleven exact-main workflow types pass; fresh local baseline is 729/0 with four availability notices and 120 focused tests pass. F08-PM-01/02 stay CLOSED. Full F08 remains partial and F28-C stays separate. [Integrated adoption record](F08-INTEGRATED.md). Earlier review/snapshots below are historical.
