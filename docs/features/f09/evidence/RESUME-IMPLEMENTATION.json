@@ -1,0 +1,144 @@
+{
+  "head": "3020661fad4f279a9caf82817f6901da4fe2cafc",
+  "run": 40730249765,
+  "artifact": 12834802276,
+  "unit": {
+    "passed": 8,
+    "failed": 0
+  },
+  "inheritedModelGroup": {
+    "passed": 64,
+    "failed": 0
+  },
+  "strictInput": {
+    "passed": 81,
+    "failed": 0
+  },
+  "browser": {
+    "head": "3020661fad4f279a9caf82817f6901da4fe2cafc",
+    "checks": [
+      "established: right-button pan does not open a menu; WA executes once; Escape, 1.5s timeout and focus changes clear prefixes",
+      "native Properties text Undo retains model history in established",
+      "context menu preserves selection/history; keyboard navigation and stale-context refusal in established",
+      "explicit analytic core/finish preview and cancellation; DI semantics and native field menus in established",
+      "native explicit placement/grip commit, cancellation, host/orientation/reference identity, Undo/Redo and actual save/reopen in established",
+      "native ambiguous hosts require explicit choice before precise pending placement in established",
+      "captured menu cannot mutate either project after native document switch in established",
+      "workspace: right-button pan does not open a menu; WA executes once; Escape, 1.5s timeout and focus changes clear prefixes",
+      "native Properties text Undo retains model history in workspace",
+      "context menu preserves selection/history; keyboard navigation and stale-context refusal in workspace",
+      "explicit analytic core/finish preview and cancellation; DI semantics and native field menus in workspace",
+      "native explicit placement/grip commit, cancellation, host/orientation/reference identity, Undo/Redo and actual save/reopen in workspace",
+      "native ambiguous hosts require explicit choice before precise pending placement in workspace",
+      "six exact analytic references through real transport; no history or model changes",
+      "actual strict schema, missing binding, foreign host and stale revision refusals",
+      "explicit raw-mm target drives existing custom-type wall placement and atomic Undo",
+      "resolve → existing wall_change → exact readback → Undo/Redo retains accepted joins and revision guards",
+      "actual live HTTP initialization, strict tool discovery, semantic calls and saved IFC",
+      "captured menu cannot mutate either project after native document switch in workspace"
+    ],
+    "errors": [],
+    "browser": "141.0.7390.37",
+    "status": "PASS"
+  },
+  "independent": {
+    "status": "PASS",
+    "reader": "IfcOpenShell 0.9.0",
+    "boundMm": 0.005,
+    "checks": [
+      {
+        "file": ".cc-test/f09/targeted.ifc",
+        "wallAxis": true,
+        "hostedIds": 5,
+        "hostRelations": 5,
+        "dimensionCurvesAndWitnesses": 2,
+        "schemaExpressFindings": 0,
+        "physicalProfileMm": true,
+        "csvLayers": 11,
+        "vectorPdf": true,
+        "pdfDimensionLines": 2
+      },
+      {
+        "file": ".cc-test/f09-source/saved.ifc",
+        "wallAxis": true,
+        "hostedIds": 0,
+        "hostRelations": 0,
+        "dimensionCurvesAndWitnesses": 0,
+        "schemaExpressFindings": 0,
+        "physicalProfileMm": true,
+        "csvLayers": 11,
+        "vectorPdf": true,
+        "pdfDimensionLines": 2
+      },
+      {
+        "file": ".cc-test/f09-package/consumer/saved.ifc",
+        "wallAxis": true,
+        "hostedIds": 0,
+        "hostRelations": 0,
+        "dimensionCurvesAndWitnesses": 0,
+        "schemaExpressFindings": 0,
+        "physicalProfileMm": true,
+        "csvLayers": 11,
+        "vectorPdf": true,
+        "pdfDimensionLines": 2
+      },
+      {
+        "file": ".cc-test/f09-browser/established-saved.ifc",
+        "wallAxis": true,
+        "hostedIds": 5,
+        "hostRelations": 5,
+        "dimensionCurvesAndWitnesses": 2,
+        "schemaExpressFindings": 0,
+        "physicalProfileMm": true,
+        "csvLayers": 11,
+        "vectorPdf": true,
+        "pdfDimensionLines": 2
+      },
+      {
+        "file": ".cc-test/f09-browser/workspace-saved.ifc",
+        "wallAxis": true,
+        "hostedIds": 5,
+        "hostRelations": 5,
+        "dimensionCurvesAndWitnesses": 2,
+        "schemaExpressFindings": 0,
+        "physicalProfileMm": true,
+        "csvLayers": 11,
+        "vectorPdf": true,
+        "pdfDimensionLines": 2
+      },
+      {
+        "file": ".cc-test/f09-browser/live-saved.ifc",
+        "wallAxis": true,
+        "hostedIds": 5,
+        "hostRelations": 5,
+        "dimensionCurvesAndWitnesses": 2,
+        "schemaExpressFindings": 0,
+        "physicalProfileMm": true,
+        "csvLayers": 11,
+        "vectorPdf": true,
+        "pdfDimensionLines": 2
+      }
+    ]
+  },
+  "performance": [
+    {
+      "fixture": "F03 small",
+      "wallCount": 12,
+      "existingP95Ms": 0.10569599999996626,
+      "explicitP95Ms": 1.181683000000021
+    },
+    {
+      "fixture": "F03 medium",
+      "wallCount": 36,
+      "existingP95Ms": 0.12278700000001663,
+      "explicitP95Ms": 0.4679590000000644
+    },
+    {
+      "fixture": "F03 large",
+      "wallCount": 96,
+      "existingP95Ms": 0.6052230000000236,
+      "explicitP95Ms": 3.267374000000018
+    }
+  ],
+  "note": "Counts describe separate overlapping suites/groups and are not additive unique coverage. Final delivery must rerun these checks after evidence commit."
+}

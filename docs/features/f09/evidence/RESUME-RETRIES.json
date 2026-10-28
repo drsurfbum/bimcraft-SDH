@@ -1,0 +1,628 @@
+{
+  "note": "Executed PR-triggered run metadata; failures and concurrency cancellations remain distinct. Push duplicates are not additional coverage.",
+  "history": [
+    {
+      "head": "49be6fb5f6efaa8046e2a4bca9d9ed425e958984",
+      "runs": [
+        {
+          "id": 40725297625,
+          "name": "F06 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297625"
+        },
+        {
+          "id": 40725297814,
+          "name": "Upstream rebase compatibility",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297814"
+        },
+        {
+          "id": 40725298721,
+          "name": "F04 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725298721"
+        },
+        {
+          "id": 40725298020,
+          "name": "F09 interaction foundation",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725298020"
+        },
+        {
+          "id": 40725297557,
+          "name": "F05 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297557"
+        },
+        {
+          "id": 40725297984,
+          "name": "F28 live workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297984"
+        },
+        {
+          "id": 40725297664,
+          "name": "F08 straight-wall acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297664"
+        },
+        {
+          "id": 40725297933,
+          "name": "F28-B wall workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297933"
+        },
+        {
+          "id": 40725297797,
+          "name": "MCP-01 semantic materials and walls",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297797"
+        },
+        {
+          "id": 40725297732,
+          "name": "0.7 foundation controls",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725297732"
+        },
+        {
+          "id": 40725298797,
+          "name": "Tests",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725298797"
+        },
+        {
+          "id": 40725298216,
+          "name": "F03 performance evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40725298216"
+        }
+      ]
+    },
+    {
+      "head": "711186cc0045c7c261bf4f4470b0d3e67240d167",
+      "runs": [
+        {
+          "id": 40726135404,
+          "name": "F09 interaction foundation",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135404"
+        },
+        {
+          "id": 40726135328,
+          "name": "F05 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135328"
+        },
+        {
+          "id": 40726135112,
+          "name": "F04 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135112"
+        },
+        {
+          "id": 40726135170,
+          "name": "F06 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135170"
+        },
+        {
+          "id": 40726135294,
+          "name": "F28 live workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135294"
+        },
+        {
+          "id": 40726135442,
+          "name": "F28-B wall workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135442"
+        },
+        {
+          "id": 40726135167,
+          "name": "MCP-01 semantic materials and walls",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135167"
+        },
+        {
+          "id": 40726135212,
+          "name": "Upstream rebase compatibility",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135212"
+        },
+        {
+          "id": 40726135161,
+          "name": "F08 straight-wall acceptance",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135161"
+        },
+        {
+          "id": 40726135025,
+          "name": "0.7 foundation controls",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135025"
+        },
+        {
+          "id": 40726135461,
+          "name": "F03 performance evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135461"
+        },
+        {
+          "id": 40726135091,
+          "name": "Tests",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726135091"
+        }
+      ]
+    },
+    {
+      "head": "31684cdaa9b5c20296edd2237ef14761d2a6b93a",
+      "runs": [
+        {
+          "id": 40726644145,
+          "name": "F06 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726644145"
+        },
+        {
+          "id": 40726643946,
+          "name": "0.7 foundation controls",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643946"
+        },
+        {
+          "id": 40726644129,
+          "name": "F03 performance evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726644129"
+        },
+        {
+          "id": 40726644077,
+          "name": "Tests",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726644077"
+        },
+        {
+          "id": 40726643869,
+          "name": "Upstream rebase compatibility",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643869"
+        },
+        {
+          "id": 40726643646,
+          "name": "F28 live workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643646"
+        },
+        {
+          "id": 40726644151,
+          "name": "F09 interaction foundation",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726644151"
+        },
+        {
+          "id": 40726643825,
+          "name": "F28-B wall workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643825"
+        },
+        {
+          "id": 40726643840,
+          "name": "F08 straight-wall acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643840"
+        },
+        {
+          "id": 40726643837,
+          "name": "F05 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643837"
+        },
+        {
+          "id": 40726643780,
+          "name": "F04 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643780"
+        },
+        {
+          "id": 40726643830,
+          "name": "MCP-01 semantic materials and walls",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40726643830"
+        }
+      ]
+    },
+    {
+      "head": "18e0aeeabf800df9efe69f163abe59f597aa8688",
+      "runs": [
+        {
+          "id": 40727276069,
+          "name": "F05 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276069"
+        },
+        {
+          "id": 40727276091,
+          "name": "Upstream rebase compatibility",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276091"
+        },
+        {
+          "id": 40727276230,
+          "name": "F28-B wall workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276230"
+        },
+        {
+          "id": 40727276148,
+          "name": "F28 live workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276148"
+        },
+        {
+          "id": 40727276282,
+          "name": "F09 interaction foundation",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276282"
+        },
+        {
+          "id": 40727276301,
+          "name": "F06 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276301"
+        },
+        {
+          "id": 40727276497,
+          "name": "F04 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276497"
+        },
+        {
+          "id": 40727276121,
+          "name": "MCP-01 semantic materials and walls",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276121"
+        },
+        {
+          "id": 40727276107,
+          "name": "F08 straight-wall acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276107"
+        },
+        {
+          "id": 40727276194,
+          "name": "Tests",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276194"
+        },
+        {
+          "id": 40727276181,
+          "name": "0.7 foundation controls",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276181"
+        },
+        {
+          "id": 40727276226,
+          "name": "F03 performance evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40727276226"
+        }
+      ]
+    },
+    {
+      "head": "ac5721169516b89740ac17e788ad38a4bfa52c5e",
+      "runs": [
+        {
+          "id": 40728189520,
+          "name": "Tests",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189520"
+        },
+        {
+          "id": 40728189977,
+          "name": "MCP-01 semantic materials and walls",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189977"
+        },
+        {
+          "id": 40728189689,
+          "name": "F28-B wall workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189689"
+        },
+        {
+          "id": 40728192054,
+          "name": "F04 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728192054"
+        },
+        {
+          "id": 40728189602,
+          "name": "F08 straight-wall acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189602"
+        },
+        {
+          "id": 40728189726,
+          "name": "F06 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189726"
+        },
+        {
+          "id": 40728189653,
+          "name": "F28 live workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189653"
+        },
+        {
+          "id": 40728189960,
+          "name": "F09 interaction foundation",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189960"
+        },
+        {
+          "id": 40728189717,
+          "name": "Upstream rebase compatibility",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189717"
+        },
+        {
+          "id": 40728189523,
+          "name": "F05 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189523"
+        },
+        {
+          "id": 40728189588,
+          "name": "F03 performance evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189588"
+        },
+        {
+          "id": 40728189680,
+          "name": "0.7 foundation controls",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728189680"
+        }
+      ]
+    },
+    {
+      "head": "770c15e111bece1109e8937511c5f3a7de21f3b5",
+      "runs": [
+        {
+          "id": 40728797297,
+          "name": "F09 interaction foundation",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797297"
+        },
+        {
+          "id": 40728797326,
+          "name": "F28 live workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797326"
+        },
+        {
+          "id": 40728797260,
+          "name": "Upstream rebase compatibility",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797260"
+        },
+        {
+          "id": 40728797409,
+          "name": "F05 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797409"
+        },
+        {
+          "id": 40728797437,
+          "name": "F06 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797437"
+        },
+        {
+          "id": 40728797323,
+          "name": "F04 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797323"
+        },
+        {
+          "id": 40728797261,
+          "name": "F28-B wall workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797261"
+        },
+        {
+          "id": 40728797595,
+          "name": "MCP-01 semantic materials and walls",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797595"
+        },
+        {
+          "id": 40728797250,
+          "name": "F08 straight-wall acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797250"
+        },
+        {
+          "id": 40728797545,
+          "name": "Tests",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797545"
+        },
+        {
+          "id": 40728797343,
+          "name": "F03 performance evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797343"
+        },
+        {
+          "id": 40728797192,
+          "name": "0.7 foundation controls",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40728797192"
+        }
+      ]
+    },
+    {
+      "head": "cf0c134333d06cafd4402100c99da824571bb24c",
+      "runs": [
+        {
+          "id": 40729400003,
+          "name": "F09 interaction foundation",
+          "status": "completed",
+          "conclusion": "failure",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400003"
+        },
+        {
+          "id": 40729399892,
+          "name": "F28 live workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729399892"
+        },
+        {
+          "id": 40729399856,
+          "name": "F05 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729399856"
+        },
+        {
+          "id": 40729399845,
+          "name": "Upstream rebase compatibility",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729399845"
+        },
+        {
+          "id": 40729400464,
+          "name": "F06 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400464"
+        },
+        {
+          "id": 40729400102,
+          "name": "F04 browser acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400102"
+        },
+        {
+          "id": 40729400008,
+          "name": "MCP-01 semantic materials and walls",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400008"
+        },
+        {
+          "id": 40729400111,
+          "name": "F28-B wall workspace acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400111"
+        },
+        {
+          "id": 40729400023,
+          "name": "F08 straight-wall acceptance",
+          "status": "completed",
+          "conclusion": "success",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400023"
+        },
+        {
+          "id": 40729400252,
+          "name": "0.7 foundation controls",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400252"
+        },
+        {
+          "id": 40729400051,
+          "name": "F03 performance evidence",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400051"
+        },
+        {
+          "id": 40729400098,
+          "name": "Tests",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "url": "https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40729400098"
+        }
+      ]
+    }
+  ]
+}

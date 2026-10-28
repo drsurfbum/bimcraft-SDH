@@ -1,6 +1,6 @@
 # F09-A interaction inventory and decisions
 
-Owner: this F09 development chat, October 27, 2026. Checkout `bimcraft-f09`; branch `feature/f09-interaction-foundation`; approved base `60dbd3abff0d1d98ce1a85375de7b6087709c8ee`; application baseline `0329eece15fedbfeb14025683d7fe9da78263ef2`. Port 8061 is reserved for the proposed isolated preview, but this session denies TCP listen (`EPERM`), so a running preview is not claimed. Main was verified through the connected GitHub service at the approved pin. No F28-C code was imported.
+Owner: this F09 development chat, updated October 28, 2026. Active isolated candidate `bimcraft-f09-resume-20261028`; original `bimcraft-f09` remains clean at `b80ca88428b99173fa21d540e406df180e9987f5`; branch `feature/f09-interaction-foundation`; approved base `60dbd3abff0d1d98ce1a85375de7b6087709c8ee`; application baseline `0329eece15fedbfeb14025683d7fe9da78263ef2`. Port 8061 is reserved for the proposed isolated preview, but this session denies TCP listen (`EPERM`), so a running preview is not claimed. Main was verified through the connected GitHub service at the approved pin. No F28-C code was imported.
 
 ## Confirmed choices
 
@@ -24,11 +24,12 @@ The supplied chart is `reviews/INTERACTIONS-2026-10-24/user-shortcut-reference.j
 | RO / AL | Library-item turn and specific geometry operations exist | Do not imply authored-wall Rotate/Align exists | Unavailable; later slices |
 | TR | Existing authored-wall trim/extend tool | Bind existing trim tool and its authoritative actions | No new Join Geometry / corner semantics |
 | VG / VV | Individual view controls exist | Explain that unified Visibility/Graphics is unavailable | Do not relabel another control as VG |
+| Ctrl/Cmd+K | Registry ID exists but the standalone shell has no mounted launcher | One launcher in the app bar or active workspace header; search dialog over `ccInput.paletteItems()`, current availability and guarded `run` | No new registry; static harness declares the exact mounted owner and runtime proves the control/action |
 | PP / KS | Existing Properties and input settings/palette | Focus selected-wall Properties; accessible shortcut table with actual availability and explicit profile choice | PP supports a single authored wall in this slice |
 | Space | Space+drag pans | Preserve | Flip/90-degree operation rules unresolved |
 | Tab | Focus and some existing placement behavior | Preserve | No new candidate-cycling key |
 | SC | Ribbon section-plane command | Preserve | No snap override steals SC |
-| Numeric/unit entry | Existing model parser and Properties inputs | Keep all six display units and parser; preserve native field Undo | No new units or geometry tolerance |
+| Numeric/unit entry | Existing model parser and Properties inputs | Keep all six display units and parser; preserve native field Undo | Native units are visible in the established CadCraft toolbar and integrated Properties footer; the standalone input ribbon does not add a units command |
 
 Sequence contract: inherited 1500 ms timeout, visible existing status feedback; Escape cancels a pending prefix; focus changes, blur, visibility changes and composition start reset the buffer. Repeated keydowns do not start extra commands. The existing physical-key normalization is retained, including translated keyboards; no alternate input engine is added. Dialogs, all editable content (including empty/plaintext-only contenteditable), native field context menus, composition and browser/OS pass-through keys retain ownership. The shared engine is scoped to the app/body and its input/workspace controls. Customization/conflict explanations remain in the existing input settings; KS lists current bindings and reasons.
 
@@ -44,8 +45,9 @@ Sequence contract: inherited 1500 ms timeout, visible existing status feedback; 
 | Plan background with an existing selection | Selected-element menu | Pointer does not replace selection |
 | 3D, imported/background underlays, sheets, browser/source tree | Existing native/owned behavior | Not intercepted by F09 |
 | Text/Properties field | Native menu | Never intercepted |
+| Drawing right-click while Properties text is dirty | Actionable finish-or-cancel explanation; drawing menu stays closed | Prevent pointer focus blur; no accidental change/history. Enter commits through the existing field handler; Escape cancels the draft |
 
-PlanView distinguishes click from the existing pan threshold and profiles. Platforms that emit contextmenu on button-down defer menu opening until release; a pan drag suppresses it. No new pan threshold is introduced. Shift+F10 / Context Menu key on the focusable plan invokes the menu; arrows/Home/End navigate, Enter/Space activate, Escape/Tab dismiss with focus restoration. Menus are clamped and scroll within the viewport; disabled entries retain visible and accessible reasons.
+PlanView distinguishes click from the existing pan threshold and profiles. Platforms that emit contextmenu on button-down defer menu opening until release; a pan drag suppresses it. No new pan threshold is introduced. Unmodified Shift+F10 / Context Menu key on the focusable plan invokes the menu; composing events and Ctrl/Alt/Meta variants retain their native ownership; arrows/Home/End navigate, Enter/Space activate, Escape/Tab dismiss with focus restoration. Menus are clamped and scroll within the viewport; disabled entries retain visible and accessible reasons.
 
 Every menu captures editor identity, native history revision, key base/source, drawing level/kind/callout, tool/drag and selection. Execution checks them again, including busy/reloading/queue state. Opening a menu creates no IFC/history change. Stale/foreign context refuses instead of selecting or editing a new project. Input command preparation also revalidates editor ownership; the workspace engine checks its owner across async activation. These are presentation guards around existing actions, not a second transaction system.
 
@@ -91,6 +93,8 @@ Next slices: bounded authored-wall Move/Copy with explicit host treatment; Rotat
 New domain capability: `wall_reference_resolve` (read), requiring documentId, expectedRevision, wall GlobalId, one of six reference names and station [0,1]. It returns raw `p`, analytic endpoint `segment`, reference identity/station, mm units, level ID, revision/document binding, `persistent:false` and explicit geometry classification. It uses requireWalls/bindDocument and F02 referencePoint. Actual source stdio and isolated packaged tests execute this schema and reuse wall_change/walls_add rather than synthetic input. UI snapping settings are transient presentation state, not persistent project settings or constraints.
 
 Presentation-only changes: keyboard/help/context-menu arrangement; route to guarded existing commands, selection, drawWalls/changeWall and existing reference dimensions. Inherited dimension/detail/trim semantic gaps stay visible; the new resolver does not claim a dimension-creation/export API or full application parity. MCP-01/F08 catalogs, permissions, protected records and agent-owned history are retained. Live HTTP and browser evidence are separate gates, never inferred from source tests.
+
+The mounted model UI exposes its existing extension `ask` dispatcher to command presentation and its existing `pickedWalls` query to the interaction adapter. The workspace adapter also moves the same palette launcher into its visible header on entry and restores its app-bar home on exit. These bridges introduce no separate domain action.
 
 Shared touchpoints for C: small additive hooks in input-bimcraft, bimcraft's ccInputHooks, workspace-bimcraft inputCommand, guarded engineRun, input UI sequence reset, model-ui's snap/menu lifecycle, and a single existing dimension-extension entry method. C must retain these hooks and existing source/editor guards while adding its own documentation activation; no C file was copied and no competing documentation adapter added. Established layout remains default/fallback.
 
