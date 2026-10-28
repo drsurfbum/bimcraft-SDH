@@ -1,3 +1,5 @@
+> Historical pre-merge review. PR #18 is now adopted at main75af81b; see [integrated adoption evidence](F09-INTEGRATED.md).
+
 # F09-A PM re-review — October 28, 2026
 
 **Decision: the bounded F09-A slice is ready to merge. No blocking finding remains in this review.** PR #18 remains draft/unmerged; readiness transition and adoption have not been performed. Full F09 remains incomplete beyond this slice.
