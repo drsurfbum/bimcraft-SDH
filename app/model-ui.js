@@ -1522,6 +1522,7 @@ export function mountModel(host) {
   const api = {
     S, root, host, t, ed, kb, commit, refresh, buildScene, drawOverlay, setTool, level, levelAbove, wallsHere, wallsOn, snapAt,
     previewInteraction(p) { onMove(p, {}); },
+    placeInteractionPalette(host, workspace = false) { interactions?.placePalette(host, workspace); },
     cancelInteraction() { S.drag = null; S.hover = null; S.last = null; setTool('select'); drawOverlay(); },
     workspaceWallControls: () => ({ row: ui.wallOpts, type: ui.wallType, reference: ui.wallRef, side: ui.wallSide, shape: ui.wallShape, top: ui.wallTop, height: ui.wallH, typedRow: ui.typedRow, typed: ui.typed, units: ui.units }),
     workspaceCancel(finishOnly = false) { if (S.chain) { endChain(); host.status(t('model.chain.ended')); } else if (!finishOnly) setTool('select'); for (const x of exts) x.toolChanged?.(S.tool); },

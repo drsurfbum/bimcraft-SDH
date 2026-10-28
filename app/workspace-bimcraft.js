@@ -236,6 +236,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
     },
     entered(c) {
       ctx = c;
+      A.placeInteractionPalette(document.querySelector('.ws-titlebar'), true);
       launch.hidden = true;
       if (c.has('palettes')) {
         elementProps.append(props);
@@ -247,6 +248,7 @@ export function createBimcraftWorkspace({ root, modelUi, views, commands, props,
       if (c.has('toolbox') && current().editor) needDraw();
     },
     leaving(c) {
+      A.placeInteractionPalette(null);
       if (c.has('palettes')) {
         browserForClassic = browserEl();
         walls.setActive(false); rememberCamera(); propsHome.after(props); restoreBrowser();

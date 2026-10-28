@@ -33,7 +33,8 @@ export function mountInteractions(A) {
   }
   function reset() { window.ccInput?.resetSequence(); picked = ''; choicesKey = ''; choices.hidden = true; mode = 'existing'; select.value = mode; candidate = null; feedback.textContent = ''; dismiss(false); }
   const paletteButton = el('button', { type: 'button', 'data-palette-open': '', onClick: palette }, A.t('input.cmd.app.palette'));
-  (document.querySelector('.app-bar') || A.root).append(paletteButton);
+  const paletteHome = document.querySelector('.app-bar') || A.root;
+  paletteHome.append(paletteButton);
   function palette() {
     if (pendingText()) { A.host.status(t('textentry'), true); return; }
     const editor=A.ed(), origin=document.activeElement;
@@ -149,6 +150,7 @@ export function mountInteractions(A) {
   window.addEventListener('blur', () => { reset(); A.cancelInteraction(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) { reset(); A.cancelInteraction(); } });
   return {
+    placePalette(host, workspace = false) { (host || (workspace ? controls : paletteHome)).append(paletteButton); },
     open, reset, sync, active: () => mode !== 'existing',
     snap(p, walls) {
       sync();
