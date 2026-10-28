@@ -1548,7 +1548,7 @@ export function mountModel(host) {
     },
     /** Snap as the Wall tool does, from a point of the extension's own (0.6: outlines drawn by hand): angles, Shift, lengths. */
     snapFrom: (p, e, from) => snapPoint(p, snapCtx(), { tol: pv.pxToMm(SNAP_PX), from, ortho: !!e?.shiftKey, step: 15, round: from ? round() : 0 }),
-    pv: () => pv, units: () => S.units, round, selectedKeys, renderProps: () => renderProps(), loopsOf: (st) => loopsOf(ed(), st), fitPlan, mergeJournals,
+    pv: () => pv, units: () => S.units, round, selectedKeys, wallsPicked: pickedWalls, renderProps: () => renderProps(), loopsOf: (st) => loopsOf(ed(), st), fitPlan, mergeJournals,
     /** The plan scene of any level (the sheets' plans), the level shown left as it was. */
     sceneFor(levelId, kind = 'plan', callout = null) {
       const keep = { level: S.level, kind: S.kind, callout: S.callout, loops: S.loops, outlines: S.outlines, cut: S.cut, cutFor: S.cutFor };

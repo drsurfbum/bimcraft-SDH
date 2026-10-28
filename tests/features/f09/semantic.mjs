@@ -22,7 +22,9 @@ export async function workflow(call, wall, other, expected, check) {
   assert.deepEqual(await call('model_describe'),state);check('six exact analytic references through real transport; no history or model changes');
   const args={...bind(),wall,reference:'coreExterior',station:.3728282828};
   for(const bad of [{documentId:'foreign-document'},{expectedRevision:state.revision+1},{station:-.01},{station:1.01},{reference:'physical-face'},{wall:'0F09W00000000000000001'},{unexpected:true}])await call('wall_reference_resolve',{...args,...bad},true);
-  const {expectedRevision,...missing}=args;await call('wall_reference_resolve',missing,true);
+  for(const required of ['documentId','expectedRevision','wall','reference','station']){const missing={...args};delete missing[required];await call('wall_reference_resolve',missing,true);}
+  const listed=(await call('walls_list')).walls,curve=listed.find(w=>w.bulge),opening=listed.flatMap(w=>w.openings)[0];assert.ok(curve&&opening,'fixture must retain real curved and non-wall products');
+  await call('wall_reference_resolve',{...args,wall:curve.guid},true);await call('wall_reference_resolve',{...args,wall:opening.guid},true);
   assert.deepEqual(await call('model_describe'),state);check('actual strict schema, missing binding, foreign host and stale revision refusals');
   const placementTarget=await call('wall_reference_resolve',args),type=(await call('walls_list')).walls.find(w=>w.guid===wall).type;
   const placed=await call('walls_add',{...bind(),level:placementTarget.level,type,locationLine:'center',exteriorSide:'left',height:2700.123456,points:[placementTarget.p,[placementTarget.p[0]+1200.123456,placementTarget.p[1]+900.123456]]});
