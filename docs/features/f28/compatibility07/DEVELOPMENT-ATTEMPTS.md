@@ -1,3 +1,5 @@
+> Historical foundation-only record. The October 28 approved-main continuation and current closures supersede its old adoption order and agent coverage status: [DOC-MCP-01](DOC-MCP-01.md).
+
 # Compatibility attempts retained
 
 These are historical attempts, not final-head evidence. No failure was relabeled as passing and no required assertions were removed.

@@ -55,6 +55,7 @@ import { materialWallTools, documentState, bindDocument, exactWalls, BINDING, WA
 import { placementPath, placementReference } from './wall-placement.js';
 import { liveHistory } from './agent-history.js';
 import { wallJoinTools } from './wall-join-agent.js';
+import { documentationTools } from './documentation-agent.js';
 export { BINDING, bindDocument, documentState } from './material-wall-agent.js';
 
 const LIMIT = 1000;
@@ -203,6 +204,7 @@ function modelDefinitions(env) {
   return [
     ...materialWallTools(env),
     ...wallJoinTools(env),
+    ...documentationTools(env),
     {
       name: 'model_describe', group: 'read', title: 'Describe the model',
       description: 'The open BimCraft model in millimetres: its levels (name, GlobalId, elevation, height), walls by type, doors, windows, rooms with their areas, floors drawn by outline, ramps, grid line tags, columns and the site; also the wall, door and window types walls_add and opening_add take.',
@@ -467,7 +469,21 @@ export function installAgents(modelUi, app) {
   ];
   // after an edit outside the Draw module (element_set): the Properties panel shows the new value
   const refresh = () => { try { app.select([...(app.selection() || [])]); } catch (e) { /* nothing selected */ } };
-  for (const def of [...live.slice(0, 1), ...modelTools({ ed, apply, refresh, busy }), ...live.slice(1)]) C.tool(def);
+  const exportDocumentation = async (a, output) => {
+    if (a.path) {
+      if (!C.files.available) throw new Error('File paths require the desktop file host and an allowed root.');
+      return { path:await C.files.write(a.path, output.bytes, { overwrite:a.overwrite === true }) };
+    }
+    const name=output.source.id.replace(/[^A-Za-z0-9_-]/g,'-')+'.'+output.extension;
+    app.download(new Blob([output.bytes],{type:output.mime}),name,output.mime);
+    return { downloaded:true, fileName:name };
+  };
+  for (const def of [...live.slice(0, 1), ...modelTools({ ed, apply, refresh, busy, exportDocumentation,
+    ...(app.activateDocumentation ? { activateDocumentation:source=>app.activateDocumentation(source) } : {}),
+    ...(app.documentationContext ? { documentationContext:()=>app.documentationContext() } : {}),
+    ...(app.documentationOwner ? { documentationOwner:()=>app.documentationOwner() } : {}),
+    ...(app.documentationEditing ? { documentationEditing:()=>app.documentationEditing() } : {}),
+  }), ...live.slice(1)]) C.tool(def);
   // 0.7 AS.6 (assistants-gaps): the Render dialog's pictures and queue, through the page's own Render hooks (window only)
   if (app.render) for (const d of renderTools(C, app.render, { toolResult })) C.tool(d);
   return C;

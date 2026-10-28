@@ -1,3 +1,5 @@
+> Historical foundation-only record. The October 28 approved-main continuation and current closures supersede its old adoption order and agent coverage status: [DOC-MCP-01](DOC-MCP-01.md).
+
 # Agent capability gate — F28-C / 0.7
 
 This matrix separates implemented UI/domain behavior from registered and transport-tested agent behavior. No MCP exception is granted. Generic element/property access is not a substitute for documentation operations; protected-record guards must continue refusing raw writes to those records.

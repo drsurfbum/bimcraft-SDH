@@ -1,3 +1,5 @@
+> Historical foundation-only record. The October 28 approved-main continuation and current closures supersede its old adoption order and agent coverage status: [DOC-MCP-01](DOC-MCP-01.md).
+
 # F28-C on the pinned 0.7 shared workspace
 
 Draft compatibility candidate for PR #12. No acceptance, merge, deployment, default-layout change or agentic exception is claimed. Foundation `82da107dfd760199bc943249590812978c1a6082`; reviewed feature `f956fac00adf1d4d51ddc2e4253fe215a2c50acd`. These are merged with both histories retained. MCP-01 and F08 branches are excluded. Reconcile with the then-approved main after MCP-01 adoption before adoption of this candidate.

@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 import { PLAN_DETAILS } from './wall-plan-graphics.js';
+import { appendCalloutMarks } from './documentation-marks.js';
 import { readProjectedView, setProjectedView } from './projected-views.js';
 /**
  * views-ui.js — views the BIM way on screen (0.6 DF.19, session `bim-draw`), through model-ui.js `extend()`:
@@ -156,14 +157,7 @@ export function mountViewsBim(modelUi, o = {}) {
   function addCallouts(scene) {
     const key = viewKey();
     if (!key) return;
-    const r = bubbleR();
-    for (const c of R.callouts) {
-      if (c.parent !== key || !rootOf(c.id)) continue;
-      const [x0, y0, x1, y1] = c.crop, at = tagOf(c, r), k = Math.SQRT1_2;
-      scene.symbols.push({ key: null, callout: c.id, lines: [[x0, y0, x1, y0], [x1, y0, x1, y1], [x1, y1, x0, y1], [x0, y1, x0, y0], [x1, y1, at[0] - r * k, at[1] - r * k]], arcs: [{ c: at, r, a0: 0, a1: Math.PI * 2 }] });
-      const ref = sheetRef(c.id);
-      scene.rooms.push({ key: null, callout: c.id, at, label: ref ? [c.name, ref] : [c.name] });
-    }
+    appendCalloutMarks(scene, { callouts:R.callouts, key, rootOf, scale:bubbleR()/5, sheetRef });
   }
   /** Select tool: a click on a callout's tag opens it. */
   function tagClick(p) {

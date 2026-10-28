@@ -4706,6 +4706,19 @@ function init(root) {
         fileBase: () => (ifcName || 'model').replace(/\.ifc$/i, ''), download: (blob, name) => fileHost.download(blob, name, blob.type || 'image/png'), appName: 'BimCraft' };
     },
     download: (blob, name, type) => fileHost.download(blob, name, type),
+    documentationContext: () => workspace?.inspect().view?.id || null,
+    documentationOwner: () => cur()?.tag || null,
+    documentationEditing: () => {
+      const input=document.activeElement;
+      return input?.matches('input:not([readonly]):not([disabled]),textarea:not([readonly]):not([disabled])') &&
+        !!input.closest('[data-model-props],.ws-view-props,[data-props]') && input.value!==input.defaultValue;
+    },
+    activateDocumentation: source => {
+      if (!workspace?.inspect().active) throw new Error('Documentation source activation requires the existing live workspace; the default layout is not changed.');
+      workspace.openSource(source.kind, source.ref);
+      if (workspace.inspect().view?.id !== source.id) throw new Error('The requested documentation source could not be activated.');
+      return { activated:true, source:source.id };
+    },
     undo: history => coreCommands ? coreCommands.execute('undo', history) : undo(history),
     redo: history => coreCommands ? coreCommands.execute('redo', history) : redo(history),
     busy: () => (busy ? 'opening or saving a file' : placing ? 'placing a library item' : null),   // i18n-ignore: read by the assistant

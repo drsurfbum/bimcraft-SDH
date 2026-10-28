@@ -1,4 +1,5 @@
 import { documentPages } from './assembly-schedule-layout.js';
+import { appendSectionMarks } from './documentation-marks.js';
 /* SPDX-License-Identifier: Apache-2.0 */
 /**
  * res-ui.js — the residential tools in BimCraft's plan view (0.5 part 4, track RC; session bim-residential). Mounted
@@ -904,16 +905,7 @@ export function mountRes(modelUi) {
 
   // ---- section lines and sheets (RC.5) ----
   function sectionScene(scene) {
-    const k = A.kb();
-    for (const sl of R.secs) {
-      if (sl.storey !== A.S.level) continue;
-      const { dir, u } = sectionDir(sl), ext = 600;
-      const a = [sl.a[0] - u[0] * ext, sl.a[1] - u[1] * ext], b = [sl.b[0] + u[0] * ext, sl.b[1] + u[1] * ext];
-      const arrows = [];
-      for (const e of [a, b]) { const tip = [e[0] + dir[0] * 500, e[1] + dir[1] * 500]; arrows.push([e[0], e[1], tip[0], tip[1]], [tip[0], tip[1], tip[0] - dir[0] * 160 + u[0] * 120, tip[1] - dir[1] * 160 + u[1] * 120], [tip[0], tip[1], tip[0] - dir[0] * 160 - u[0] * 120, tip[1] - dir[1] * 160 - u[1] * 120]); }
-      scene.symbols.push({ key: k + sl.id, lines: [[a[0], a[1], b[0], b[1]], ...arrows], dashed: [], poly: bandOf([a, b], 150) });
-      for (const e of [a, b]) { const c = [e[0] - dir[0] * 350, e[1] - dir[1] * 350]; scene.rooms.push({ key: k + sl.id, poly: [[c[0] - 250, c[1] - 250], [c[0] + 250, c[1] - 250], [c[0] + 250, c[1] + 250], [c[0] - 250, c[1] + 250]], at: c, label: [sl.name] }); }
-    }
+    appendSectionMarks(scene, { sections:R.secs, level:A.S.level, keyBase:A.kb(), bandOf });
   }
   function sectionOverlay(o) {
     if (A.S.tool !== 'section') return;

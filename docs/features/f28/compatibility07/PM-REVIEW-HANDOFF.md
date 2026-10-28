@@ -1,3 +1,5 @@
+> Historical foundation-only record. The October 28 approved-main continuation and current closures supersede its old adoption order and agent coverage status: [DOC-MCP-01](DOC-MCP-01.md).
+
 # F28-C 0.7 compatibility — PM re-review handoff
 
 This is a draft compatibility candidate, not readiness or merge authorization. [PR #12](https://github.com/drsurfbum/bimcraft-SDH/pull/12) is advanced normally after preserving its reviewed cutoff; no replacement PR or owner merge cleanup was needed. The PR description records the exact immutable source/delivery commit and final-head CI once those runs finish. **Do not infer final-head success from older attempts.**
