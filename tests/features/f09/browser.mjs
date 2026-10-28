@@ -35,7 +35,7 @@ async function inspect(page){return page.evaluate(async()=>{
  const base='/assets/apps/bimcraft/dev/',ed=bimcraftLive.editor;
  const [{ModelWriter},{readWalls},{readOpenings},{readWallDimensions}]=await Promise.all(['model-write.js','model-walls.js','model-openings.js','wall-dimensions.js'].map(f=>import(base+f)));
  const w=new ModelWriter(ed.W,ed.api,ed.mid);
- return {walls:readWalls(w).map(x=>({guid:x.guid,a:x.a,b:x.b,extSide:x.extSide,justification:x.justification,typeKey:x.typeKey})),
+ return {walls:readWalls(w).map(x=>({guid:x.guid,a:x.a,b:x.b,height:x.height,extSide:x.extSide,justification:x.justification,typeKey:x.typeKey})),
  openings:readOpenings(w).map(x=>({guid:x.guid,wallGuid:x.wallGuid,offset:x.offset,face:x.face})),dimensions:readWallDimensions(w).map(x=>({guid:x.guid,refs:x.refs}))};
 });}
 async function exportExpected(page,wall,file){const snapshot=await inspect(page),w=snapshot.walls.find(w=>w.guid===wall);
@@ -51,6 +51,7 @@ try{
  for(const layout of [false,true]){
   const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true}),page=await context.newPage();lastPage=page;page.on('pageerror',e=>report.errors.push(e.stack||e.message));
   await open(page,layout);await page.waitForFunction(()=>!!window.ccInput);await page.locator('[data-palette-open]').click();await page.locator('[data-f09-palette]').waitFor();await page.locator('[data-f09-palette] input').fill('Wall');assert.ok(await page.locator('[data-f09-palette-command="input:model.wall"]').isVisible());const paletteHistory=(await state(page)).changes;await page.locator('[data-f09-palette-command="input:model.wall"]').click();await settle(page);assert.equal((await state(page)).tool,'wall');assert.equal((await state(page)).changes,paletteHistory);await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('Escape');await page.evaluate(()=>{window.__f09Events=[];for(const phase of [true,false])window.addEventListener('keydown',e=>{__f09Events.push({key:e.key,shift:e.shiftKey,prevented:e.defaultPrevented,target:e.target.tagName,phase});if(__f09Events.length>40)__f09Events.shift();},phase);});assert.equal(await page.evaluate(()=>ccInput.current().id),'cadcraft');assert.equal(await page.evaluate(()=>ccInput.commands.filter(c=>c.mount).every(c=>document.querySelector(c.sel))),true);
+  await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('ControlOrMeta+k');await page.locator('[data-f09-palette]').waitFor();await page.keyboard.press('Escape');
   await page.locator('[data-f09-shortcuts]').click();await page.locator('[data-f09-use-ribbon]').click();
   await page.evaluate(()=>{window.__f09WallStarts=0;document.querySelector('[data-mtool="wall"]').addEventListener('click',()=>__f09WallStarts++);});
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('w');assert.equal((await state(page)).tool,'select');await page.keyboard.press('a');await settle(page);assert.equal((await state(page)).tool,'wall');assert.equal(await page.evaluate(()=>__f09WallStarts),1);
@@ -67,10 +68,12 @@ try{
   const height=page.locator('[data-mp-height]');await height.waitFor({state:'visible'});await height.focus();const before=await state(page),original=await height.inputValue();
   await height.press('ControlOrMeta+A');await page.keyboard.insertText('3100');await height.press('ControlOrMeta+z');assert.equal(await height.inputValue(),original);assert.equal((await state(page)).changes,before.changes);
   await height.press('ControlOrMeta+A');await page.keyboard.insertText('3100');await clickPlan(page,[(other.a[0]+other.b[0])/2,other.a[1]],{button:'right'});assert.equal(await page.locator('[data-f09-menu]').count(),0);assert.equal((await state(page)).changes,before.changes);assert.equal(await height.inputValue(),'3100');
-  await height.press('Escape');await page.locator('[data-plan-canvas]').focus();check('native Properties text Undo retains model history in '+(layout?'workspace':'established'));
+  await height.press('Escape');assert.equal(await height.inputValue(),original);assert.equal((await state(page)).changes,before.changes);await height.press('ControlOrMeta+A');await page.keyboard.insertText('3100 mm');await height.press('Enter');await settle(page);assert.equal((await state(page)).changes,before.changes+1);assert.ok(Math.abs((await inspect(page)).walls.find(w=>w.guid===target.guid).height-3100)<.005);await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('ControlOrMeta+z');await settle(page);assert.equal((await state(page)).changes,before.changes);check('native Properties text Undo retains model history in '+(layout?'workspace':'established'));
   // Opening does not select the pointed wall or change history; stale selection is refused.
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('w');await page.keyboard.press('a');await settle(page);
-  const unitControl=page.locator('[data-model-units]'),unitValues=await unitControl.locator('option').evaluateAll(options=>options.map(o=>o.value));assert.equal(unitValues.length,6);assert.ok(await unitControl.isVisible());assert.ok(await unitControl.isEnabled());const beforeUnits=await inspect(page);for(const unit of unitValues){await unitControl.selectOption(unit);assertModelNear(await inspect(page),beforeUnits);}await unitControl.selectOption('mm');await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('Escape');await settle(page);
+  // The established ribbon only presents registered command buttons; native global units live in CadCraft's toolbar.
+  if(!layout)await page.evaluate(()=>ccInput.setStyle('cadcraft'));
+  const unitControl=page.locator('[data-model-units]'),unitValues=await unitControl.locator('option').evaluateAll(options=>options.map(o=>o.value));assert.equal(unitValues.length,6);assert.ok(await unitControl.isVisible());assert.ok(await unitControl.isEnabled());const beforeUnits=await inspect(page);for(const unit of unitValues){await unitControl.selectOption(unit);assertModelNear(await inspect(page),beforeUnits);}await unitControl.selectOption('mm');if(!layout)await page.evaluate(()=>ccInput.setStyle('ribbon'));await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('Escape');await settle(page);
   const beforeMenu=await state(page);await clickPlan(page,[(other.a[0]+other.b[0])/2,other.a[1]],{button:'right'});await page.locator('[data-f09-menu]').waitFor();assert.deepEqual(await state(page),beforeMenu);
   await page.locator('[data-f09-menu] button').first().click();await settle(page);assert.notDeepEqual((await state(page)).selection,beforeMenu.selection);assert.equal((await state(page)).changes,beforeMenu.changes);
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('ContextMenu');await page.locator('[data-f09-menu]').waitFor();await page.keyboard.press('Escape');await page.keyboard.press('Shift+F10');await page.locator('[data-f09-menu]').waitFor();await page.keyboard.press('ArrowDown');await page.keyboard.press('Escape');assert.equal(await page.locator('[data-f09-menu]').count(),0);
@@ -78,11 +81,11 @@ try{
   check('context menu preserves selection/history; keyboard navigation and stale-context refusal in '+(layout?'workspace':'established'));
   // Explicit core vs finish targeting and cancellation; numeric continuation retains the existing operation.
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('w');await page.keyboard.press('a');await settle(page);
-  for(const reference of ['coreExterior','exterior']){
+  for(const reference of ['coreExterior','exterior','center']){
     await page.locator('[data-f09-target]').selectOption(reference);
     const p=referencePoint({wall:target.guid,reference,station:.5},walls),q=await point(page,[p[0],p[1]+.000123]);await page.mouse.move(q.x,q.y);
     await page.waitForFunction(()=>document.querySelector('[data-f09-feedback]').textContent.includes('analytic'));
-    assert.ok((await page.locator('[data-f09-feedback]').innerText()).includes(reference==='exterior'?'Finish face: exterior':'Core face: exterior'));
+    assert.ok((await page.locator('[data-f09-feedback]').innerText()).includes(reference==='exterior'?'Finish face: exterior':reference==='center'?'Wall center':'Core face: exterior'));
     const count=(await state(page)).changes;await page.mouse.click(q.x,q.y);const start=await page.evaluate(()=>bimcraftPlan.state.chain?.points[0]);for(let i=0;i<2;i++)assert.ok(Math.abs(start[i]-p[i])<.005);
     assert.equal((await state(page)).changes,count);
     if(reference==='coreExterior'){
@@ -111,7 +114,8 @@ try{
   const afterGrip=await inspect(page),movedWall=afterGrip.walls.find(w=>w.guid===target.guid),expectedDelta=destination.map((x,i)=>x-(sourceWall.a[i]+sourceWall.b[i])/2);
   for(let i=0;i<2;i++){assert.ok(Math.abs(movedWall.a[i]-sourceWall.a[i]-expectedDelta[i])<.005);assert.ok(Math.abs(movedWall.b[i]-sourceWall.b[i]-expectedDelta[i])<.005);}
   assert.equal(movedWall.extSide,sourceWall.extSide);assert.equal(movedWall.justification,sourceWall.justification);assert.equal(movedWall.typeKey,sourceWall.typeKey);
-  assert.deepEqual(afterGrip.openings,beforeGrip.openings);assert.deepEqual(afterGrip.dimensions,beforeGrip.dimensions);
+  const axis=sourceWall.b.map((v,i)=>v-sourceWall.a[i]),length=Math.hypot(...axis),shift=expectedDelta.reduce((sum,v,i)=>sum+v*axis[i]/length,0);
+  assert.equal(afterGrip.openings.length,beforeGrip.openings.length);for(const opening of beforeGrip.openings){const actual=afterGrip.openings.find(o=>o.guid===opening.guid);assert.equal(actual.wallGuid,opening.wallGuid);assert.equal(actual.face,opening.face);assert.ok(Math.abs(actual.offset-opening.offset+(opening.wallGuid===target.guid?shift:0))<.005);}assert.deepEqual(afterGrip.dimensions,beforeGrip.dimensions);
   await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('ControlOrMeta+z');await settle(page);assertModelNear(await inspect(page),beforeGrip);
   await page.keyboard.press('ControlOrMeta+Shift+z');await settle(page);assertModelNear(await inspect(page),afterGrip);
   const savedEvent=page.waitForEvent('download'),saving=page.evaluate(()=>ccInput.run('file.save'));await(await savedEvent).saveAs(path.join(out,layout?'workspace-saved.ifc':'established-saved.ifc'));await saving;
@@ -133,6 +137,7 @@ try{
     await live.close();live=null;
     check('actual live HTTP initialization, strict tool discovery, semantic calls and saved IFC');
   }
+  await page.locator('[data-plan-canvas]').focus();await page.keyboard.press('Escape');await backgroundMenu(page);await page.locator('[data-f09-menu]').waitFor();await page.evaluate(()=>{window.__f09Stale=document.querySelector('[data-f09-menu] button');window.__f09Previous=bimcraftLive.editor;window.__f09PreviousChanges=__f09Previous.changes.length;});await page.locator('[data-file]').setInputFiles(fixture);await settle(page);assert.equal(await page.locator('[data-f09-menu]').count(),0);const switched=await state(page);await page.evaluate(()=>__f09Stale.click());assert.deepEqual(await state(page),switched);assert.equal(await page.evaluate(()=>__f09Previous.changes.length===__f09PreviousChanges&&__f09Previous!==bimcraftLive.editor),true);check('captured menu cannot mutate either project after native document switch in '+(layout?'workspace':'established'));
   await context.close();
  }
  assert.deepEqual(report.errors,[]);report.status='PASS';
