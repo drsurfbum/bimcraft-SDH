@@ -32,6 +32,25 @@ export function mountInteractions(A) {
     if (next.some((value, i) => value !== session[i])) { reset(); session = next; }
   }
   function reset() { window.ccInput?.resetSequence(); picked = ''; choicesKey = ''; choices.hidden = true; mode = 'existing'; select.value = mode; candidate = null; feedback.textContent = ''; dismiss(false); }
+  const paletteButton = el('button', { type: 'button', 'data-palette-open': '', onClick: palette }, A.t('input.cmd.app.palette'));
+  (document.querySelector('.app-bar') || A.root).append(paletteButton);
+  function palette() {
+    if (pendingText()) { A.host.status(t('textentry'), true); return; }
+    const editor=A.ed(), origin=document.activeElement;
+    const dlg=el('dialog',{className:'bc-dialog bc-f09-help','data-f09-palette':'','aria-label':A.t('input.cmd.app.palette')});
+    const search=el('input',{type:'search','aria-label':A.t('input.cmd.app.palette')}),rows=el('div');
+    function render(){rows.replaceChildren();for(const item of window.ccInput?.paletteItems() || []){
+      if(!item.label.toLowerCase().includes(search.value.toLowerCase()))continue;
+      const b=el('button',{type:'button','data-f09-palette-command':item.id,'aria-disabled':String(item.disabled),title:item.hint},item.label+' '+item.key);
+      if(item.hint)b.append(el('small',{},item.hint));
+      b.addEventListener('click',()=>{const current=window.ccInput.paletteItems().find(x=>x.id===item.id);if(editor!==A.ed()||!current||current.disabled){A.host.status(current?.hint||t('stale'),true);return;}dlg.close();current.run();});rows.append(b);
+    }}
+    search.addEventListener('input',render);dlg.append(el('h2',{},A.t('input.cmd.app.palette')),search,rows,el('button',{type:'button',onClick:()=>dlg.close()},t('close')));
+    dlg.addEventListener('close',()=>{dlg.remove();if(origin?.isConnected)origin.focus();});A.root.append(dlg);render();dlg.showModal();search.focus();
+  }
+  function pendingText(){const f=document.activeElement;return f?.closest?.('input,textarea,[contenteditable]:not([contenteditable="false"])')&&(f.isContentEditable||f.value!==f.defaultValue);}
+  canvas.addEventListener('pointerdown',e=>{if(e.button===2&&pendingText())e.preventDefault();},true);
+  paletteButton.addEventListener('pointerdown',e=>{if(pendingText())e.preventDefault();});
   function properties() {
     A.renderProps();
     const field = A.root.querySelector('[data-mp-height]');
@@ -61,6 +80,7 @@ export function mountInteractions(A) {
     if (restore && focus?.isConnected) focus.focus({ preventScroll: true });
   }
   function open(p, e) {
+    if(pendingText()){A.host.status(t('textentry'),true);return;}
     sync();
     if (!A.S.on || !A.ed() || A.S.busy || A.S.reloading || A.S.queue.length) return;
     dismiss(false); window.ccInput?.resetSequence();

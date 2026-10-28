@@ -7878,5 +7878,6 @@
   "f09.choosecandidate": "Choose a nearby reference before committing",
   "f09.end": "Endpoint",
   "f09.mid": "Midpoint",
-  "f09.on": "Nearest point"
+  "f09.on": "Nearest point",
+  "f09.textentry": "Finish or cancel the text entry before opening a drawing menu."
 }

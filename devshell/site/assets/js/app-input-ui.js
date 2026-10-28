@@ -440,7 +440,7 @@ function mount(cfg, reg) {
     if (e.repeat) return;
     if (!prof || e.defaultPrevented || e.isComposing || recording) return;
     if (H.inScope && !H.inScope(e.target)) { resetSequence(); return; }
-    if (prof.id === OWN && !matcher.text.size) return;   // the app's own style, unchanged: nothing at all happens
+    if (prof.id === OWN && !matcher.text.size && !H.nativeKey?.(IP.eventCombo(e))) return;   // the app's own style, unchanged: nothing at all happens
     // hooks.keysIn(node): the app's own command line takes a style's keys while it is empty (CadCraft; 0.5 IP.3)
     if (e.target === cmdInput || (inField(e.target) && !(H.keysIn && H.keysIn(e.target))) || document.querySelector('dialog[open]')) return;
     const combo = IP.eventCombo(e);
@@ -459,7 +459,8 @@ function mount(cfg, reg) {
     }
     const r = matcher.press(combo);
     clearTimeout(waitTimer);
-    if (!r || r.native) return;
+    if (!r || (r.native && !H.nativeKey?.(combo))) return;
+    if (r.native) r.run = r.native;
     e.preventDefault(); e.stopImmediatePropagation();
     if (r.wait) {
       status(T('shell.input.key.wait', { keys: IP.showSeq(r.wait) }));

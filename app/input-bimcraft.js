@@ -109,7 +109,7 @@ export const COMMANDS = [
   C('library.credits', 'library', 'bi-c-circle', '[data-lib-tool="credits"]'),
   C('tools.handoff', 'tools', 'bi-box-arrow-up-right', '[data-handoff-ifc]', { optional: true }),
   C('app.settings', 'app', 'bi-gear', '[data-settings-open]', { defKeys: ['Ctrl+,'], keyOnly: true }),
-  C('app.palette', 'app', 'bi-search', '[data-palette-open]', { defKeys: ['Ctrl+K'], keyOnly: true }),
+  C('app.palette', 'app', 'bi-search', '[data-palette-open]', { defKeys: ['Ctrl+K'], keyOnly: true, mount: 'interaction-ui.js' }),
   C('app.help', 'app', 'bi-question-circle', '[data-help-open]', { defKeys: ['F1'], keyOnly: true }),
 ];
 export const GROUPS = ['file', 'edit', 'model', 'view', 'show', 'tools', 'library', 'app'];
@@ -236,6 +236,7 @@ export function hooks({ root, t }) {
   const toggle = () => root.querySelector('[data-model-toggle]');
   const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
   return {
+    nativeKey: combo => combo === 'Ctrl+K',
     context: () => window.bimcraftLive?.editor,
     inScope: node => node === document.body || root.contains(node) || !!node?.closest?.('[data-input-bar], [data-ws-options]'),
     toolbar: () => root.querySelector('[data-toolbar]'),
