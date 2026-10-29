@@ -1,6 +1,6 @@
 # F09-A adopted main — October 28, 2026
 
-**PR #18 was marked ready and merged under explicit user authorization.** New main is `75af81b49a3f472de734b0229f64e2140bbcbb10`. Fresh integrated functional/reader validation passes; the final F03 CI measurement run is still pending at this evidence snapshot.
+**PR #18 was marked ready and merged under explicit user authorization.** New main is `75af81b49a3f472de734b0229f64e2140bbcbb10`. Fresh integrated validation passes, including all twelve exact-main CI workflow types.
 
 ## Exact adoption
 
@@ -31,7 +31,7 @@ Five push workflows started automatically; the remaining seven required workflow
 - [F05 browser acceptance](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764127677): success
 - [F04 browser acceptance](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764127812): success
 - [F06 browser acceptance](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764127841): success
-- [F03 performance evidence](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764228935): in_progress
+- [F03 performance evidence](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764228935): success
 - [F09 interaction foundation](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764232606): success
 - [F28 live workspace acceptance](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764236335): success
 - [F28-B wall workspace acceptance](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764240018): success
@@ -39,7 +39,7 @@ Five push workflows started automatically; the remaining seven required workflow
 - [Upstream rebase compatibility](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764247428): success
 - [0.7 foundation controls](https://github.com/drsurfbum/bimcraft-SDH/actions/runs/40764251117): success
 
-Performance measurement collection is not closure of responsiveness budgets. Raw collection must complete900 browser observations /30 groups; model-only27-group data is not a replacement.
+Performance measurement collection is not closure of responsiveness budgets. Fresh CI artifacts verify900 browser observations /30 groups of30 samples, exact75af head, zero source errors. The27 model-only workload groups are explicitly unmeasured in this browser-only CI artifact; no fresh model timing claim is made. The run completes on its first attempt in about27.5minutes, leaving CI runtime headroom OPEN. Raw reports remain retained.
 
 ## Scope, preservation and next work
 
