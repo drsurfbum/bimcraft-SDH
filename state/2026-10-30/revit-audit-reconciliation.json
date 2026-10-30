@@ -1,0 +1,747 @@
+{
+  "originalAuditDate": "2026-10-28",
+  "reconciledDate": "2026-10-30",
+  "currentMain": "75af81b49a3f472de734b0229f64e2140bbcbb10",
+  "nativeRevitRun": false,
+  "rows": [
+    {
+      "id": "AUD-DEF-01",
+      "task": "Join-end edit after Undo/Redo can silently alter the opposite end",
+      "classification": {
+        "code": 4,
+        "label": "Reproducible defect in supported behavior"
+      },
+      "roadmapPriority": "P0 — repair before extending joins",
+      "severity": "S1 — unintended saved model change",
+      "userImpact": "A user editing one end after history navigation can change corner geometry at the other end without asking for it. Reselecting before editing refreshes the form, but is only a workaround.",
+      "featureOwner": "F09 Properties/history lifecycle, with F08 domain verification and F28 adapter coordination; no owner reassigned",
+      "proposedBoundedAcceptance": "After every history step form values equal current model state; editing B preserves current A and vice versa. Test Allow and cap fields, Undo/Redo, reselect, layout transition, save/reopen and semantic/UI interleave. One edit produces one accurate receipt.",
+      "unresolvedDecisions": "Exact refresh ordering/root cause needs owner investigation. Do not assume F09 or F28 candidates contain or fix this defect; they were not freshly reproduced here.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "After Redo of Start A disallow, raw Settings has a.allow=false but the editable control shows Allow. Changing End B cap to Square then writes a.allow=true. Downloaded IFC confirms both that unintended A change and requested B change.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Wall join cleanup and permission",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-130A65BC-8C57-4C31-8C07-F96041771539.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Freshly reproduced on main75af with native browser controls and actual saved IFC independently read by IfcOpenShell. OPEN P0 F09-B; no application fix made."
+    },
+    {
+      "id": "J-01",
+      "task": "Deterministic straight L/T/endpoint-X geometry",
+      "classification": {
+        "code": 1,
+        "label": "Verified match within supported scope"
+      },
+      "roadmapPriority": "Retain accepted scope",
+      "severity": "None in tested slice",
+      "userImpact": "Reliable basic model junctions exist already; do not describe F08 as wholly missing.",
+      "featureOwner": "F08-A accepted; F08-B extension",
+      "proposedBoundedAcceptance": "Retain 2–4 rays, straight constant-width walls, 30–150° cases, matching vertical bounds, core intersection, deterministic input order and stable host IDs. Keep negative controls.",
+      "unresolvedDecisions": "No claim of identical Revit layer topology from matching envelope. General interior X and near-face T remain outside this slice.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Main has real bounded envelope cleanup. Lab08–14 accepted/independent states match expected diagnostics; Lab15 reports two height mismatches. 48 straight IFC profiles match computed envelopes within 0.000000405 mm. True T preserves the continuous host; endpoint-X is four wall ends.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Change the configuration of a wall join",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-19EAF7A9-331F-4271-94CC-43B76B13011E.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "J-02",
+      "task": "Core-butt and finish/substrate continuity with material seams",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 — first F08-B proof",
+      "severity": "Capability limit; not a regression",
+      "userImpact": "The desired clean exterior corner cannot be selected and proven at layer level merely by changing the current cap.",
+      "featureOwner": "F08-B; F02 schema; F04/F05 output",
+      "proposedBoundedAcceptance": "Two-wall 90° L fixtures prove explicit material ownership and core/finish continuity in both butt orders and eligible miter; same/different materials, cavities and zero membranes remain correct across outputs.",
+      "unresolvedDecisions": "Obtain exact screenshot recipes and native outcomes; choose how independent priority is versioned and how legacy records acquire defaults before implementation.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Current wall body is one closed envelope; plan bands are clipped per wall. Core bands help the envelope solver, but independent priority is not stored and material identity does not drive junction topology. Changing a neighbor material/priority leaves the envelope unchanged; validator drops priority.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Layer function and priority",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-Model/files/GUID-1CCD1005-CBDA-4338-8D60-489095D4BB25.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2026",
+          "title": "Independent compound-layer priority",
+          "url": "https://help.autodesk.com/cloudhelp/2026/ENU/Revit-WhatsNew/files/GUID-50F25D06-C5CD-42B9-A766-CAABD3F2FA91.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "J-03",
+      "task": "Butt/Miter/Square Off and which wall continues",
+      "classification": {
+        "code": 3,
+        "label": "Missing operation"
+      },
+      "roadmapPriority": "P1 — F08-B",
+      "severity": "Missing operation",
+      "userImpact": "User cannot explicitly choose miter or reverse which wall continues at an eligible corner.",
+      "featureOwner": "F08-B owns domain; F09/F28 provide shared control framework",
+      "proposedBoundedAcceptance": "Introduce only agreed eligible L modes with stable wall identities, preview/cancel and visible unavailable choices. Reject unsupported topology atomically through the same manual/MCP operation.",
+      "unresolvedDecisions": "Include Square Off in first slice only after native evidence and user scope decision; preserve existing cap semantics distinctly.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "v1 join records contain allow/cap/node/tee, without join mode or order. Current Square cap is an independent square end, not joined Square Off. Ribbon Wall Joins is disabled.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Change the configuration of a wall join",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-19EAF7A9-331F-4271-94CC-43B76B13011E.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "J-04",
+      "task": "Allow/disallow joining versus display-only cleanup",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 — clarify during F08-B",
+      "severity": "Capability limit",
+      "userImpact": "Users can prevent a join now, but cannot merely reveal a joined seam with Revit-equivalent cleanup control.",
+      "featureOwner": "F08-B and F04 display contract",
+      "proposedBoundedAcceptance": "Name and store permission, physical configuration and presentation separately; physical state must not change when only cleanup display changes.",
+      "unresolvedDecisions": "Decide first-slice display cleanup inclusion; define per-view versus model ownership and export behavior.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Per-end Allow/Disallow and Follow join/Square are available in both Properties layouts and change physical envelope/plan. There is no separate join-specific Clean/Do not clean/Use view setting record.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Wall join cleanup and permission",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-130A65BC-8C57-4C31-8C07-F96041771539.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "J-05",
+      "task": "Discoverable wall-end control and selected-join workflow",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 — with F08-B",
+      "severity": "Usability gap",
+      "userImpact": "Existing capability is harder to find; a disabled ribbon command can imply that all join control is missing.",
+      "featureOwner": "F08-B + F09/F28 coordination",
+      "proposedBoundedAcceptance": "Local discoverable entry, exact selected end/junction feedback, preview, Esc cancel and contextual eligibility; retain Properties access and shared operation.",
+      "unresolvedDecisions": "Native tooltip/click evidence must identify the user’s screenshot control. Final handle/menu arrangement remains a product decision.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Properties end controls work in both layouts. No corresponding local end permission indicator or active selected-join Wall Joins ribbon command was found. The screenshot handle cannot be identified conclusively.",
+      "revitSources": [
+        {
+          "version": "2025",
+          "title": "In-canvas wall join control",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-WhatsNew/files/GUID-0489005A-5724-4933-8894-5FCABA00A0EB.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2026",
+          "title": "Wall join contextual controls",
+          "url": "https://help.autodesk.com/cloudhelp/2026/ENU/Revit-WhatsNew/files/GUID-C029A36A-4F54-4B95-9B04-3280FCC4F15C.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "J-06",
+      "task": "Corner cleanup versus wrapping at free ends and inserts",
+      "classification": {
+        "code": 3,
+        "label": "Missing operation"
+      },
+      "roadmapPriority": "P2 — separately bounded",
+      "severity": "Missing wrapping scope",
+      "userImpact": "End caps and window returns cannot be assumed to follow the desired material buildup.",
+      "featureOwner": "F08 follow-up + F15 openings; F17 family closure",
+      "proposedBoundedAcceptance": "Approve a separate straight free-end case before an insert case; prove material extents, cavities, membranes, hosts and saved output.",
+      "unresolvedDecisions": "Define eligible layers, interior/exterior options and insert closure planes; do not fold this into the first corner promise.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Current join caps and clipped plan layers do not encode a compound-wall end/insert wrapping contract.",
+      "revitSources": [
+        {
+          "version": "2025",
+          "title": "Compound-wall layer wrapping",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-Model/files/GUID-69B6DC75-56A9-4F35-BE24-80048360E2BB.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "J-07",
+      "task": "Unsupported curves, unequal heights and complex intersections",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P2 — retain clear limits",
+      "severity": "Known scope limit",
+      "userImpact": "Users need explicit limits rather than plausible geometry implying a fully solved junction.",
+      "featureOwner": "F08 later slices; F02 tolerance",
+      "proposedBoundedAcceptance": "Keep visible deterministic refusals/fallback and unchanged records; do not expand topology until independent golden cases exist.",
+      "unresolvedDecisions": "Native unequal-height/curve behavior still needs versioned specimens if prioritized.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Curved walls retain legacy envelopes with diagnostics. Unequal vertical bounds fall back. Continuous interior X, near-face T and unresolved multi-floor joins are not newly solved by F08-A.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Change the configuration of a wall join",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-19EAF7A9-331F-4271-94CC-43B76B13011E.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "W-01",
+      "task": "Wall type, material, core and instance separation",
+      "classification": {
+        "code": 1,
+        "label": "Verified match within supported scope"
+      },
+      "roadmapPriority": "Retain accepted slice",
+      "severity": "None in tested slice",
+      "userImpact": "Common assembly authoring is usable; independent priority and join continuity are separate gaps.",
+      "featureOwner": "F02/F06 accepted; F07 libraries and F21 quantities remain distinct",
+      "proposedBoundedAcceptance": "Retain shared-type impact disclosure, duplicate versus edit behavior, zero-width records, cavity semantics and stable IDs.",
+      "unresolvedDecisions": "Cross-project library update/conflict rules and material quantity methods remain later scope.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Stable project materials, explicit contiguous cores, cavity widths, zero membranes and separate instance/type edits exist. +10 mm LAB finish updates LAB walls only; HOUSE independent type and nine opening identities remain intact.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "About walls",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-550F4B3E-7D49-4A4F-BEC7-4077D5B9FC85.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Layer function and priority",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-Model/files/GUID-1CCD1005-CBDA-4338-8D60-489095D4BB25.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "W-02",
+      "task": "Location lines and exterior orientation",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 — protect during F08-B",
+      "severity": "Partial comparison",
+      "userImpact": "Orientation and reference mistakes can invalidate dimensions even if a corner looks reasonable.",
+      "featureOwner": "F02 + F09, retained by F08-B",
+      "proposedBoundedAcceptance": "Golden cases compare physical position, location reference, flip and type thickness changes for each of six references, both directions, hosts and dimensions.",
+      "unresolvedDecisions": "Native/UI cross-check of changing justification without moving the wall remains required; do not label complete parity.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "BimCraft has six named finish/core/center references and exterior side. Seven master dimensions resolve; a finish change preserves supported references. Reversed L axes/exterior remain eligible, but the audit did not prove polygon equivalence or every UI relocation/flip combination.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Wall location line",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-F26DB6DA-A0EC-424D-B656-3BDF47607F4F.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "I-01",
+      "task": "Selection, Properties, wall grips, numeric entry and cancellation",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 — existing F09 ownership",
+      "severity": "Mixed verified and inherited evidence",
+      "userImpact": "Common input exists; inconsistent lifecycle can matter more than adding commands, as AUD-DEF-01 shows.",
+      "featureOwner": "F09; F28 shared adapter",
+      "proposedBoundedAcceptance": "Preserve dirty-field guards, mixed values, selection, units, Escape/Enter and busy/document/revision handling in future changes.",
+      "unresolvedDecisions": "Broader native multiselection/grip/numeric comparison needs targeted Revit cases; F09 candidate results are inherited separately.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Wall placement/Properties use existing unit parsing, height/reference/orientation and shared history; end grips and trim/extend exist. F28-B documents homogeneous multi-selection. Esc ends a chain, repeated Esc returns to Modify; committed segments remain. Fresh audit exercised selection/end edits/history, not the entire input matrix.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Wall location line",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-F26DB6DA-A0EC-424D-B656-3BDF47607F4F.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2025",
+          "title": "Temporary dimensions",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-DocumentPresent/files/GUID-74FFB00B-FB29-44B7-8FEA-613DBE010AD4.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "I-02",
+      "task": "Wall Move/Copy/Rotate/Mirror/Align/Offset/Split",
+      "classification": {
+        "code": 3,
+        "label": "Missing operation"
+      },
+      "roadmapPriority": "P1 — narrow Move/Copy first",
+      "severity": "Missing supported wall operations",
+      "userImpact": "Revising a house layout requires workarounds and risks lost host/reference intent.",
+      "featureOwner": "F09 Modify; F15 host rules; F02 identity",
+      "proposedBoundedAcceptance": "One straight wall Move then Copy, with numeric displacement and preview/cancel; explicit host/reference copy policy, one undo, stable move IDs/new copy IDs, save/reopen and MCP parity.",
+      "unresolvedDecisions": "Copy-host and dimension rebind policy must be agreed. Rotate/Mirror/Align/Offset/Split are separate subsequent slices.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Workspace shows these general wall commands disabled; Trim/Extend and Edit Type are available. Generic element move is not a substitute for supported authored-wall Move/Copy with host/reference semantics.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "About walls",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-550F4B3E-7D49-4A4F-BEC7-4077D5B9FC85.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "I-03",
+      "task": "Keyboard/context shortcuts and reference snapping candidate",
+      "classification": {
+        "code": 5,
+        "label": "Planned feature / unadopted candidate"
+      },
+      "roadmapPriority": "Existing reviewed candidate — separate adoption queue",
+      "severity": "Unadopted, not accepted-main defect",
+      "userImpact": "F09-A addresses useful discoverability/precision gaps but cannot be counted as installed on main.",
+      "featureOwner": "F09-A owner retained; PR18",
+      "proposedBoundedAcceptance": "Follow existing exact-head adoption gates if authorized; preserve curves refusal, cancel/dirty-input tests and analytic-reference versus trimmed-outline distinction.",
+      "unresolvedDecisions": "Any broader Revit shortcut remapping and richer snap override behavior needs user decision; no merge authorized here.",
+      "auditedBuild": "731fa6604418b20eaea7253a8e331ba5b4049450",
+      "originalObservation": "Main ordinary targeting lacks F09-A’s explicit six analytic reference targets. Draft F09-A adds WA/DR/WN, context actions and ambiguity selection for supported straight authored walls. Space remains pan, Tab focus and SC section: deliberate bounded differences, not universal keyboard parity.",
+      "revitSources": [
+        {
+          "version": "2025",
+          "title": "Snaps",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-Customize/files/GUID-A3947840-1F30-41D7-AF75-B61687952A07.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2025",
+          "title": "Flip controls",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-GetStarted/files/GUID-0B88E1B2-37D2-4008-A2B4-50C35F1DB147.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Historical candidate status superseded: F09-A is now adopted via PR18 at75af, with integrated validation. Its bounded interaction differences remain explicit."
+    },
+    {
+      "id": "H-01",
+      "task": "Door/window host edits and cut consequences",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 dependency for Modify; P2 broader host audit",
+      "severity": "Partial proof",
+      "userImpact": "Basic hosted behavior works, while broader layout changes still need explicit host policy.",
+      "featureOwner": "F15 + F09; F17 for parametric-window proof",
+      "proposedBoundedAcceptance": "Bound one door and one window through host move/thickness/height/flip/replacement/deletion with exact void and ID checks; honest refusal outside scope.",
+      "unresolvedDecisions": "Rehost and copy semantics, rough openings and nonrectangular family cuts need their own native cases.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Nine openings survive a shared assembly change; host0419 height +100 mm preserves opening IDs, wall IDs, sizes and sills. High-sill window produces 2 plan pieces at1200 and3 at2100. This does not establish rehost/delete/replace/flip/type-change coverage.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "About doors",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-05A0DA70-E276-4944-ACCA-5702DC8B9DCA.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2025",
+          "title": "Flip controls",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-GetStarted/files/GUID-0B88E1B2-37D2-4008-A2B4-50C35F1DB147.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "V-01",
+      "task": "Plan/RCP detail and view range",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P2 — maintain and extend bounded views",
+      "severity": "Partial scope",
+      "userImpact": "Reliable cut height matters for residential windows; advanced visibility must remain explicit.",
+      "featureOwner": "F04 + view ownership; F28-C access",
+      "proposedBoundedAcceptance": "Retain shared screen/vector layer boundaries and test floor/RCP range, below/through/above opening, level-spanning/raised walls at exact elevations.",
+      "unresolvedDecisions": "Revit exceptions, underlays and regions should be individually prioritized, not assumed missing from an entire view system.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Existing plans/RCP, range/detail/scale/templates and layered plan graphics are substantial. Fresh F04 checks pass and high-sill cut changes agree. No fresh proof of arbitrary regions/underlays or complete Revit visibility exceptions.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "View range",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-D5545CBE-822F-4A55-820E-6813AAA63888.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Plan views",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-43780EA2-1B9A-4EEA-AFC4-101716E88510.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "D-01",
+      "task": "Persistent wall dimensions versus chains and driving constraints",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 — chain dimensions after input foundation",
+      "severity": "Known partial capability",
+      "userImpact": "House dimension strings need repeated independent objects; users cannot assume dimension text drives geometry.",
+      "featureOwner": "F19 + F02/F09; F15 for openings",
+      "proposedBoundedAcceptance": "First add chained plan dimensions and witness edit/rebind with unresolved states, stable refs, one history transaction and actual vector output. Keep driving unavailable.",
+      "unresolvedDecisions": "Constraint strategy remains an explicit user/product decision, not automatic Revit scope.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "BimCraft has saved two-reference dimensions to six named wall references in plan/RCP/callout. Seven Test Lab dimensions resolve. No supported chains/locks/equality or generalized section/opening references. Driving geometry is explicitly deferred pending constraint strategy.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Lock permanent dimensions",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-BD91C1BE-4FBC-41F0-AC82-5C60A545EAC6.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2025",
+          "title": "Temporary dimensions",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-DocumentPresent/files/GUID-74FFB00B-FB29-44B7-8FEA-613DBE010AD4.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "V-02",
+      "task": "Sections through an otherwise ordinary joined wall",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P1 — high residential documentation impact",
+      "severity": "Existing F05 limit; not newly introduced",
+      "userImpact": "Most house walls join at their ends, so an isolated-wall condition limits practical wall sections substantially.",
+      "featureOwner": "F05 follow-up; F08 geometry coordination",
+      "proposedBoundedAcceptance": "Support one perpendicular cut away from a valid straight-wall junction using authoritative layer geometry, including opening, cavity and membrane cases; retain explicit oblique/unsupported fallback and verify PDF.",
+      "unresolvedDecisions": "End-junction cuts and intersections of multiple section solids should follow separately.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Layer-aware F05 sectioning requires an isolated supported wall. Even a perpendicular midpoint cut away from the L corner receives unsupported-cut when that wall connects at its end. Elevation/section breadth remains partial.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "About walls",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-550F4B3E-7D49-4A4F-BEC7-4077D5B9FC85.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Layer function and priority",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-Model/files/GUID-1CCD1005-CBDA-4338-8D60-489095D4BB25.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "S-01",
+      "task": "Assembly schedule/material legend versus flexible schedules/quantities",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P2 — F21 semantics before generalized totals",
+      "severity": "Existing partial scope",
+      "userImpact": "Useful documentation exists, but detailed quantities need explicit measurement rules and user-defined schedules are limited.",
+      "featureOwner": "F06 retained; F21 quantities; F22 output",
+      "proposedBoundedAcceptance": "Hand-check openings/cavities/membrane coverage and label methods before new totals; preserve fixed-table consistency and exports.",
+      "unresolvedDecisions": "Prioritize necessary custom fields rather than implement all Revit schedules.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "F06 fixed model-derived assembly schedule/material legend include cavity and membrane records; fresh schedule tests pass. Existing other schedules and CSV are present. This is not a generic field/filter designer and envelope quantity is not per-material net volume.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Schedule properties",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-6D4DBBDA-3611-40CD-9A45-BE40EB07188A.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Schedules overview",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-F50D6FF4-859E-43A2-A2F6-81C84A1BA0EB.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "S-02",
+      "task": "Sheets, callouts, annotations and vector output",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P2 — coordinated residential set",
+      "severity": "Partial / bounded output",
+      "userImpact": "Existing sheet tools should be extended rather than rebuilt; whole-set coordination and unsupported wall sections remain limiting.",
+      "featureOwner": "F20/F22; F28-C controls",
+      "proposedBoundedAcceptance": "One small house sheet set with stable titles/scales/references, clipping checks and visual/independent exported-output inspection after model edit.",
+      "unresolvedDecisions": "Broader font support, sheet references and title-block expectations require targeted requirements.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Test Lab contains2 sheets,2 callouts,1 section,2 templates and202 drafting records. Existing vector plan/section/schedule exports are accepted bounded features. No fresh PDF rendering/schema validation was run in this audit; earlier exact runtime evidence is inherited.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Plan views",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-43780EA2-1B9A-4EEA-AFC4-101716E88510.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Schedules overview",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-F50D6FF4-859E-43A2-A2F6-81C84A1BA0EB.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "C-01",
+      "task": "F28-C documentation controls and semantic workflow",
+      "classification": {
+        "code": 5,
+        "label": "Planned feature / unadopted candidate"
+      },
+      "roadmapPriority": "Existing owner/review queue",
+      "severity": "Unadopted candidate",
+      "userImpact": "Avoid duplicating existing work or counting unmerged features as accepted.",
+      "featureOwner": "F28-C owner retained; PR12",
+      "proposedBoundedAcceptance": "Use owner reconciliation and exact combined-head review against current main when authorized. Retain existing eleven runtime workflow types and C-specific gates.",
+      "unresolvedDecisions": "No readiness/merge decision made by this audit; source cutoff in handoff differs from published tip and must remain explicit.",
+      "auditedBuild": "aa75a6f9261e6f2d79e4fe805a287d35cf272d28",
+      "originalObservation": "Draft published F28-C handoff reports 21 documentation tools and 13 workflows, source/package/live checks. It improves access to bounded views/templates/callouts/annotations/dimensions/tables/sheets/export; it does not remove two-reference, fixed-table or bounded-section limits.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Plan views",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-43780EA2-1B9A-4EEA-AFC4-101716E88510.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Schedule properties",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-6D4DBBDA-3611-40CD-9A45-BE40EB07188A.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Still draft aa75; documentation MCP is supplied. Current five-conflict/input/combined-validation gates are in the PM review. Eventual combined CI requires14 types, not the audit’s older11-main count."
+    },
+    {
+      "id": "L-01",
+      "task": "Levels and multi-level wall behavior",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P2 — representative expansion",
+      "severity": "Evidence-limited partial comparison",
+      "userImpact": "Existing vertical modeling is real; multi-floor joins must not be promised from level support alone.",
+      "featureOwner": "F02/F24 + F08 for junctions",
+      "proposedBoundedAcceptance": "Change lower-storey height and compare upper levels, top-constrained walls, hosted openings, dimensions and drawings; test fixed-height controls and save/reopen.",
+      "unresolvedDecisions": "Agree supported negative offsets, top-level reassignment and cross-floor cleanup before expanding.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Master has4 levels and a spanning wall plus raised/low walls. Main supports fixed/level-relative tops and base offsets. Fresh suite covers precision/view behavior; full native level-height cascade and multi-floor junction comparison was not replayed.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "About walls",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-550F4B3E-7D49-4A4F-BEC7-4077D5B9FC85.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "View range",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-DocumentPresent/files/GUID-D5545CBE-822F-4A55-820E-6813AAA63888.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "R-01",
+      "task": "Existing floors and roofs versus persistent roof relationships",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "P2 — F10 discovery before F11–14",
+      "severity": "Partial inventory",
+      "userImpact": "Common roof editing and reliable intersecting residential roofs need focused proof, not a replacement roof tool by assumption.",
+      "featureOwner": "F10 spike; F11–14; F24 floors",
+      "proposedBoundedAcceptance": "Two roof planes with different pitch/bearing, then porch case; record seams, overhang, wall attachment, Undo/reopen and export before choosing extension.",
+      "unresolvedDecisions": "Native expected intersection/trim gestures and persistent relation rules remain open.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "Main already contains derived floors/ceilings/roofs and manual roof-plane modules. Master includes2 floors,1 ceiling,1 roof. No fresh different-pitch/bearing intersection or roof-wall attachment test was completed; do not equate module presence with validated parity.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Roofs",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-FF37F25A-D805-4F2E-B9FC-4372CAFDF4FC.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2026",
+          "title": "Add a roof and attach walls",
+          "url": "https://help.autodesk.com/cloudhelp/2026/ENU/Revit-GetStarted/files/GUID-5924644F-C73E-4B76-897D-B181EE9F1B16.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Sloped floors",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-Model/files/GUID-20D727CE-04D8-4C9B-8888-B65C6DD0639D.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "F-01",
+      "task": "Existing framing versus planned assembly coordination",
+      "classification": {
+        "code": 2,
+        "label": "Partial / behavior mismatch / discoverability"
+      },
+      "roadmapPriority": "Retain capability; F29 discovery",
+      "severity": "None in representative test",
+      "userImpact": "Reuse existing framing, kept-piece/reveal paths and identities instead of rebuilding them.",
+      "featureOwner": "Existing res-framing; F24 inventory; F29 planned/unassigned",
+      "proposedBoundedAcceptance": "F29 first proof can extend one straight timber wall, rectangular opening, one outlet and niche with explicitly supported coordination and real semantic parity.",
+      "unresolvedDecisions": "Native framing expectations depend on Revit content/add-ins; obtain actual intended workflow. No automatic engineering/code claim.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "frameHosts on house wall0419 creates1 assembly with73 real parts. Undo removes it, Redo restores it, and saved IFC rereads73 parts. F29 is future coordination of assembly/framing/bays/devices/niches, not the first framing system.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Beam systems",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-StructEng/files/GUID-487AE7B8-EBE4-4345-B2C8-016F69AC43A2.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "A-01",
+      "task": "Authoritative manual/MCP operations and transport evidence",
+      "classification": {
+        "code": 1,
+        "label": "Verified match within supported scope"
+      },
+      "roadmapPriority": "Retain adopted contract",
+      "severity": "None in tested join slice",
+      "userImpact": "Agentic capability is demonstrated for bounded joins, not every residential operation or every deployed client.",
+      "featureOwner": "MCP-01/F08 accepted; broader coverage remains open",
+      "proposedBoundedAcceptance": "New F08-B semantics require registered read/edit operations, document/revision/permission guards, atomic refusal, owned receipts, Undo and real source/package/live tests.",
+      "unresolvedDecisions": "Actual client connection is separate optional setup, not silently installed during audit.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "F08 joins run through authoritative model operations and protected records. Fresh source stdio and isolated packed consumer each pass 10 groups/361 calls; package byte identity and missing-module startup refusal pass. No persistent connected BimCraft client was configured; fresh live HTTP replay was not run.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Wall join cleanup and permission",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-130A65BC-8C57-4C31-8C07-F96041771539.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    },
+    {
+      "id": "E-01",
+      "task": "Exact native Revit result behind the user screenshot",
+      "classification": {
+        "code": 6,
+        "label": "Evidence / access gap / unresolved preference"
+      },
+      "roadmapPriority": "Before dependent F08-B semantics",
+      "severity": "Evidence gap",
+      "userImpact": "Guessing the control or layer algorithm could produce a convincing but incorrect implementation.",
+      "featureOwner": "F08-B discovery; user/PM evidence intake",
+      "proposedBoundedAcceptance": "Capture version, exact type layers/core/priority/materials, tooltips and context controls plus each requested configuration, before/after save and outputs.",
+      "unresolvedDecisions": "User’s preferred first mode set, Square Off inclusion and display cleanup inclusion remain unresolved. No client-project access requested.",
+      "auditedBuild": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee",
+      "originalObservation": "The private image shows an L-corner result and a selected wall/end control. Native Revit version, recipes, independent priorities, join order/configuration, cleanup state and tooltip are unknown. No supported connected Revit session was available to this audit.",
+      "revitSources": [
+        {
+          "version": "2027",
+          "title": "Change the configuration of a wall join",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-19EAF7A9-331F-4271-94CC-43B76B13011E.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Layer function and priority",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-Model/files/GUID-1CCD1005-CBDA-4338-8D60-489095D4BB25.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2027",
+          "title": "Wall join cleanup and permission",
+          "url": "https://help.autodesk.com/cloudhelp/2027/ENU/Revit-ArchDesign/files/GUID-130A65BC-8C57-4C31-8C07-F96041771539.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2025",
+          "title": "In-canvas wall join control",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-WhatsNew/files/GUID-0489005A-5724-4933-8894-5FCABA00A0EB.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        },
+        {
+          "version": "2025",
+          "title": "Compound-wall layer wrapping",
+          "url": "https://help.autodesk.com/cloudhelp/2025/ENU/Revit-Model/files/GUID-69B6DC75-56A9-4F35-BE24-80048360E2BB.htm",
+          "evidence": "Official documentation read during audit; not native observation"
+        }
+      ],
+      "currentDisposition": "Retain original bounded finding; not freshly replayed in full on75af. No native Revit execution."
+    }
+  ]
+}

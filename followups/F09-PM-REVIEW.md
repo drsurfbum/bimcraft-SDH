@@ -1,3 +1,5 @@
+> October30 current-state note: AUD-DEF-01 is a newly reproduced current-main join Properties/history defect. This earlier acceptance record remains historical evidence; see [current project state](PROJECT-STATE-2026-10-30.md) and [repair scope](../features/F09-B-JOIN-HISTORY-REPAIR.md).
+
 > Historical pre-merge review. PR #18 is now adopted at main75af81b; see [integrated adoption evidence](F09-INTEGRATED.md).
 
 # F09-A PM re-review — October 28, 2026

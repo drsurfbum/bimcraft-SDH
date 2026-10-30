@@ -1,0 +1,101 @@
+{
+  "checkedDate": "2026-10-30",
+  "forkMain": "75af81b49a3f472de734b0229f64e2140bbcbb10",
+  "upstreamMain": "c778c7ca3f83eeecc3e815078417f152b2ca7a94",
+  "mergeBase": "c778c7ca3f83eeecc3e815078417f152b2ca7a94",
+  "upstreamOnlyCommits": 0,
+  "forkOnlyCommits": 220,
+  "neededUpstreamMainPRs": [],
+  "pullRequests": [
+    {
+      "number": 13,
+      "title": "Add Traditional Chinese (Taiwan) translation",
+      "state": "open",
+      "mergedAt": null,
+      "mergeCommit": "722f86333305bf9b0be1bdf8fe1207862d519240",
+      "includedByAncestry": false,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/13"
+    },
+    {
+      "number": 12,
+      "title": "Size sanitary drains by fixture units (NBR 8160 and IPC)",
+      "state": "closed",
+      "mergedAt": "2026-10-24T00:06:49Z",
+      "mergeCommit": "46275e4e09aa7a086836b98372f73422dec6d74d",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/12"
+    },
+    {
+      "number": 11,
+      "title": "Add starter plumbing fixtures with connectors",
+      "state": "closed",
+      "mergedAt": "2026-10-24T00:06:27Z",
+      "mergeCommit": "8191a41d31d5afbe4dd8ed6bc0c8b705ce5c8538",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/11"
+    },
+    {
+      "number": 10,
+      "title": "Add Brazilian PVC pipe tables (NBR 5648, NBR 5688)",
+      "state": "closed",
+      "mergedAt": "2026-10-24T00:06:51Z",
+      "mergeCommit": "b9612f9389404c6ed2bf9660c0777429d00a41b4",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/10"
+    },
+    {
+      "number": 9,
+      "title": "Draw pipes and ducts from family connectors",
+      "state": "closed",
+      "mergedAt": "2026-10-24T00:05:36Z",
+      "mergeCommit": "983dff9420ccaf3fe80e5f8ef90915f62f397bb0",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/9"
+    },
+    {
+      "number": 8,
+      "title": "Add pipe and duct connectors to families",
+      "state": "closed",
+      "mergedAt": "2026-10-24T00:05:25Z",
+      "mergeCommit": "3dfd8e12f9b1e0aa6a0e463ccfb8bd9b2ebf2f8d",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/8"
+    },
+    {
+      "number": 7,
+      "title": "Re-render devshell/index.html from ui.inc",
+      "state": "closed",
+      "mergedAt": "2026-10-24T00:05:13Z",
+      "mergeCommit": "0280d8caca9e8b1942bfaec6aac1c8ad17f2aec2",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/7"
+    },
+    {
+      "number": 6,
+      "title": "Add Brazilian Portuguese (pt-BR) translation",
+      "state": "open",
+      "mergedAt": null,
+      "mergeCommit": null,
+      "includedByAncestry": false,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/6"
+    },
+    {
+      "number": 4,
+      "title": "Improve BimCraft units, view controls, framing, roofs, and symbols",
+      "state": "closed",
+      "mergedAt": "2026-10-22T15:46:22Z",
+      "mergeCommit": "8b1654384bf96cf2b1436f972837badddd45c343",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/4"
+    },
+    {
+      "number": 2,
+      "title": "Add wall alignment guides, face references and basement egress preset",
+      "state": "closed",
+      "mergedAt": "2026-10-17T20:05:09Z",
+      "mergeCommit": "aa77872ad078b493bc85d3a9576a880e34a4d599",
+      "includedByAncestry": true,
+      "url": "https://github.com/getcadcraft/bimcraft/pull/2"
+    }
+  ]
+}

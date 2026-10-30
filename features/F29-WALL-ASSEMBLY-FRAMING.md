@@ -87,3 +87,7 @@ Initial exclusions: engineered sizing, code/electrical compliance certification,
 Before dispatch, decide the assembly/framing rule interface; member/bay ID and persistence/migration model; supported opening and niche representation; envelope/clearance sources; override/conflict UI; review-state scope; F09/F28/shared-file ownership; and reference fixture/machine/targets. The discovery output names an owner and integration plan only when assigned by PM. The demonstration reels described in the source brief are inspiration, not acceptance evidence or a source of proprietary code/assets.
 
 No implementation, new chat, owner message, merge, app deployment or change to current F09/F28-C work follows automatically from adding this epic. [Return to the feature roadmap](https://drsurfbum.github.io/bimcraft-SDH/).
+
+## October 30 evidence reconciliation
+
+The Revit comparison audit generated 73 real framing parts on one synthetic house wall, retained through Undo/Redo and save/reopen. Existing framing is a concrete starting point. F29-A therefore inventories and extends assembly/bay/device/niche coordination; it is not the first framing implementation. This proof does not establish engineered sizing, field accuracy or all junction/override cases. Discovery and exact supported semantics remain unassigned and unimplemented.

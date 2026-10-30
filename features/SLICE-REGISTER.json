@@ -1,0 +1,238 @@
+{
+  "checkedDate": "2026-10-30",
+  "approvedMain": "75af81b49a3f472de734b0229f64e2140bbcbb10",
+  "implementationAuthorizedByThisDocument": false,
+  "slices": [
+    {
+      "id": "F09-B",
+      "feature": "F09",
+      "priority": "P0",
+      "title": "Repair join Properties after history",
+      "scope": "Repair AUD-DEF-01: refresh actual end values after history and preserve the untouched end during a partial edit. No new join configuration.",
+      "acceptance": "Pristine Lab08: Disallow A → Undo → Redo → Square B leaves A disallowed in visible form, authoritative record and actual saved/reopened IFC. Repeat inverse ends/caps and both layouts; include native/semantic interleaving, one owned step, stale/dirty refusal and no human-work Undo.",
+      "dependencies": "Current main75af; F08/F02 retained controls; coordinate F28 adapter",
+      "status": "OPEN defect; reproduced on current main",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F28-C",
+      "feature": "F28",
+      "priority": "P1",
+      "title": "Reconcile documentation candidate with current main",
+      "scope": "Existing PR12, not a new implementation epic. Reconcile five conflicts, preserve accepted tools and wire DI/DL/context actions to real documentation availability. Stabilize actual live downloads.",
+      "acceptance": "Published combined head retains all fourteen applicable workflow types, source/package/live catalogs and refusal/history tests; C/B/F09 native checks and independent actual outputs. Add the new history repair regression when its baseline lands.",
+      "dependencies": "Current accepted main; F09-B coordination; existing C owner",
+      "status": "Existing draft; blocked for adoption",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F08-B0",
+      "feature": "F08",
+      "priority": "P1",
+      "title": "Capture the intended native Revit join behavior",
+      "scope": "One synthetic equal/mixed L, controlled T and opening. Record Revit version, type/core/material/function/independent priority, orientation, join mode/order, permission, cleanup and control tooltip.",
+      "acceptance": "Labeled golden observations distinguish core/finish meeting, Butt/Miter/order, automatic permission, view cleanup and free-end/insert wrapping. Mark unavailable modes. Agree first-slice behavior before schema/solver commitments.",
+      "dependencies": "User/native Revit evidence; versioned Autodesk references",
+      "status": "Discovery required",
+      "decision": "Exact screenshot control/recipes; Square Off and display-cleanup inclusion; independent-priority migration defaults"
+    },
+    {
+      "id": "F08-B",
+      "feature": "F08",
+      "priority": "P1",
+      "title": "Layered 90-degree L corners and explicit join choices",
+      "scope": "Two straight vertical equal-height walls; equal/mixed assemblies, both directions/orientations. Core butt/finish continuity, material seams and eligible agreed Butt/order/Miter.",
+      "acceptance": "No gaps/double ownership; stable references/hosts; cavities keep width and membranes stay zero; deterministic regeneration, preview/cancel, Undo/reopen; independent IFC/plan/section/vector output and manual/source/package/live semantic parity. Retain T/X negative controls.",
+      "dependencies": "F09-B; F08-B0; F02 schema; coordinate F04/F05/F28",
+      "status": "Planned after discovery",
+      "decision": "Physical/layer representation and migration; do not infer Square Off or wrapping from a square cap"
+    },
+    {
+      "id": "F05-B",
+      "feature": "F05",
+      "priority": "P1",
+      "title": "Sections through joined straight walls",
+      "scope": "Perpendicular cut through a supported wall away from an existing supported junction. Do not solve a cut through the corner itself.",
+      "acceptance": "Equal/mixed L plus house wall with opening: layers, cavity/membranes and voids remain correct after type/height/opening edit, Undo and reopen; inspect actual vector PDF. Oblique/junction cuts still refuse honestly.",
+      "dependencies": "F05-A/F08-A; shared layer contract with F08-B",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F15-A",
+      "feature": "F15",
+      "priority": "P1",
+      "title": "Focused door/window host durability",
+      "scope": "One door and one window across supported host move/thickness/height/flip, then bounded replacement/rehost/deletion decisions.",
+      "acceptance": "Exact wall/opening/void identities and extents; valid dimensions or explicit unresolved references; atomic refusal, native/MCP parity and independent saved-file readback. Define copy behavior before Copy.",
+      "dependencies": "F02/F08; coordinate F09-C/D",
+      "status": "Proposed; not started",
+      "decision": "Explicit policy for hosted elements and persistent references when copying/replacing a wall"
+    },
+    {
+      "id": "F09-C",
+      "feature": "F09",
+      "priority": "P1",
+      "title": "Move one authored wall predictably",
+      "scope": "One straight wall with supported hosted door/window, numeric displacement and noncommitting preview.",
+      "acceptance": "Move preserves wall/host IDs and agreed references; dependent joins/openings/dimensions update or refuse visibly; Escape cancels; one owned Undo; real save/reopen and registered semantic transport.",
+      "dependencies": "F09-B; focused F15-A host contract; F02/F08",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F09-D",
+      "feature": "F09",
+      "priority": "P1",
+      "title": "Copy one authored wall with explicit host rules",
+      "scope": "Follow Move with one-wall Copy; preview/cancel and clear include/exclude-host behavior. No blanket implementation of all Modify commands.",
+      "acceptance": "New unique wall/selected-copy IDs, original unchanged; no accidental source-dimension rebinding; supported joins/hosts and per-instance values preserved; one operation/history receipt and actual saved-output parity.",
+      "dependencies": "F09-C/F15-A; identity/reference copy decision",
+      "status": "Proposed; not started",
+      "decision": "Which hosted elements and annotations copy; how copied references bind"
+    },
+    {
+      "id": "F19-A",
+      "feature": "F19",
+      "priority": "P1",
+      "title": "Chained plan dimensions and witness editing",
+      "scope": "Chains of supported straight-wall analytic references in plan/callout; nondriving. Add/edit/remove/rebind witnesses with clear unresolved states.",
+      "acceptance": "Type/geometry changes, Undo/Redo and reopen preserve supported references and equal displayed/vector values. Keep locks/equality/driving visibly unavailable until a constraint strategy is approved.",
+      "dependencies": "F02/F09 input; coordinate C adapter; opening references follow F15",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F09-E",
+      "feature": "F09",
+      "priority": "P2",
+      "title": "Operation-specific snapping and contextual input",
+      "scope": "Agree temporary snap overrides, candidate cycling and core/finish priority during a small set of real operations; extend the contextual menu inventory from user examples.",
+      "acceptance": "Visible candidate identity/ambiguity and temporary-versus-persistent intent; preserve native text/Tab/focus, numeric entry, cancel and analytic-reference contracts. Match agreed Revit workflows rather than blindly enabling every shortcut.",
+      "dependencies": "F09-A/B; native interaction examples; coordinate F19",
+      "status": "Discovery required",
+      "decision": "Tab/Space and two-letter shortcut conflicts; exact context-dependent menu contents"
+    },
+    {
+      "id": "F08-C",
+      "feature": "F08",
+      "priority": "P2",
+      "title": "Free-end compound-wall wrapping",
+      "scope": "Separate one straight free-end wrapping rule from corner join cleanup and independent cap choice.",
+      "acceptance": "Explicit eligible layers/material extents, cavity/membrane behavior and coherent saved plan/section/IFC outputs, with Undo and MCP parity.",
+      "dependencies": "F08-B layer representation; native wrapping evidence",
+      "status": "Proposed; not started",
+      "decision": "First free-end modes and representation; no insert wrapping implied"
+    },
+    {
+      "id": "F15-B",
+      "feature": "F15",
+      "priority": "P2",
+      "title": "Door/window insert wrapping",
+      "scope": "One rectangular hosted insert with explicit wall layer eligibility and supported closure references.",
+      "acceptance": "Preserve opening/host/void IDs and extents, correct layer returns across type/sill/size changes and actual exported sections; unsupported families refuse clearly.",
+      "dependencies": "F15-A; F08 wrapping contract; F17 closure proof",
+      "status": "Proposed; not started",
+      "decision": "Which insert/family closure rules are supported first"
+    },
+    {
+      "id": "F04-B",
+      "feature": "F04",
+      "priority": "P2",
+      "title": "Plan/RCP range edge-case acceptance",
+      "scope": "Explicitly exercise raised, spanning and low walls; below/through/above openings; independent plan/RCP values and templates. Expand only gaps the evidence establishes.",
+      "acceptance": "Same view-owned range/detail/scale values produce coherent screen/vector results across levels, edits, history and reopen; unavailable Revit view-region/underlay cases remain declared.",
+      "dependencies": "F04/F02; coordinate C source ownership",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F28-D",
+      "feature": "F28",
+      "priority": "P2",
+      "title": "Narrow-window layout and command accessibility",
+      "scope": "Repair inherited drawing-area loss with both palettes expanded; legible short labels, keyboard/touch explanations and discoverable controls.",
+      "acceptance": "Agreed narrow desktop viewport preserves a usable canvas, independent palette scrolling, focus/selection and command availability in both layouts. Inspect real screenshots; retain established default/fallback.",
+      "dependencies": "F28-C/input framework; preserve model behavior",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F21-A",
+      "feature": "F21",
+      "priority": "P2",
+      "title": "Hand-checkable material quantities",
+      "scope": "Separate gross/net wall envelope, openings, solid-layer volume, cavity width and zero-membrane coverage before generalized totals.",
+      "acceptance": "Small fixtures reconcile every quantity to declared methods; cavities contribute no solid material volume; membranes may have coverage but zero nominal volume; framing is not silently a homogeneous solid.",
+      "dependencies": "F06/F08/F15; coordinate F29 later",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F22-A",
+      "feature": "F22",
+      "priority": "P1 later",
+      "title": "One coordinated small-house drawing set",
+      "scope": "Use existing plans, section, callout, dimensions, schedules/legend and sheet tools on a bounded reference house. Keep roof/window completeness in M2/M3 phases.",
+      "acceptance": "Revise a wall/window and verify every affected placed view, title/scale/reference/continuation and inspected vector output. Clear incomplete-view reporting, no clipping or stale dimensions.",
+      "dependencies": "F05-B/F19-A; F06; F28-C; coordinated F20",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F24-A",
+      "feature": "F24",
+      "priority": "P2",
+      "title": "Residential coverage and level-cascade audit",
+      "scope": "Inventory current floors/ceilings, levels, foundations, stairs and framing against the house; verify level-height propagation. Reuse roof discovery F10.",
+      "acceptance": "Supported/partial/missing matrix and selected level edit preserve upper levels, constrained/fixed walls, hosts, dimensions and drawings or explain limits. Existing modules are starting points, not automatic acceptance.",
+      "dependencies": "F02/F09; roof F10; retained Test Lab",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F29-A",
+      "feature": "F29",
+      "priority": "P2",
+      "title": "Framing coordination discovery and first proof",
+      "scope": "Reuse existing framing (audit produced73 parts). One straight timber wall, rectangular opening, derived bays, one outlet and niche; 3D sketch/reveal only within agreed input scope.",
+      "acceptance": "Deterministic supported framing/clear-bay extents; no silent member cutting; explicit conflicts and assumptions; supported identities/overrides, Undo/reopen and authoritative semantic parity.",
+      "dependencies": "F24 framing inventory; F09 input; F15 hosts; F08/F02",
+      "status": "Discovery required",
+      "decision": "Bays/clearances and override policy; generated design does not establish field accuracy or engineered sizing"
+    },
+    {
+      "id": "F30-A",
+      "feature": "F30",
+      "priority": "P2",
+      "title": "Headless capability and parity inventory",
+      "scope": "Audit current IfcSession, CLI and packaged MCP execution; distinguish domain operations from live-only source activation. No second model/history engine.",
+      "acceptance": "Capability matrix marks source implementation, direct-call usability, registration, package closure, permissions/history, export/file output and actual test evidence separately. Choose one local job interface and measure where overhead occurs.",
+      "dependencies": "Current accepted core/MCP contracts; C adoption only for its documentation features",
+      "status": "Proposed discovery; no owner assigned",
+      "decision": "None beyond the stated boundary"
+    },
+    {
+      "id": "F30-B",
+      "feature": "F30",
+      "priority": "P2",
+      "title": "One reproducible browser-free Test Lab job",
+      "scope": "Open a working copy, run an explicit recipe of supported edits/checks and write new IFC plus structured report and supported exports to disk. Compare direct core and MCP execution.",
+      "acceptance": "Same resulting semantic model/identities/precision and actual output checks; deterministic job/revision/error/history receipts; explicit failure/resume/overwrite policy; measured time/memory on same fixtures. GUI activation remains live-only; no service deployment required.",
+      "dependencies": "F30-A; accepted operations; F28-C for proposed documentation export breadth",
+      "status": "Proposed after discovery",
+      "decision": "Job atomicity and retry/resume/idempotency boundaries; choose SDK/CLI shape before implementation"
+    },
+    {
+      "id": "F26-I18N",
+      "feature": "F26",
+      "priority": "P2",
+      "title": "Locale, export-text and platform acceptance",
+      "scope": "Retain existing catalogs and fork labels; test units/plurals/fills, meaningful PDF glyphs and basic Mac/Windows startup/save behavior. Watch upstream translation PRs after their own review.",
+      "acceptance": "Actual user-visible strings and exported text work in chosen languages; missing keys/glyphs fail or report limits honestly. Browser/PHP/catalog/platform boundaries are recorded; no full Unicode/platform certification from one passing language test.",
+      "dependencies": "F22 output; existing F28 language coverage; selected release platforms/languages",
+      "status": "Proposed; not started",
+      "decision": "None beyond the stated boundary"
+    }
+  ]
+}

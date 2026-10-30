@@ -1,3 +1,5 @@
+> October30 current-state note: AUD-DEF-01 is a newly reproduced current-main join Properties/history defect. This earlier acceptance record remains historical evidence; see [current project state](PROJECT-STATE-2026-10-30.md) and [repair scope](../features/F09-B-JOIN-HISTORY-REPAIR.md).
+
 # F09-A adopted main — October 28, 2026
 
 **PR #18 was marked ready and merged under explicit user authorization.** New main is `75af81b49a3f472de734b0229f64e2140bbcbb10`. Fresh integrated validation passes, including all twelve exact-main CI workflow types.

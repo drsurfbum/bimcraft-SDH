@@ -44,3 +44,11 @@ F08 owns join/domain/layer semantics. Coordinate controls with F09's input/conte
 Use Test Lab v1 Join Lab stations 08–15 for current comparisons and keep that master unchanged. Capture the Revit example and desired join-mode outcomes as new fixtures in a versioned extension. The comparison matrix should record the exact assemblies/core boundaries/materials/priorities, join type/order, permission/cleanup settings, before/after controls and eligible/disabled options. Add end/opening wrapping as separate cases when that scope is agreed.
 
 Existing performance, test-isolation, MEP, narrow-window and broader MCP follow-ups stay open. No feature merge, deployment, baseline change or full-F08 completion is implied.
+
+## October 30 audit reconciliation
+
+The completed 25-row Revit comparison is reconciled in the [project-state report](https://drsurfbum.github.io/bimcraft-SDH/state/2026-10-30/). Native Revit execution remains unverified. F09-A is now adopted at main75af; C remains separate at aa75 with five conflicts and eventual fourteen-workflow combined acceptance.
+
+Add F08-B0 as the explicit synthetic native-evidence step. The first solver slice remains an equal-height 90-degree L with agreed material/priority/core ownership, eligible modes and actual output/MCP equivalence. Keep the fifteen proposed evidence-fixture groups from the audit; do not infer Square Off, display cleanup or insert wrapping from a square cap.
+
+Repair the newly verified AUD-DEF-01 / [F09-B history form issue](F09-B-JOIN-HISTORY-REPAIR.md) before expanding joins. The current-main native replay confirms that an opposite-end cap edit can overwrite a disallowed end after Undo/Redo. This new repair does not reopen accepted F08-PM-01/02 semantic findings.
