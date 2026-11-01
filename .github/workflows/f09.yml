@@ -39,6 +39,7 @@ jobs:
           .cc-test/f09-reader/bin/python -m pip install -r tests/features/f04/requirements-independent.txt
       - name: F09 and inherited precision/model regressions
         run: |
+          node tests/features/f08/fixture.mjs
           node --test tests/features/f09/*.test.mjs tests/features/upstream08/*.test.mjs
           node --test tests/features/f28/*.test.mjs tests/unit/*.test.mjs tests/features/f08/*.test.mjs
           .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
