@@ -389,6 +389,12 @@ export function headlessTools(env) {
     for (const def of BIM.modelTools(bimEnv(null))) {
       const schema = def.inputSchema || obj({});
       T({ ...def, description: def.description + ' Works on an IFC model opened with ifc_open or ifc_new (doc).',
+        ...(def.preview ? { preview: async a => {
+          const d = get(env, a.doc, 'ifc');
+          await d.s.editor();
+          const { doc, ...rest } = a;
+          return { doc, ...await BIM.modelTools(bimEnv(d.s, doc)).find(t => t.name === def.name).preview(rest) };
+        } } : {}),
         inputSchema: { ...schema, properties: { doc: S.doc, ...schema.properties }, required: ['doc', ...(schema.required || [])] },
         run: async (a) => {
           const d = get(env, a.doc, 'ifc');

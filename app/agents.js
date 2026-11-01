@@ -42,11 +42,11 @@
  *   · render_still, render_queue (export, 0.7 AS.6, session assistants-gaps: render-tools.js, a copy of ModelCraft's; only in the
  *   window, when the page hands `render`; the headless package carries render-tools.js without the renderer it loads on use)
  */
-import { getHost, toolResult, undoRollback, peekUndo, ToolError } from './host.js';
+import { getHost, toolResult, peekUndo, ToolError } from './host.js';
 import { renderTools } from './render-tools.js';
 import { snapshotModel, drawWalls, placeOpening, loopsOf, op, changeWall, changeOpening, removeElements } from './model-ops.js';
 import { readDerived } from './model-slabs.js';
-import { EDITABLE_ATTRS } from './ifc-edit.js';
+import { EDITABLE_ATTRS, IfcEditor } from './ifc-edit.js';
 import { ids as idsOf } from './ifc-util.js';
 import { WALL_TYPES, readWalls, wallTypes } from './model-walls.js';
 import { DOOR_TYPES, WINDOW_TYPES } from './model-openings.js';
@@ -203,8 +203,37 @@ const massingFor = (a) => {
   if (!env) throw new Error('Give the buildable outline: envelope (points in mm) or width_m and depth_m.');
   return massingOptions({ program: a.program, envelope: env, floorHeight: a.floor_height_mm || undefined, heightCap: a.height_cap_mm || 0, efficiency: a.efficiency || undefined });
 };
+// Evaluate rollback-preview tools on a separate IFC model, never on the person's editor.
+async function previewModelTool(env, def, args) {
+  const original = env.ed();
+  if (!original) throw new Error('No IFC model is open in BimCraft.');
+  if (editing.has(original) || env.busy?.()) throw new Error('Document is busy.');
+  const state = bindDocument(original, args);
+  const verify = () => {
+    if (env.ed() !== original) throw new Error('Document changed during preview.');
+    bindDocument(original, { documentId: state.documentId, expectedRevision: state.revision });
+    if (env.busy?.()) throw new Error('Document is busy.');
+  };
+  const bytes = original.api.SaveModel(original.mid);
+  const api = new original.W.IfcAPI();
+  let mid;
+  try {
+    await api.Init({ manifold: false });
+    verify();
+    mid = api.OpenModel(bytes);
+    const ed = new IfcEditor(original.W, { api, modelID: mid });
+    const scoped = { ...env, ed: () => ed, busy: () => false, refresh: () => {},
+      apply: async (label, operation) => ed.modelChange(operation, { label: 'Assistant: ' + label, verb: '' }) };
+    const { documentId, expectedRevision, ...plain } = args;
+    const would = await modelTools(scoped).find(t => t.name === def.name).run(plain);
+    verify();
+    return { ...would, undo: null, ...documentState(original) };
+  } finally { if (mid !== undefined) api.CloseModel(mid); }
+}
+
 export function modelTools(env) {
   return modelDefinitions(env).map(def => def.group !== 'edit' ? def : ({ ...def,
+    ...(def.rollbackPreview ? { preview: args => previewModelTool(env, def, args) } : {}),
     inputSchema: { ...def.inputSchema, properties: { ...BINDING, ...def.inputSchema.properties } },
     run: async args => {
       const original = env.ed();

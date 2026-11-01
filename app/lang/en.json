@@ -10389,5 +10389,7 @@
   "f09.end": "Endpoint",
   "f09.mid": "Midpoint",
   "f09.on": "Nearest point",
-  "f09.textentry": "Finish or cancel the text entry before opening a drawing menu."
+  "f09.textentry": "Finish or cancel the text entry before opening a drawing menu.",
+  "model.modify.move.scope": "Selected walls move independently; unselected joined walls stay in place.",
+  "model.modify.bounds.scope": "Uses the physical outer bounds. No core-face reference or alignment lock."
 }

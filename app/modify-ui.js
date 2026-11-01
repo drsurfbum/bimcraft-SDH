@@ -24,6 +24,8 @@ export function mountModify(modelUi) {
   const hintNow = () => {
     const sel = selected().length;
     hint(A.S.tool === 'move' ? (!sel ? 'model.hint.move' : R.base ? 'model.hint.move2' : 'model.hint.move1') : A.S.tool === 'align' ? (R.to === 'point' ? 'model.hint.alignpt' : 'model.hint.align') : 'model.hint.distribute');
+    const h = A.root.querySelector('[data-model-hint]');
+    if (h) h.textContent += ' ' + t(A.S.tool === 'move' ? 'model.modify.move.scope' : 'model.modify.bounds.scope');
   };
 
   /** What is picked that Move / Align / Distribute can work on, in pick order, with its box in plan mm. */

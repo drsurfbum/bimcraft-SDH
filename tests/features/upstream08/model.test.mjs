@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {model} from '../f08/fixture.mjs';
-import {readWalls,locationLine} from '../../../app/model-walls.js';
+import {readWalls,locationLine,wallOutlines} from '../../../app/model-walls.js';
 import {readOpenings} from '../../../app/model-openings.js';
-import {moveElements} from '../../../app/model-modify.js';
+import {moveElements,movables,alignMoves,distributeMoves} from '../../../app/model-modify.js';
 import {changeWall} from '../../../app/model-ops.js';
 import {documentHistoryState} from '../../../app/material-wall-agent.js';
 const near=(a,b)=>a.forEach((v,i)=>assert.ok(Math.abs(v-b[i])<.005,`${a} != ${b}`));
@@ -56,4 +56,20 @@ test('model registry retains the exact pinned upstream and accepted fork capabil
  const {modelTools}=await import('../../../app/agents.js');const expected=JSON.parse(fs.readFileSync(new URL('./model-catalog.json',import.meta.url))).union;
  const actual=modelTools({ed:()=>null}).map(({name,group})=>({name,group}));const sort=xs=>xs.sort((a,b)=>a.name.localeCompare(b.name));
  assert.deepEqual(sort(actual),sort(expected));assert.equal(new Set(actual.map(x=>x.name)).size,actual.length);
+});
+
+
+test('Modify bounds follow actual offset/curved wall profiles; align and gaps use those bounds',async()=>{
+ const {model:layered}=await import('../f04/fixture.mjs');const m=await layered(),walls=readWalls(m.w()),list=movables(m.w()).filter(x=>x.kind==='wall'),polys=wallOutlines(walls.map(x=>({...x,key:x.guid})));
+ assert.ok(walls.some(x=>x.bulge));assert.ok(walls.some(x=>x.justification!=='center'));
+ for(const item of list){const p=polys.get(item.guid);assert.deepEqual(item.box,{minX:Math.min(...p.map(p=>p[0])),minY:Math.min(...p.map(p=>p[1])),maxX:Math.max(...p.map(p=>p[0])),maxY:Math.max(...p.map(p=>p[1]))});}
+ const isolated=list.filter(x=>walls.find(w=>w.guid===x.guid).a[0]<7000).slice(0,3),aligned=alignMoves(isolated,{side:'left',to:'point',point:[35000,0]});
+ for(const x of isolated)assert.ok(Math.abs(x.box.minX+aligned.get(x.guid)[0]-35000)<.005);
+ const moves=distributeMoves(isolated,{axis:'v',mode:'gaps'}),placed=isolated.map(x=>({...x.box,minY:x.box.minY+(moves.get(x.guid)?.[1]||0),maxY:x.box.maxY+(moves.get(x.guid)?.[1]||0)})).sort((a,b)=>a.minY-b.minY);
+ assert.ok(Math.abs((placed[1].minY-placed[0].maxY)-(placed[2].minY-placed[1].maxY))<.005);
+ m.change(moveElements([...aligned].map(([guid,[dx,dy]])=>({guid,dx,dy}))));
+ const moved=readWalls(m.w()),physical=wallOutlines(moved.map(x=>({...x,key:x.guid})));
+ for(const item of isolated){const wall=moved.find(x=>x.guid===item.guid),before=walls.find(x=>x.guid===item.guid);assert.ok(Math.abs(Math.min(...physical.get(item.guid).map(p=>p[0]))-35000)<.005);assert.equal(wall.justification,before.justification);assert.equal(wall.extSide,before.extSide);assert.equal(wall.typeKey,before.typeKey);}
+ m.ed.undo();for(const wall of readWalls(m.w()))near(wall.a,walls.find(x=>x.guid===wall.guid).a);
+
 });

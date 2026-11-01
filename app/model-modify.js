@@ -16,7 +16,7 @@
  * walls (with their doors and windows), floors and columns; a placed library item is copied by the Edit menu's Copy and Paste.
  */
 import { ModelWriter } from './model-write.js';
-import { readWalls, updateWall, addWall } from './model-walls.js';
+import { readWalls, wallOutlines, updateWall, addWall } from './model-walls.js';
 import { readOpenings, addOpening } from './model-openings.js';
 import { readColumns, copyColumn } from './model-columns.js';
 import { readDrawnFloors, shiftDrawnFloor, writeDrawnFloor } from './model-floors.js';
@@ -32,9 +32,11 @@ const boxOfPts = (pts) => ({ minX: Math.min(...pts.map((p) => p[0])), minY: Math
 /** The walls' outline (centre line ± half the thickness at each end), floors' points, columns' corners, items' insertion point. */
 export function movables(w, storey = null) {
   const out = [];
-  for (const x of readWalls(w, storey)) {
-    const L = Math.hypot(x.b[0] - x.a[0], x.b[1] - x.a[1]) || 1, n = [-(x.b[1] - x.a[1]) / L * x.t / 2, (x.b[0] - x.a[0]) / L * x.t / 2];
-    out.push({ kind: 'wall', guid: x.guid, storey: x.storey, box: boxOfPts([[x.a[0] + n[0], x.a[1] + n[1]], [x.a[0] - n[0], x.a[1] - n[1]], [x.b[0] + n[0], x.b[1] + n[1]], [x.b[0] - n[0], x.b[1] - n[1]]]) });
+  const walls = readWalls(w, storey), outlines = wallOutlines(walls.map(x => ({ ...x, key: x.guid })));
+  for (const x of walls) {
+    // The saved location line may be a core/finish face, and curved walls exceed their chord.
+    const points = outlines.get(x.guid);
+    if (points?.length) out.push({ kind: 'wall', guid: x.guid, storey: x.storey, box: boxOfPts(points) });
   }
   for (const f of readDrawnFloors(w, storey)) out.push({ kind: 'floor', guid: f.guid, storey: f.storey, box: boxOfPts(f.points) });
   for (const c of readColumns(w, storey)) {
