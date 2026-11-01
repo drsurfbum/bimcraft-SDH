@@ -73,3 +73,12 @@ Ready for local review, not adoption. Remaining verification is the Poppler gate
 ## Draft PR CI follow-up
 
 The first published head is `081959304a44905bb50414fcff6308305b8110f0`, with main still at the recorded base. Existing CI now also runs the new upstream08 regression tests, source/isolated-package preview checks, Problems native acceptance and equal-depth journal tests. The Poppler-equipped Tests job runs the complete unchanged `r52` mode. Browser shortcut tests choose the platform's actual modifier. No existing gate, assertion or tolerance is removed. Exact-head terminal CI results and remaining limits are recorded in the PR and local publication receipt; historical local limitations above are not automatically CI failures.
+
+
+CI also exposed three obsolete 0.7 expectations, confirmed against the pinned 0.8 source rather than inferred from a failing run:
+
+- The add-on API is now 1.4. Explicit tests accept each retained 1.0–1.4 manifest and refuse future versions.
+- Upstream removed bundled manufacturer TJI span data. Framing now requires a loaded table and refuses without it. This is an intentional upstream behavior change requiring adoption review; example tables are fictional and not for design. Tests require absence/refusal plus smallest-fitting-depth, out-of-range refusal and direction/sizing with the explicit example table.
+- The starter catalog adds a bathtub. The legacy fixture test now requires all six exact starter keys, twelve ports, all saved sanitary types including BATH, all six drain identities and reopen, retaining the original fixture checks.
+
+The foundation comparison records four exact, mode-scoped API/TJI assertion transitions, with both immutable release refs and test-source blob hashes. Every replacement assertion and occurrence is required; removing a replacement or any unrelated assertion still fails. Raw release/candidate cases and the transitions remain in the report. The comparison itself and its original seven strict tests are unchanged. No manufacturer span data was restored or existing capability removed to satisfy CI. Final exact-head outcomes are in the publication receipt and draft PR.

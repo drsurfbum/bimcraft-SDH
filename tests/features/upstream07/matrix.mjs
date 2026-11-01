@@ -2,9 +2,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { applyContractTransitions, sourceProof, pins } from '../upstream08/contract-transitions.mjs';
+import { execFileSync } from 'node:child_process';
+import assert from 'node:assert/strict';
 import { compareAssertions, residentialDifferences, assertionName, residentialNameRules, opsTimingRule, executedAssertions } from './assertion-comparison.mjs';
 const arg = k => process.argv[process.argv.indexOf(k) + 1];
 const controls = [['release', path.resolve(arg('--release'))], ['candidate', process.argv.includes('--candidate') ? path.resolve(arg('--candidate')) : process.cwd()]];
+// Prove these narrow transitions came from the two exact upstream releases.
+for(const proof of sourceProof)for(const side of ['before','after'])assert.equal(execFileSync('git',['rev-parse',pins[side]+':'+proof.file],{encoding:'utf8'}).trim(),proof[side]);
 const out = path.resolve('.cc-test/upstream07'); fs.mkdirSync(out, { recursive: true });
 const supported = ['mlwall','copylevel','famsolid','fammore','su878','variants','bundle-open','mep07','mass07','agent','new','rotated','fixes2'];
 const external = ['plans','draw06','families','mep','ops'];
@@ -30,9 +35,11 @@ for (const [control, cwd] of controls) for (const mode of modes) {
 for (const row of results.filter(r => r.control === 'candidate')) {
   const source = results.find(r => r.control === 'release' && r.flag === row.flag);
   row.classification = row.exitCode === 0 ? 'PASS' : source.exitCode === 0 ? 'CANDIDATE_REGRESSION' : 'CONTROL_FAILURE';
-  row.caseComparison = compareAssertions(source.cases, row.cases, row.flag.startsWith('res') ? residentialDifferences : []);
+  const transition = applyContractTransitions(source.cases, row.flag);
+  row.upstreamContractTransitions = transition.applied;
+  row.caseComparison = compareAssertions(transition.expected, row.cases, row.flag.startsWith('res') ? residentialDifferences : []);
   if (row.caseComparison.status === 'FAIL') console.error('MISSING ASSERTIONS ' + row.flag + ': ' + row.caseComparison.missing.join(' | '));
 }
-fs.writeFileSync(path.join(out, 'matrix.json'), JSON.stringify({ node: process.version, residentialNameRules: residentialNameRules.map(({pattern,name,reason})=>({pattern:pattern.source,name,reason})), opsTimingRule: {pattern:opsTimingRule.pattern.source,reason:opsTimingRule.reason}, results }, null, 2));
+fs.writeFileSync(path.join(out, 'matrix.json'), JSON.stringify({ node: process.version, upstreamContractSourceProof: { pins, sourceProof }, residentialNameRules: residentialNameRules.map(({pattern,name,reason})=>({pattern:pattern.source,name,reason})), opsTimingRule: {pattern:opsTimingRule.pattern.source,reason:opsTimingRule.reason}, results }, null, 2));
 // External/control failures stay recorded, never counted as passes. Required standalone failures block this job.
 process.exitCode = results.some(r => r.required && (r.exitCode !== 0 || r.failed !== 0 || !r.cases.length)) || results.some(r => r.classification === 'CANDIDATE_REGRESSION' || r.caseComparison?.status === 'FAIL') ? 1 : 0;
