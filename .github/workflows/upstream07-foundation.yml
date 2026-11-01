@@ -45,7 +45,7 @@ jobs:
           python -m venv .cc-test/reader
           .cc-test/reader/bin/python -m pip install -r tests/features/f01/requirements-independent.txt
       - name: Shared record guard and all retained F28 assertions
-        run: node --test tests/features/upstream07/*.test.mjs tests/features/f28/*.test.mjs
+        run: node --test tests/features/upstream07/*.test.mjs tests/features/upstream08/contract-transitions.test.mjs tests/features/f28/*.test.mjs
       - name: All 33 electrical kinds and independent schema EXPRESS validation of actual saves
         run: |
           node .cc-test/bin/test-bimcraft.mjs --res --only rc6 --keep

@@ -1,0 +1,121 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* app-problems.css — the shell's Problems button, panel and ⚠ markers (assets/js/app-problems.js; docs/0.8-PROBLEMS-SPEC.md).
+   Loaded by AppBuilds::headTags only for builds whose manifest says "problems": true. Tokens only; rem sizes. */
+.app-bar-problems[data-worst="error"] .bi { color: var(--layer-red); }
+.app-bar-problems[data-worst="warning"] .bi { color: var(--layer-ochre); }
+.app-bar-problems[aria-expanded="true"] { color: var(--on-action, var(--sheet)); background: var(--ink); }
+.app-bar-problems[aria-expanded="true"] .bi { color: inherit; }
+.app-bar-problems-n { font-variant-numeric: tabular-nums; }
+.app-bar-problems-n:empty { display: none; }
+
+.ccp:not(.ccp-v2) {
+  position: fixed; z-index: 1040; top: 3.25rem; right: .75rem; width: min(30rem, calc(100vw - 1.5rem)); max-height: calc(100vh - 4.5rem);
+  display: flex; flex-direction: column; gap: .5rem; padding: .75rem;
+  background: var(--sheet-2); color: var(--ink); border: var(--pen-2) solid var(--ink); border-radius: var(--radius);
+  font-size: var(--fs-sm); line-height: 1.4;
+}
+.ccp[hidden] { display: none; }
+.ccp-head { display: flex; align-items: center; gap: .5rem; }
+.ccp:not(.ccp-v2) .ccp-title { margin: 0; font-size: var(--fs-md); font-weight: 700; }
+.ccp:not(.ccp-v2) .ccp-sum { flex: 1; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+/* A panel like the app's own (owner 2026-10-27): the layout's panel colours (--ws-panel-bg / --ws-line when a workspace layout is on,
+   else the sheet), the shell's grip bar on top, the panel text size (--shell-panel-zoom), a hairline frame; docked right (default) or
+   left under the bars, floating (moved by the grip, resized at its corner), or in a window of its own (.ccp-window). */
+.ccp.ccp-v2 {
+  position: fixed; z-index: 1040; top: var(--ccp-top, 3.25rem); right: 0; width: min(26rem, calc(100vw - 1rem)); max-height: calc(100vh - var(--ccp-top, 3.25rem));
+  display: flex; flex-direction: column; gap: .4rem; padding: 0 .6rem .6rem;
+  background: var(--ws-panel-bg, var(--sheet)); color: var(--ws-ink, var(--ink)); border: var(--pen-1) solid var(--ws-line, var(--line)); border-radius: 0;
+  font-size: .8125rem; line-height: 1.4;
+}
+body.app-shell.shell-zoomed .ccp.ccp-v2 { zoom: var(--shell-panel-zoom, 1); }
+.ccp.ccp-v2[data-dock="left"] { right: auto; left: 0; }
+.ccp.ccp-v2[data-dock="float"] { right: auto; max-height: none; resize: both; overflow: hidden; min-width: 16rem; min-height: 10rem; border-radius: var(--radius);
+  box-shadow: 0 .25rem 1rem color-mix(in srgb, var(--ink) 25%, transparent); }
+.ccp.ccp-v2[data-dock="float"] .ccp-list { flex: 1 1 auto; }
+.ccp-v2 .ccp-grip { margin: 0 -.6rem; background: var(--ws-chrome, var(--sheet-2)); border-bottom-color: var(--ws-line, var(--line)); }
+.ccp-v2 .ccp-handle .bi { color: var(--layer-ochre); }
+.ccp-v2 .ccp-title { margin: 0; font-size: inherit; font-weight: 700; color: var(--ws-ink, var(--ink)); }
+.ccp-v2 .ccp-sum { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ccp.ccp-v2[data-dock="float"] .ccp-handle { cursor: move; }
+/* in its own window: the whole window */
+.ws-popout-box > .ccp.ccp-v2 { position: static; width: auto; height: 100vh; max-height: none; border: 0; resize: none; box-shadow: none; zoom: 1; }
+.ws-popout-box > .ccp.ccp-v2 .ccp-handle { cursor: default; }
+/* buttons sized and coloured like the panels' own: compact, bordered, the layout's line colour; the main one carries the layer accent */
+.ccp-v2 .btn-sm-cc { padding: .2rem .55rem; font-size: .75rem; line-height: 1.3; min-height: 0; color: var(--ws-ink, var(--ink)); background: transparent; border: var(--pen-1) solid var(--ws-line, var(--line)); border-radius: var(--radius); }
+.ccp-v2 .btn-sm-cc:hover { background: var(--ws-chrome, var(--sheet-2)); border-color: var(--ws-ink, var(--ink)); }
+.ccp-v2 .btn-sm-cc.ccp-primary { border-color: var(--ws-blue, var(--layer)); box-shadow: inset 0 0 0 var(--pen-1) var(--ws-blue, var(--layer)); font-weight: 600; }
+.ccp-v2 .btn-sm-cc:focus-visible { outline: var(--pen-2) solid var(--action); outline-offset: 1px; }
+/* the panel's own fields and links in the layout's colours (lab builds; released builds keep the rules below) */
+.ccp-v2 .ccp-search, .ccp-v2 .ccp-reason { color: var(--ws-ink, var(--ink)); background: var(--ws-panel-bg, var(--sheet)); border-color: var(--ws-line, var(--line)); }
+.ccp-v2 .ccp-search { padding: .2rem .45rem; }
+.ccp-v2 .ccp-sev { padding: .15rem .4rem; color: var(--ws-ink, var(--ink)); border-color: var(--ws-line, var(--line)); }
+.ccp-v2 .ccp-link { color: var(--ws-ink, var(--ink)); padding: .2rem .35rem; }
+.ccp-v2 .ccp-link:hover { background: var(--ws-chrome, var(--sheet-2)); }
+.ccp-v2 .ccp-x { padding: 0; }
+.ccp-x, .ccp-link { font: inherit; color: var(--ink); background: transparent; border: 0; padding: .25rem .4rem; border-radius: var(--radius); cursor: pointer; }
+.ccp-link { text-decoration: underline; text-underline-offset: .15em; }
+.ccp-x:hover, .ccp-link:hover { background: var(--sheet); }
+.ccp-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.ccp-search { flex: 1 1 10rem; min-width: 0; padding: .3rem .5rem; font: inherit; color: var(--ink); background: var(--sheet); border: var(--pen-1) solid var(--line); border-radius: var(--radius); }
+.ccp-search::placeholder { color: var(--placeholder, var(--ink-2)); }
+.ccp-sevs { display: inline-flex; gap: .25rem; }
+.ccp-sev { display: inline-flex; align-items: center; gap: .25rem; padding: .25rem .45rem; font: inherit; font-variant-numeric: tabular-nums; color: var(--ink); background: transparent; border: var(--pen-1) solid var(--line); border-radius: var(--radius); }
+.ccp-sev[aria-pressed="true"] { border-color: var(--ink); background: var(--sheet); }
+.ccp-sev[aria-pressed="false"] { opacity: .6; }
+.ccp-group { width: auto; }
+.ccp-check { display: inline-flex; align-items: center; gap: .3rem; }
+.ccp-spacer { flex: 1; }
+.ccp-about { margin: 0; color: var(--ink-2); }
+.ccp-list { overflow: auto; min-height: 3rem; border-top: var(--pen-1) solid var(--line); padding-top: .25rem; }
+.ccp-none { margin: .5rem 0; color: var(--ink-2); }
+.ccp-grp-h { margin: .5rem 0 .25rem; font-size: var(--fs-sm); font-weight: 700; text-transform: none; }
+.ccp-grp-n { color: var(--ink-2); font-weight: 400; }
+.ccp-row { padding: .3rem 0 .4rem .5rem; border-left: 3px solid var(--line); margin-bottom: .25rem; }
+.ccp-row.ccp-error { border-left-color: var(--layer-red); }
+.ccp-row.ccp-warning { border-left-color: var(--layer-ochre); }
+.ccp-row.is-accepted { opacity: .75; border-left-style: dashed; }
+.ccp-row.is-shown { background: var(--sheet); }
+.ccp-main { display: grid; grid-template-columns: 1.25rem minmax(0, 1fr); gap: 0 .35rem; width: 100%; padding: .15rem .25rem; font: inherit; text-align: left; color: var(--ink); background: transparent; border: 0; border-radius: var(--radius); cursor: pointer; }
+.ccp-main:hover { background: var(--sheet); }
+.ccp-ico { grid-row: span 3; padding-top: .1rem; }
+.ccp-error .ccp-ico { color: var(--layer-red); }
+.ccp-warning .ccp-ico { color: var(--layer-ochre); }
+.ccp-note .ccp-ico { color: var(--layer-blue); }
+/* every text line sits in the text column: a regulation row has four (the "Warning: failed regulation" label first), and a fourth
+   line would otherwise drop into the icon's narrow column below it (owner 2026-10-27, one letter per line) */
+.ccp-main > :not(.ccp-ico) { grid-column: 2; }
+.ccp-msg { overflow-wrap: anywhere; }
+.ccp-obj { font-weight: 600; overflow-wrap: anywhere; }
+.ccp-meta, .ccp-acc, .ccp-hint { color: var(--ink-2); font-size: .8125rem; overflow-wrap: anywhere; }
+.ccp-acc { margin: .15rem 0 0 1.6rem; }
+.ccp-acc.is-changed { color: var(--layer-ochre); }
+.ccp-acts { display: flex; flex-wrap: wrap; gap: .3rem; margin: .25rem 0 0 1.6rem; }
+.ccp-accept { margin: .35rem 0 0 1.6rem; display: grid; gap: .3rem; }
+.ccp-accept .ccp-acts { margin-left: 0; }
+.ccp-hint { margin: 0; }
+.ccp-reason { width: 100%; font: inherit; padding: .3rem .45rem; color: var(--ink); background: var(--sheet); border: var(--pen-1) solid var(--line); border-radius: var(--radius); }
+.ccp-err { margin: 0; color: var(--layer-red); }
+
+.ccp-marks { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+.ccp-mark {
+  position: absolute; transform: translate(-50%, -100%); pointer-events: auto; display: inline-flex; align-items: center; gap: .15rem;
+  min-width: 1.6rem; min-height: 1.6rem; padding: .1rem .25rem; font: inherit; font-size: .8125rem; font-weight: 700; line-height: 1;
+  color: var(--ink); background: var(--sheet-2); border: var(--pen-2) solid currentColor; border-radius: var(--radius); cursor: pointer;
+}
+.ccp-mark-error { color: var(--layer-red); }
+.ccp-mark-warning { color: var(--layer-ochre); }
+.ccp-mark-note { color: var(--layer-blue); }
+.ccp-mark-n { color: var(--ink); font-variant-numeric: tabular-nums; }
+.ccp-mark:focus-visible { outline: var(--pen-3) solid var(--ink); outline-offset: 1px; }
+
+@media (max-width: 760px) {
+  .ccp, .ccp.ccp-v2, .ccp.ccp-v2[data-dock] { top: auto; bottom: 0; left: 0; right: 0; width: auto; height: auto; max-height: 65vh; border-width: var(--pen-2) 0 0; border-radius: 0; resize: none; }
+  .ccp-main, .ccp-sev, .ccp-x, .ccp-link { min-height: 2.75rem; }
+  .ccp-mark { min-width: 2.25rem; min-height: 2.25rem; }
+}
+@media (pointer: coarse) { .ccp-mark { min-width: 2.25rem; min-height: 2.25rem; } }
+.ccp-reg { grid-column: 2; justify-self: start; margin-bottom: .1rem; padding: 0 .3rem; font-size: .8125rem; font-weight: 700; color: var(--layer-ochre); border: var(--pen-1) solid currentColor; border-radius: var(--radius); }
+/* the grouping list as compact as the panel's other controls (lab builds) */
+.ccp-v2 .ccp-group { min-height: 0; height: auto; padding: .15rem 1.75rem .15rem .45rem; font-size: inherit; line-height: 1.3; color: var(--ws-ink, var(--ink)); background-color: var(--ws-panel-bg, var(--sheet)); border-color: var(--ws-line, var(--line)); }
+/* in its own window the panel fills it at any width (a narrow window must not turn it into the phone's bottom sheet) */
+.ws-popout-box > .ccp.ccp-v2[data-dock] { position: static; width: auto; height: 100vh; max-height: none; border: 0; border-radius: 0; resize: none; }

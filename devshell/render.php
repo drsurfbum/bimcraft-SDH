@@ -144,6 +144,11 @@ ob_start();
 <?php if (AppBuilds::input($__build)): /* menus, keys and mouse (0.5 track IP) */ ?>
   <link rel="stylesheet" href="<?= $R ?>assets/css/app-input.css">
 <?php endif; ?>
+<?php if (AppBuilds::propgrid($__build)): /* shared property grid (0.7 PANEL-COMPACT item 4) */ ?>
+  <link rel="stylesheet" href="<?= $R ?>assets/css/app-propgrid.css">
+<?php endif; ?>
+<?php if (AppBuilds::extras($__build)): ?>  <link rel="stylesheet" href="<?= $R ?>assets/css/app-tools.css">
+<?php endif; ?>
 <?php if ($__wsCfg): /* workspace layouts (0.7 WS.6) */ ?>
   <link rel="stylesheet" href="<?= $R ?>assets/css/app-workspace.css">
   <script>(function(){try{if(window.matchMedia&&matchMedia('(max-width: 760px)').matches)return;var w=new URLSearchParams(location.search).get('workspace')||localStorage.getItem('cc-workspace');if(w==='live')w='docked';var ok=<?= json_encode($__wsCfg['layouts']) ?>.indexOf(w)>=0||/^addon:/.test(w||'');if(!ok&&/^file:[a-z][a-z0-9-]{1,39}$/.test(w||'')){var f=JSON.parse(localStorage.getItem('cc-workspace-files')||'{}');ok=!!f&&typeof f[w.slice(5)]==='string';}if(ok)document.documentElement.setAttribute('data-cc-ws-boot',w)}catch(e){}})()</script>
@@ -154,6 +159,9 @@ ob_start();
   <script type="importmap"><?= json_embed(['imports' => (object)$imports]) ?></script>
 <?php if (!empty($__manifest['module'])): ?>
   <script type="module" src="<?= e($__build['url'] . $__manifest['module']) ?>"></script>
+<?php endif; ?>
+<?php if (!empty($__manifest['problems'])): ?>
+<link rel="stylesheet" href="<?= $R ?>assets/css/app-problems.css">
 <?php endif; ?>
 </head>
 <body class="app-shell layer-<?= e($app['layer'] ?? 'red') ?>">
@@ -175,6 +183,9 @@ ob_start();
   <button type="button" class="app-bar-btn app-bar-help" data-help-open aria-expanded="false" title="Help (F1)" hidden><i class="bi bi-question-circle" aria-hidden="true"></i><span class="app-bar-btn-label">Help</span></button>
 <?php if ($__offlineData !== null): ?>
   <button type="button" class="app-bar-btn app-bar-offline" data-offline aria-live="polite" hidden><i class="bi bi-cloud-arrow-down" aria-hidden="true"></i><span class="app-bar-btn-label" data-offline-label><?= Lang::e('shell.offline.save') ?></span></button>
+<?php endif; ?>
+  <?php if (!empty($__manifest['problems'])): ?>
+  <button type="button" class="app-bar-btn app-bar-problems" data-problems-open aria-expanded="false" aria-controls="ccp-panel" hidden><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span class="app-bar-btn-label"><?= Lang::e('shell.problems.button') ?></span><span class="app-bar-problems-n" data-problems-count></span></button>
 <?php endif; ?>
   <button type="button" class="app-bar-btn app-bar-settings" data-settings-open aria-haspopup="dialog" aria-expanded="false" title="Settings (Ctrl+,)" hidden><i class="bi bi-gear" aria-hidden="true"></i><span class="app-bar-btn-label">Settings</span></button>
   <button type="button" class="app-bar-fs" data-fs-cycle aria-pressed="false" hidden><i class="bi bi-fullscreen" aria-hidden="true"></i><span class="app-bar-fs-label">Full screen</span></button>
@@ -202,6 +213,9 @@ ob_start();
 <?php if ($__wsCfg): ?>
 <script type="application/json" id="cc-workspace"><?= json_embed($__wsCfg) ?></script>
 <?php endif; ?>
+<?php if (AppBuilds::propgrid($__build)): ?>
+<script src="<?= $R ?>assets/js/app-propgrid.js" defer></script>
+<?php endif; ?>
 <?php if ($__input = AppBuilds::input($__build)): ?>
 <script type="application/json" id="cc-input"><?= json_embed(['app' => $app['slug'], 'appName' => $app['name'], 'registry' => $__input]) ?></script>
 <script type="module" src="<?= $R ?>assets/js/app-input-ui.js"></script>
@@ -209,6 +223,18 @@ ob_start();
 <?php if (AppBuilds::hardware($__build)): /* hardware specs (0.7 HW.2): same report and switch as the site; desktop opt-in */ ?>
 <script type="application/json" id="cc-hardware"><?= json_embed(['app' => $app['slug'], 'build' => (string)$__ver]) ?></script>
 <script type="module" src="<?= $R ?>assets/js/app-hardware.js"></script>
+<?php endif; ?>
+<?php if (AppBuilds::devices($__build)): /* input devices (0.8 Track ID): same module and settings as the site */ ?>
+<script type="application/json" id="cc-devices"><?= json_embed(['app' => $app['slug'], 'appName' => $app['name']]) ?></script>
+<script type="module" src="<?= $R ?>assets/js/app-devices-ui.js"></script>
+<?php endif; ?>
+<?php foreach (AppBuilds::extras($__build) as $__x): /* round 2 shell_PART_2: calc sheets, design reasons, running totals, lessons: same modules as the site */ ?>
+<script type="application/json" id="cc-<?= $__x ?>"><?= json_embed(['app' => $app['slug'], 'appName' => $app['name']]) ?></script>
+<script type="module" src="<?= $R ?>assets/js/app-<?= $__x ?>.js"></script>
+<?php endforeach; ?>
+<?php if (!empty($__manifest['problems'])): ?>
+<script type="application/json" id="cc-problems"><?= json_embed(['app' => $app['slug'], 'appName' => $app['name'], 'panel' => 2]) ?></script>
+<script type="module" src="<?= $R ?>assets/js/app-problems.js"></script>
 <?php endif; ?>
 </body>
 </html>

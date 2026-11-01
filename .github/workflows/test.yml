@@ -43,6 +43,8 @@ jobs:
       # PROVENANCE.md). Some apps' tests need them.
       - name: Standalone residential baseline
         run: npm run test:baseline
+      - name: Upstream 0.8 sheet image and attachment checks with required Poppler
+        run: node .cc-test/bin/test-bimcraft.mjs --r52
       - name: F03 harness smoke (no timing gates)
         run: npm run test:f03
       - name: Independent IFC fixture acceptance

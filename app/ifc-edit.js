@@ -186,10 +186,23 @@ export class IfcEditor {
    * id?, ids?, made? (Map GlobalId → id of what it created) }. One undo step; redo runs it again (it names elements by
    * GlobalId, so it finds them under their new ids). `verb` is the change list's word for it ("Drew", "Changed" …).
    */
-  modelChange(run, { label = '', verb = '' } = {}) {
+  modelChange(run, { label = '', verb = '', coalesce = null } = {}) {
     const r = run(this);
     this.reindex();
-    this.record({ kind: 'model', id: r.id ?? null, ids: r.ids, made: r.made, label, verb, journal: r.journal, old: null, value: null, again: { run }, result: r });
+    // GH.3-D: a rapid series of edits of one field is ONE undo step. `coalesce` = { key, merge (journals), ms }: when the
+    // newest change is a model change with the same key, made less than `ms` ago, the new journal is folded into it and
+    // redo runs the newest `run` alone (each such change sets absolute values of the same field, so the last one wins).
+    const last = this.changes[this.changes.length - 1], now = Date.now();
+    if (coalesce?.key && last && last.kind === 'model' && last.coalesce === coalesce.key && now - last.coalesceT < (coalesce.ms ?? 2500) && !this.undone.length) {
+      // Replace the stack entry so revision bindings and pending history receipts observe a coalesced edit.
+      const merged = { ...last };
+      merged.journal = coalesce.merge(last.journal, r.journal);
+      merged.again = { run }; merged.result = r; merged.coalesceT = now; merged.label = label || last.label;
+      merged.id = r.id ?? last.id; merged.ids = r.ids ?? last.ids; merged.made = r.made ?? last.made;
+      this.changes[this.changes.length - 1] = merged;
+      return r;
+    }
+    this.record({ kind: 'model', id: r.id ?? null, ids: r.ids, made: r.made, label, verb, journal: r.journal, old: null, value: null, again: { run }, result: r, ...(coalesce?.key ? { coalesce: coalesce.key, coalesceT: now } : {}) });
     return r;
   }
 

@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { APP_KEYS } from './core.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const args = process.argv.slice(2);
@@ -72,7 +73,7 @@ if (args.includes('--bimcraft-only')) {
   pkg.files = ['mcp/', 'cli/', 'LICENSE', 'NOTICE', 'README.md', 'THIRD_PARTY.md'];
   fs.writeFileSync(path.join(OUT, 'package.json'), JSON.stringify(pkg, null, 2));
   cp(path.join(ROOT,'tools/cli/cadcraft.mjs'),path.join(OUT,'cli/cadcraft.mjs'));
-  for (const f of ['server.mjs','core.mjs','live-server.mjs']) cp(path.join(ROOT,'tools/mcp',f),path.join(OUT,'mcp',f));
+  for (const f of fs.readdirSync(path.join(ROOT,'tools/mcp')).filter(f => f.endsWith('.mjs') && f !== 'pack.mjs')) cp(path.join(ROOT,'tools/mcp',f),path.join(OUT,'mcp',f));
   for (const f of fs.readdirSync(path.join(ROOT,'tools/cli/headless'))) if (f.endsWith('.mjs')) cp(path.join(ROOT,'tools/cli/headless',f),path.join(OUT,'cli/headless',f));
   const source = path.join(ROOT,'public_html/assets/apps/bimcraft/dev');
   copyClosure(source,path.join(OUT,'cli/apps/bimcraft'),['agents.js','ifc-edit.js','new-model.js'],{staticOnly:['render-tools.js']});
@@ -93,14 +94,29 @@ pkg.files = ['mcp/', 'cli/', 'LICENSE', 'README.md', 'THIRD_PARTY.md'];
 pkg.keywords = ['mcp', 'model-context-protocol', 'cad', 'dwg', 'dxf', 'ifc', 'takeoff', 'cli'];
 mk(OUT);
 fs.writeFileSync(path.join(OUT, 'package.json'), JSON.stringify(pkg, null, 2) + '\n');
-for (const f of ['server.mjs', 'core.mjs', 'live-server.mjs']) cp(path.join(ROOT, 'tools/mcp', f), path.join(OUT, 'mcp', f));
+for (const f of ['server.mjs', 'core.mjs', 'live-server.mjs', 'bridge.mjs', 'setup.mjs', 'clients.mjs', 'contract.mjs', 'openapi.mjs', 'packs.mjs']) cp(path.join(ROOT, 'tools/mcp', f), path.join(OUT, 'mcp', f));
+// AC.5 / AC.14: the skill packs and the firm-standards reader beside the server (server.mjs finds them next to itself)
+for (const f of ['skill-packs.js', 'ai-standards.js']) cp(path.join(ROOT, 'public_html/assets/js', f), path.join(OUT, 'mcp', f));
+// AC.10: the OpenAPI description of the live tools, generated from their definitions at pack time (`cadcraft-mcp openapi` prints it)
+{
+  const { loadTools } = await import('./contract-load.mjs');
+  const { openApiFor, checkOpenApi } = await import('./openapi.mjs');
+  const entries = [];
+  for (const app of Object.keys(APP_KEYS)) for (const def of await loadTools(app)) entries.push({ app, def });
+  const doc = openApiFor(entries, { version: pkg.version });
+  const bad = checkOpenApi(doc);
+  if (bad.length) throw new Error('The OpenAPI description has problems: ' + bad.slice(0, 5).join('; '));
+  fs.writeFileSync(path.join(OUT, 'mcp', 'openapi.json'), JSON.stringify(doc) + '\n');
+  console.log('openapi.json: ' + entries.length + ' tools');
+}
 cp(path.join(ROOT, 'tools/cli/cadcraft.mjs'), path.join(OUT, 'cli/cadcraft.mjs'));
 for (const f of fs.readdirSync(path.join(ROOT, 'tools/cli/headless'))) if (f.endsWith('.mjs')) cp(path.join(ROOT, 'tools/cli/headless', f), path.join(OUT, 'cli/headless', f));
 for (const a of APPS) copyCode(path.join(ROOT, 'public_html/assets/apps', a, 'dev'), path.join(OUT, 'cli/apps', a));
 copyClosure(path.join(ROOT, 'public_html/assets/apps/bimcraft/dev'), path.join(OUT, 'cli/apps/bimcraft'), ['agents.js', 'ifc-edit.js', 'new-model.js'], { staticOnly: ['render-tools.js'] });
 // CivilCraft (0.7 AS.3): its project and assistant tools, the libraries they import by name (as its import map maps them)
 const CIVIL = path.join(ROOT, 'public_html/assets/apps/civilcraft/dev');
-copyClosure(CIVIL, path.join(OUT, 'cli/apps/civilcraft'), ['project.js', 'points.js', 'civil-agent.js']);
+copyClosure(CIVIL, path.join(OUT, 'cli/apps/civilcraft'), ['project.js', 'points.js', 'civil-agent.js', 'landscape/ls-agent.js', 'landscape/plants.js', 'powerline/pl-agent.js', 'powerline/library.js', 'water-agent.js']);
+cp(path.join(CIVIL, 'landscape/plants-seed.json'), path.join(OUT, 'cli/apps/civilcraft/landscape/plants-seed.json'));   // 0.8 LD.8: the seed plant list the landscape tools read
 const civilImports = JSON.parse(fs.readFileSync(path.join(CIVIL, 'manifest.json'), 'utf8')).imports || {};
 const CIVIL_LIBS = ['delaunator', 'robust-predicates', 'proj4'];
 fs.writeFileSync(path.join(OUT, 'cli/apps/civilcraft/imports.json'), JSON.stringify(Object.fromEntries(Object.entries(civilImports).filter(([k]) => CIVIL_LIBS.includes(k))), null, 1) + '\n');

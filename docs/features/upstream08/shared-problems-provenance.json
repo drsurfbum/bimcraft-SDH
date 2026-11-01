@@ -1,0 +1,30 @@
+{
+  "retrievedUtc": "2026-11-01T20:48:07.005294+00:00",
+  "scope": "Official shared 0.8 Problems modules omitted by standalone export. Supplemental content-pinned snapshot; not represented as part of upstream git release. app-problems.js has a local static-button reuse integration adjustment.",
+  "files": [
+    {
+      "url": "https://getcadcraft.com/assets/css/app-problems.css",
+      "path": "devshell/site/assets/css/app-problems.css",
+      "sha256": "aea00abaf04b773708068942728baf21f793df556b830c50f77d4e76d7085c4d",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "https://getcadcraft.com/assets/js/problems-pdf.js",
+      "path": "devshell/site/assets/js/problems-pdf.js",
+      "sha256": "1977574461703af24837b6507f86ac648061ab98b7ce4debce276d3e0bb5a225",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "https://getcadcraft.com/assets/js/app-problems.js",
+      "path": "devshell/site/assets/js/app-problems.js",
+      "sha256": "1be1ec80e25ad87b5155ffb9d2e8ef7f6735cff160eabf784eda0267cdd0755c",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "https://getcadcraft.com/assets/js/problems.js",
+      "path": "devshell/site/assets/js/problems.js",
+      "sha256": "47c7949dd73671dd7232797e9c4f0d1ed28e35badfa4a2e5ec6a89bd42bd623c",
+      "license": "Apache-2.0"
+    }
+  ]
+}
