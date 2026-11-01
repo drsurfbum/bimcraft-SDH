@@ -1,0 +1,562 @@
+{
+  "base": "75af81b49a3f472de734b0229f64e2140bbcbb10",
+  "upstream": "51c1b44012b98685f43f3ca99a463c240cf0d7ef",
+  "prior": [
+    {
+      "name": "materials_list",
+      "group": "read"
+    },
+    {
+      "name": "assemblies_list",
+      "group": "read"
+    },
+    {
+      "name": "material_create",
+      "group": "edit"
+    },
+    {
+      "name": "material_edit",
+      "group": "edit"
+    },
+    {
+      "name": "assembly_create",
+      "group": "edit"
+    },
+    {
+      "name": "assembly_edit",
+      "group": "edit"
+    },
+    {
+      "name": "assembly_duplicate",
+      "group": "edit"
+    },
+    {
+      "name": "walls_edit",
+      "group": "edit"
+    },
+    {
+      "name": "wall_joins_get",
+      "group": "read"
+    },
+    {
+      "name": "wall_join_diagnostics",
+      "group": "read"
+    },
+    {
+      "name": "wall_join_end_set",
+      "group": "edit"
+    },
+    {
+      "name": "wall_reference_resolve",
+      "group": "read"
+    },
+    {
+      "name": "model_describe",
+      "group": "read"
+    },
+    {
+      "name": "walls_list",
+      "group": "read"
+    },
+    {
+      "name": "walls_add",
+      "group": "edit"
+    },
+    {
+      "name": "opening_add",
+      "group": "edit"
+    },
+    {
+      "name": "floor_add",
+      "group": "edit"
+    },
+    {
+      "name": "levels_add",
+      "group": "edit"
+    },
+    {
+      "name": "grid_add",
+      "group": "edit"
+    },
+    {
+      "name": "element_set",
+      "group": "edit"
+    },
+    {
+      "name": "elements_delete",
+      "group": "edit"
+    },
+    {
+      "name": "elements_move",
+      "group": "edit"
+    },
+    {
+      "name": "wall_change",
+      "group": "edit"
+    },
+    {
+      "name": "opening_change",
+      "group": "edit"
+    }
+  ],
+  "release": [
+    {
+      "name": "model_describe",
+      "group": "read"
+    },
+    {
+      "name": "walls_list",
+      "group": "read"
+    },
+    {
+      "name": "walls_add",
+      "group": "edit"
+    },
+    {
+      "name": "opening_add",
+      "group": "edit"
+    },
+    {
+      "name": "floor_add",
+      "group": "edit"
+    },
+    {
+      "name": "levels_add",
+      "group": "edit"
+    },
+    {
+      "name": "grid_add",
+      "group": "edit"
+    },
+    {
+      "name": "phase_describe",
+      "group": "read"
+    },
+    {
+      "name": "phase_set",
+      "group": "edit"
+    },
+    {
+      "name": "furniture_add",
+      "group": "edit"
+    },
+    {
+      "name": "massing_describe",
+      "group": "read"
+    },
+    {
+      "name": "massing_add",
+      "group": "edit"
+    },
+    {
+      "name": "scan_walls_propose",
+      "group": "read"
+    },
+    {
+      "name": "scan_walls_build",
+      "group": "edit"
+    },
+    {
+      "name": "scan_progress",
+      "group": "read"
+    },
+    {
+      "name": "plan_dimension",
+      "group": "edit"
+    },
+    {
+      "name": "walks_list",
+      "group": "read"
+    },
+    {
+      "name": "walk_narration_set",
+      "group": "edit"
+    },
+    {
+      "name": "pipes_check",
+      "group": "read"
+    },
+    {
+      "name": "ducts_check",
+      "group": "read"
+    },
+    {
+      "name": "carriers_check",
+      "group": "read"
+    },
+    {
+      "name": "lighting_check",
+      "group": "read"
+    },
+    {
+      "name": "runs_sizes_set",
+      "group": "edit"
+    },
+    {
+      "name": "loads_set",
+      "group": "edit"
+    },
+    {
+      "name": "photometry_set",
+      "group": "edit"
+    },
+    {
+      "name": "carrier_add",
+      "group": "edit"
+    },
+    {
+      "name": "energyplus_export",
+      "group": "read"
+    },
+    {
+      "name": "energyplus_run",
+      "group": "read"
+    },
+    {
+      "name": "carbon_check",
+      "group": "read"
+    },
+    {
+      "name": "carbon_factors_get",
+      "group": "read"
+    },
+    {
+      "name": "carbon_factors_set",
+      "group": "edit"
+    },
+    {
+      "name": "carbon_factor_set",
+      "group": "edit"
+    },
+    {
+      "name": "cost5d_check",
+      "group": "read"
+    },
+    {
+      "name": "cost5d_prices_get",
+      "group": "read"
+    },
+    {
+      "name": "cost5d_prices_set",
+      "group": "edit"
+    },
+    {
+      "name": "pv_arrays_check",
+      "group": "read"
+    },
+    {
+      "name": "pv_yield_estimate",
+      "group": "read"
+    },
+    {
+      "name": "pv_strings_check",
+      "group": "read"
+    },
+    {
+      "name": "pv_oneline_make",
+      "group": "read"
+    },
+    {
+      "name": "pv_array_add",
+      "group": "edit"
+    },
+    {
+      "name": "pv_array_delete",
+      "group": "edit"
+    },
+    {
+      "name": "people_run",
+      "group": "read"
+    },
+    {
+      "name": "escape_check",
+      "group": "read"
+    },
+    {
+      "name": "hazard_run",
+      "group": "read"
+    },
+    {
+      "name": "lifecycle_run",
+      "group": "read"
+    },
+    {
+      "name": "acoustics_check",
+      "group": "read"
+    },
+    {
+      "name": "element_set",
+      "group": "edit"
+    },
+    {
+      "name": "elements_delete",
+      "group": "edit"
+    },
+    {
+      "name": "elements_move",
+      "group": "edit"
+    },
+    {
+      "name": "wall_change",
+      "group": "edit"
+    },
+    {
+      "name": "opening_change",
+      "group": "edit"
+    }
+  ],
+  "union": [
+    {
+      "name": "materials_list",
+      "group": "read"
+    },
+    {
+      "name": "assemblies_list",
+      "group": "read"
+    },
+    {
+      "name": "material_create",
+      "group": "edit"
+    },
+    {
+      "name": "material_edit",
+      "group": "edit"
+    },
+    {
+      "name": "assembly_create",
+      "group": "edit"
+    },
+    {
+      "name": "assembly_edit",
+      "group": "edit"
+    },
+    {
+      "name": "assembly_duplicate",
+      "group": "edit"
+    },
+    {
+      "name": "walls_edit",
+      "group": "edit"
+    },
+    {
+      "name": "wall_joins_get",
+      "group": "read"
+    },
+    {
+      "name": "wall_join_diagnostics",
+      "group": "read"
+    },
+    {
+      "name": "wall_join_end_set",
+      "group": "edit"
+    },
+    {
+      "name": "wall_reference_resolve",
+      "group": "read"
+    },
+    {
+      "name": "model_describe",
+      "group": "read"
+    },
+    {
+      "name": "walls_list",
+      "group": "read"
+    },
+    {
+      "name": "walls_add",
+      "group": "edit"
+    },
+    {
+      "name": "opening_add",
+      "group": "edit"
+    },
+    {
+      "name": "floor_add",
+      "group": "edit"
+    },
+    {
+      "name": "levels_add",
+      "group": "edit"
+    },
+    {
+      "name": "grid_add",
+      "group": "edit"
+    },
+    {
+      "name": "element_set",
+      "group": "edit"
+    },
+    {
+      "name": "elements_delete",
+      "group": "edit"
+    },
+    {
+      "name": "elements_move",
+      "group": "edit"
+    },
+    {
+      "name": "wall_change",
+      "group": "edit"
+    },
+    {
+      "name": "opening_change",
+      "group": "edit"
+    },
+    {
+      "name": "phase_describe",
+      "group": "read"
+    },
+    {
+      "name": "phase_set",
+      "group": "edit"
+    },
+    {
+      "name": "furniture_add",
+      "group": "edit"
+    },
+    {
+      "name": "massing_describe",
+      "group": "read"
+    },
+    {
+      "name": "massing_add",
+      "group": "edit"
+    },
+    {
+      "name": "scan_walls_propose",
+      "group": "read"
+    },
+    {
+      "name": "scan_walls_build",
+      "group": "edit"
+    },
+    {
+      "name": "scan_progress",
+      "group": "read"
+    },
+    {
+      "name": "plan_dimension",
+      "group": "edit"
+    },
+    {
+      "name": "walks_list",
+      "group": "read"
+    },
+    {
+      "name": "walk_narration_set",
+      "group": "edit"
+    },
+    {
+      "name": "pipes_check",
+      "group": "read"
+    },
+    {
+      "name": "ducts_check",
+      "group": "read"
+    },
+    {
+      "name": "carriers_check",
+      "group": "read"
+    },
+    {
+      "name": "lighting_check",
+      "group": "read"
+    },
+    {
+      "name": "runs_sizes_set",
+      "group": "edit"
+    },
+    {
+      "name": "loads_set",
+      "group": "edit"
+    },
+    {
+      "name": "photometry_set",
+      "group": "edit"
+    },
+    {
+      "name": "carrier_add",
+      "group": "edit"
+    },
+    {
+      "name": "energyplus_export",
+      "group": "read"
+    },
+    {
+      "name": "energyplus_run",
+      "group": "read"
+    },
+    {
+      "name": "carbon_check",
+      "group": "read"
+    },
+    {
+      "name": "carbon_factors_get",
+      "group": "read"
+    },
+    {
+      "name": "carbon_factors_set",
+      "group": "edit"
+    },
+    {
+      "name": "carbon_factor_set",
+      "group": "edit"
+    },
+    {
+      "name": "cost5d_check",
+      "group": "read"
+    },
+    {
+      "name": "cost5d_prices_get",
+      "group": "read"
+    },
+    {
+      "name": "cost5d_prices_set",
+      "group": "edit"
+    },
+    {
+      "name": "pv_arrays_check",
+      "group": "read"
+    },
+    {
+      "name": "pv_yield_estimate",
+      "group": "read"
+    },
+    {
+      "name": "pv_strings_check",
+      "group": "read"
+    },
+    {
+      "name": "pv_oneline_make",
+      "group": "read"
+    },
+    {
+      "name": "pv_array_add",
+      "group": "edit"
+    },
+    {
+      "name": "pv_array_delete",
+      "group": "edit"
+    },
+    {
+      "name": "people_run",
+      "group": "read"
+    },
+    {
+      "name": "escape_check",
+      "group": "read"
+    },
+    {
+      "name": "hazard_run",
+      "group": "read"
+    },
+    {
+      "name": "lifecycle_run",
+      "group": "read"
+    },
+    {
+      "name": "acoustics_check",
+      "group": "read"
+    }
+  ]
+}

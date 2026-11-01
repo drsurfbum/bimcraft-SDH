@@ -120,6 +120,8 @@ export function start(opts = {}) {
         Object.assign(catalog.strings, JSON.parse(fs.readFileSync(path.join(APP_DIR, 'lang/en.json'), 'utf8')));
         return start + JSON.stringify(catalog).replace(/</g, '\\u003c') + end;
       });
+      // The standalone snapshot excludes account, skill-pack and Studio device services.
+      html = html.replace('<head>', '<head><script>window.ccStandalone=true;</script>');
       res.writeHead(200, { ...head, 'Content-Type': MIME['.html'] });
       return res.end(req.method === 'HEAD' ? undefined : html);
     }

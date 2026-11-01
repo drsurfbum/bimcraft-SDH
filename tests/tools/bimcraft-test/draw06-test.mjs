@@ -812,6 +812,21 @@ export async function draw06Mode({ APP, ROOT, WebIFC, IfcModel, quiet, args = []
     const pdf = RS.setPdf([sh], { paper: 'tabloid', title: 'Test' });
     ok(new TextDecoder().decode(pdf.slice(0, 8)).startsWith('%PDF-1.4') && /A-501/.test(new TextDecoder('latin1').decode(pdf)), 'the sheet as a PDF page with its number in the title block');
     ok(RS.scalesFor('mm').some((x) => x.ratio === 100 && x.label === '1:100') && RS.scalesFor('ftin')[3].label === '1/4" = 1\'-0"', 'scalesFor: the standard scales the sheet editor offers');
+    console.log('== EG.56 Arrange for me (res-sheets.js arrangeSheet)');
+    const sq = (w, h) => ({ walls: [{ poly: [[0, 0], [w, 0], [w, h], [0, h]] }] });
+    const in3 = { plans: [{ ref: 'p1', title: 'Level 1', scene: sq(12000, 8000) }, { ref: 'p2', title: 'Level 2', scene: sq(12000, 8000) }, { ref: 'p3', title: 'Roof', scene: sq(6000, 5000) }], elevations: [], sections: [], schedules: input.schedules };
+    const spec3 = { number: 'A-101', title: 'Plans', views: [{ kind: 'plan', ref: 'p1', x: 1, y: 1 }, { kind: 'plan', ref: 'p2', x: 1, y: 1 }, { kind: 'plan', ref: 'p3', x: 1, y: 1 }, { kind: 'schedule', ref: 'doors', x: 1, y: 1 }] };
+    const ar = RS.arrangeSheet(spec3, in3, { paper: 'tabloid', units: 'mm' });
+    ok(ar.fits && ar.views.length === 4 && ar.views.filter((v) => v.kind !== 'schedule').every((v) => v.ratio === ar.ratio), 'one common scale for the drawn views (' + ar.label + '), the schedule keeps 0');
+    const done = RS.composeSheet({ ...spec3, views: ar.views }, in3, { paper: 'tabloid', units: 'mm' });
+    const bx = done.views.map((v) => v.box);
+    ok(bx.length === 4 && bx.every((b) => b[0] >= 10 && b[2] <= 431.8 - 10 && b[1] >= 28 && b[3] <= 279.4 - 10), 'every view is inside the sheet frame and above the title block');
+    const hit = (p, q) => p[0] < q[2] && q[0] < p[2] && p[1] < q[3] && q[1] < p[3];
+    ok(bx.every((p, i) => bx.every((q, k) => i === k || !hit(p, q))), 'no two views overlap');
+    ok(ar.ratio >= 50 && RS.scalesFor('mm').some((x) => x.ratio === ar.ratio), 'a standard scale, not larger than 1:50');
+    const tiny = RS.arrangeSheet({ ...spec3, views: [{ kind: 'plan', ref: 'p1', x: 0, y: 0 }, { kind: 'plan', ref: 'p2', x: 0, y: 0 }].concat(Array.from({ length: 6 }, () => ({ kind: 'plan', ref: 'p1', x: 0, y: 0 }))) }, { ...in3, plans: [{ ref: 'p1', title: 'Big', scene: sq(200000, 150000) }, { ref: 'p2', title: 'Big 2', scene: sq(200000, 150000) }] }, { paper: 'letter', units: 'mm' });
+    ok(tiny.fits === false && tiny.views.length === 8, 'views too big for the paper: it says it does not fit, and drops nothing');
+    ok(RS.arrangeSheet({ views: [] }, in3, { units: 'mm' }).views.length === 0, 'an empty sheet arranges to an empty sheet');
   }
 
   // ============================================================================================ DF.25 assistant tools
@@ -825,11 +840,11 @@ export async function draw06Mode({ APP, ROOT, WebIFC, IfcModel, quiet, args = []
     const d = createDispatcher({ server: { name: 'bimcraft', title: 'BimCraft', version: 'test' }, allowed: () => allowed });
     for (const def of AG.modelTools({ ed: () => ed, apply: async (label, op) => ed.modelChange(op, { label: 'Assistant: ' + label }) })) d.tool(def);
     const call = async (name, a = {}) => { const r = await d.call(name, a); return { r, v: r.structuredContent, text: r.content?.[0]?.text || '' }; };
-    ok(d.list().map((x) => x.name).sort().join() === 'assemblies_list,materials_list,model_describe,wall_join_diagnostics,wall_joins_get,wall_reference_resolve,walls_list', 'read only: exact MCP-01, F08 and F09 semantic union (finding elements stays bim-agent.js\'s elements_find)');
+    ok(d.list().map(x => x.name).sort().join() === "acoustics_check,assemblies_list,carbon_check,carbon_factors_get,carriers_check,cost5d_check,cost5d_prices_get,ducts_check,energyplus_export,energyplus_run,escape_check,hazard_run,lifecycle_run,lighting_check,massing_describe,materials_list,model_describe,people_run,phase_describe,pipes_check,pv_arrays_check,pv_oneline_make,pv_strings_check,pv_yield_estimate,scan_progress,scan_walls_propose,walks_list,wall_join_diagnostics,wall_joins_get,wall_reference_resolve,walls_list", 'read only: exact pinned 0.8 + accepted MCP-01/F08/F09 union');
     let x = await call('walls_add', { points: [[0, 0], [6000, 0]] });
     ok(x.r.isError && /edit permission/.test(x.text) && ed.changes.length === 0, 'walls_add refused without edit; nothing changes');
     allowed = ['read', 'edit'];
-    ok(d.list().map(x => x.name).sort().join() === ['model_describe','walls_list','walls_add','opening_add','floor_add','levels_add','grid_add','element_set','elements_delete','elements_move','wall_change','opening_change','materials_list','assemblies_list','material_create','material_edit','assembly_create','assembly_edit','assembly_duplicate','walls_edit','wall_joins_get','wall_join_end_set','wall_join_diagnostics','wall_reference_resolve'].sort().join(), 'with edit: exact 24-tool 0.7 plus MCP-01, F08 and F09 union, including every retained generic route');
+    ok(d.list().map(x => x.name).sort().join() === "acoustics_check,assemblies_list,assembly_create,assembly_duplicate,assembly_edit,carbon_check,carbon_factor_set,carbon_factors_get,carbon_factors_set,carrier_add,carriers_check,cost5d_check,cost5d_prices_get,cost5d_prices_set,ducts_check,element_set,elements_delete,elements_move,energyplus_export,energyplus_run,escape_check,floor_add,furniture_add,grid_add,hazard_run,levels_add,lifecycle_run,lighting_check,loads_set,massing_add,massing_describe,material_create,material_edit,materials_list,model_describe,opening_add,opening_change,people_run,phase_describe,phase_set,photometry_set,pipes_check,plan_dimension,pv_array_add,pv_array_delete,pv_arrays_check,pv_oneline_make,pv_strings_check,pv_yield_estimate,runs_sizes_set,scan_progress,scan_walls_build,scan_walls_propose,walk_narration_set,walks_list,wall_change,wall_join_diagnostics,wall_join_end_set,wall_joins_get,wall_reference_resolve,walls_add,walls_edit,walls_list", 'read/edit: exact pinned 0.8 + accepted MCP-01/F08/F09 union');
     x = await call('model_describe');
     ok(x.v.units === 'mm' && x.v.levels.length === 2 && x.v.levels[0].name === 'Level 1' && x.v.walls.count === 0 && x.v.types.walls.includes('ext-2x6') && x.v.types.doors.includes('door-single'), 'model_describe: two levels, no walls, the types the edit tools take');
     x = await call('walls_add', { points: [[0, 0], [6000, 0], [6000, 4000], [0, 4000]], closed: true, type: 'ext-2x6' });
