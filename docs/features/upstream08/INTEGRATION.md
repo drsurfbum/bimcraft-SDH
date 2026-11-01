@@ -1,6 +1,6 @@
 # BimCraft 0.8 isolated integration candidate
 
-Local review candidate, November 1, 2026. No shared-main adoption, push, PR, deployment or history rewrite is authorized or performed.
+Review candidate, November 1, 2026. Austin subsequently authorized publication as [draft PR #19](https://github.com/drsurfbum/bimcraft-SDH/pull/19). Shared-main adoption, merge, approval, deployment and history rewrite remain outside authorization. The PR is for review, not adoption.
 
 ## Ownership and pins
 
@@ -67,4 +67,9 @@ The restored Problems UI passes actual source registration, all six assistant-to
 
 Browser/GPU or representative-house performance is not inferred from CPU samples. Existing PERF-F04-01, PERF-F05-01, TEST-F28-01, UP07-MEP-01 and broader MCP follow-ups remain open. Cloud CI, OS-specific/native Studio acceptance, all unselected upstream modes, full vendor audit and the separate F28-C reconciliation are not certified by this local run.
 
-Ready for local review, not adoption. Remaining verification is the Poppler gate, native Studio host and platform/CI acceptance. The installed native Studio is 0.7.0 (Info.plist) and lacks the 0.8 journal reporter/probe code; the required native 0.8 host is unavailable locally. Its existing running session was left untouched. The Move policy and reference-driven Align lock are optional product enhancements; they do not block preserving current supported behavior, and detached model previews are implemented. Publication/adoption still requires explicit authorization. No F28-C owner branch should be repaired or rebased as part of this foundation.
+Ready for local review, not adoption. Remaining verification is the Poppler gate, native Studio host and platform/CI acceptance. The installed native Studio is 0.7.0 (Info.plist) and lacks the 0.8 journal reporter/probe code; the required native 0.8 host is unavailable locally. Its existing running session was left untouched. The Move policy and reference-driven Align lock are optional product enhancements; they do not block preserving current supported behavior, and detached model previews are implemented. Draft publication is authorized; adoption still requires explicit authorization. No F28-C owner branch should be repaired or rebased as part of this foundation.
+
+
+## Draft PR CI follow-up
+
+The first published head is `081959304a44905bb50414fcff6308305b8110f0`, with main still at the recorded base. Existing CI now also runs the new upstream08 regression tests, source/isolated-package preview checks, Problems native acceptance and equal-depth journal tests. The Poppler-equipped Tests job runs the complete unchanged `r52` mode. Browser shortcut tests choose the platform's actual modifier. No existing gate, assertion or tolerance is removed. Exact-head terminal CI results and remaining limits are recorded in the PR and local publication receipt; historical local limitations above are not automatically CI failures.

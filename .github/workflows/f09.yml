@@ -39,7 +39,7 @@ jobs:
           .cc-test/f09-reader/bin/python -m pip install -r tests/features/f04/requirements-independent.txt
       - name: F09 and inherited precision/model regressions
         run: |
-          node --test tests/features/f09/*.test.mjs
+          node --test tests/features/f09/*.test.mjs tests/features/upstream08/*.test.mjs
           node --test tests/features/f28/*.test.mjs tests/unit/*.test.mjs tests/features/f08/*.test.mjs
           .cc-test/f09-reader/bin/python -I tests/features/f09/independent.py
       - name: Actual source and isolated packaged MCP
@@ -47,6 +47,20 @@ jobs:
           node tests/features/f09/semantic.mjs
           node .cc-test/bin/test-bimcraft.mjs --input
           node tests/features/f09/package.mjs
+      - name: Detached previews through source and isolated packaged stdio
+        run: |
+          node tests/features/upstream08/preview-stdio.mjs
+          mkdir -p .cc-test/upstream08-consumer
+          tar -xf .cc-test/f09-package/drsurfbum-bimcraft-mcp-0.7.0-mcp01.1.tgz -C .cc-test/upstream08-consumer
+          UP08_MCP_SERVER=.cc-test/upstream08-consumer/package/mcp/server.mjs UP08_MCP_OUT=.cc-test/upstream08/preview-package node tests/features/upstream08/preview-stdio.mjs
+      - name: Problems acceptance and equal-depth project journal
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        env:
+          UP08_PLAYWRIGHT: .cc-test/f09-deps/node_modules/playwright/index.mjs
+        run: |
+          mkdir -p .cc-test/upstream08
+          node tests/features/upstream08/problems-preview-browser.mjs
+          node tests/features/upstream08/history-browser.mjs
       - name: Both layouts and real live HTTP
         id: browser
         if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
@@ -73,4 +87,9 @@ jobs:
             .cc-test/f09-package/consumer/report.json
             .cc-test/f09/independent.json
             .cc-test/f09/performance.json
+            .cc-test/upstream08/problems-preview-browser.json
+            .cc-test/upstream08/history-browser.json
+            .cc-test/upstream08/preview-source/report.json
+            .cc-test/upstream08/preview-package/report.json
+            .cc-test/upstream08/*.png
           retention-days: 90

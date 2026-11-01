@@ -6,6 +6,7 @@ import {execFileSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
 import {start} from '../../../devshell/serve.mjs';
 const {chromium}=await import(pathToFileURL(path.resolve(process.env.UP08_PLAYWRIGHT||'.cc-test/browser-current/node_modules/playwright/index.mjs')));
+const modifier=process.platform==='darwin'?'Meta':'Control';
 const out='.cc-test/upstream08',report={head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),checks:[],errors:[]};let server,browser;
 try{
  server=await start({port:0,host:'127.0.0.1',offline:true});browser=await chromium.launch({headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
@@ -16,7 +17,7 @@ try{
  const settle=()=>page.waitForFunction(()=>globalThis.bimcraftLive?.editor&&!bimcraftWorkspace.snapshot().busy&&!globalThis.bimcraftPlan?.state.reloading&&!globalThis.bimcraftPlan?.state.busy,null,{timeout:90000});await settle();
  await page.waitForFunction(()=>globalThis.ccProblems?.store.sources().some(x=>x.id==='bimcraft.checks'));
  assert.equal(await page.locator('[data-problems-open]').count(),1);
- await page.keyboard.press('Meta+Shift+m');await page.locator('[data-problems-panel]').waitFor({state:'visible'});
+ await page.keyboard.press(`${modifier}+Shift+m`);await page.locator('[data-problems-panel]').waitFor({state:'visible'});
  const data=await page.evaluate(async()=>{
   const base='/assets/apps/bimcraft/dev/',{getHost}=await import(base+'host.js'),{snapshotModel}=await import(base+'model-ops.js');
   const c=getHost({app:'bimcraft'}).control;c.configure({enabled:true,groups:['read','edit']});
@@ -40,7 +41,7 @@ try{
   const before=snapshot();const result=await __up08Call('element_set',{guid,attribute:'Name',value:'Preview without mutation',preview:true});return {before,after:snapshot(),result};
  },data.guid);assert.equal(preview.before,preview.after);assert.equal(preview.result.preview,true);assert.equal(preview.result.applied,false);
  report.checks.push('Real live host preview returns a detached result without mutating IFC, Undo or Redo');
- await page.keyboard.press('Meta+Shift+m');await page.locator('[data-problems-accepted]').check();
+ await page.keyboard.press(`${modifier}+Shift+m`);await page.locator('[data-problems-accepted]').check();
  const download=page.waitForEvent('download');await page.locator('[data-problems-pdf]').click();await(await download).saveAs(out+'/problems-report.pdf');
  assert.ok(fs.readFileSync(out+'/problems-report.pdf').subarray(0,5).equals(Buffer.from('%PDF-')));
  await page.screenshot({path:out+'/problems-panel.png'});
