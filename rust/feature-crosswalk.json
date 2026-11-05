@@ -1,0 +1,513 @@
+{
+  "metadata": {
+    "decisionDate": "2026-11-04",
+    "timezone": "America/Chicago",
+    "remoteCheckedAt": "2026-11-05T02:02:36.521Z",
+    "direction": "BIMCraft Rust is the primary development foundation. New BIMCraft Web development is frozen; preserve existing work for handoff.",
+    "webAcceptedMain": "75af81b49a3f472de734b0229f64e2140bbcbb10",
+    "rustInstalledRelease": {
+      "version": "0.10.0",
+      "commit": "f47a6c94281555728d6a61229355f037d1a464b3"
+    },
+    "rustSourceAuditedMain": "dde24e240b7ca39fb040057c452175e3f3a0bf45",
+    "rustNewerObservedMain": "f418d8505939925a4fb30b848d8f944e614b6ec5",
+    "newerObservedAheadOfSourceAudit": 6,
+    "newerObservedScope": "Wireframe DirectX shader/edge changes, palette behavior and associated tests/translations. Observed, not runtime accepted or adopted.",
+    "implementationStartedByThisRoadmap": false,
+    "nativeRevitObserved": false,
+    "evidencePolicy": "Separate existing source capability, bounded release runtime evidence, reported upstream work and proposed acceptance. No entire Revit-parity claim.",
+    "publicationScope": "Sanitized documentation only. No house models, images, local inventories, app code or maintainer messages."
+  },
+  "features": [
+    {
+      "id": "F01",
+      "tracks": [
+        "R00"
+      ],
+      "decision": "Reuse requirements",
+      "rustAssessment": "Establish reproducible native startup and pinned comparisons.",
+      "title": "Integration baseline and standalone test workflow",
+      "webState": "integrated",
+      "webCurrentCapability": "Standalone integration foundation and the original wall/material/dimension prototype are adopted.",
+      "legacyGoal": "Inspect PR #1 and the current remotes/branch. Record the baseline commit and startup commands, create or identify a small residential fixture, and isolate the missing TakeoffCraft test dependency so standalone checks report an explicit skip or run a focused equivalent. Do not fabricate passing external checks or merge the PR without user authorization. Done: clean startup and documented reproducible test commands on a fresh development checkout; no accidental use of upstream-only main.",
+      "legacyNextWork": "Maintain reproducible isolated startup and explicit sibling availability notices; no new F01 implementation needed.",
+      "legacyDependencies": "none",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 1
+    },
+    {
+      "id": "F02",
+      "tracks": [
+        "R03",
+        "R02"
+      ],
+      "decision": "Verify and extend",
+      "rustAssessment": "Carry precision, references and unknown-record preservation requirements; distinguish IFC imports from native-file preservation.",
+      "title": "Precision, references and migration contract",
+      "webState": "integrated",
+      "webCurrentCapability": "Numeric/reference/version contracts and repeated persistence fixtures are adopted. Six wall references, stable identities and unknown-record protection are usable.",
+      "legacyGoal": "Document length/angle units, geometry tolerances, display rounding, local/project coordinates, supported file versions and named-reference behavior. Add fixtures for imperial/metric units, translated coordinates, tiny offsets, curves and repeated edit/save/reopen. Define safe handling for unknown schema versions and broken hosts. Done: tests prove supported operations meet the agreed tolerance and fail visibly outside it. Use the existing 0.005 mm regression threshold as a starting test bound, not as a claim of universal CAD-kernel accuracy.",
+      "legacyNextWork": "Extend known schema/migration contracts for future layer priority, join modes, copy/reference policies and constraints. Fixture precision is not a universal accuracy warranty.",
+      "legacyDependencies": "F01",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 4
+    },
+    {
+      "id": "F03",
+      "tracks": [
+        "R11"
+      ],
+      "decision": "Reuse methodology",
+      "rustAssessment": "Measure native Mac/house performance; do not transfer browser timings as native results.",
+      "title": "Performance baseline and profiling harness",
+      "webState": "integrated",
+      "webCurrentCapability": "Performance harness/profiling is adopted. Exact-main CI collected900 browser observations in30 groups, zero source errors.",
+      "legacyGoal": "Measure cold/warm open, selection, pan/zoom, wall/type edits, roof regeneration, save and PDF generation on small/medium/large residential fixtures. Record hardware, browser/runtime, fixture sizes, p50/p95 and memory. Proposed starting UX targets for a typical house: selection/Properties feedback within 100 ms, interactive preview frames within 33 ms, and common committed edits within 500 ms at p95. Validate or revise these targets using measured baseline data. Done: reproducible timings identify the dominant cost and separate geometry work from UI/IFC parsing/serialization.",
+      "legacyNextWork": "Address measured responsiveness and CI-duration follow-ups. The27 model timing groups are unmeasured in this browser-only artifact; benchmark completion is not a speed improvement.",
+      "legacyDependencies": "F01",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 5
+    },
+    {
+      "id": "F04",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Verify existing coverage",
+      "rustAssessment": "Check layer graphics, cavities/membranes/detail and agreement between screen and vector output.",
+      "title": "Layered plan graphics and vector output",
+      "webState": "integrated",
+      "webCurrentCapability": "Layered plan graphics, cavities, membrane lines, detail settings and vector consistency are adopted for accepted scope. View Range exists.",
+      "legacyGoal": "Render authored wall layers with project fills/colors, unfilled cavities, and membrane boundary lines. Offer useful coarse/medium/fine detail behavior. Start with straight unjoined walls; then cover curves, junction clipping and opening cuts before declaring the card complete. Screen and vector PDF/sheets must share the same layer boundaries. Done: a material-style edit changes graphics without changing geometry; walls with openings and corners remain legible and exports retain scale. Excludes per-layer 3D solids.",
+      "legacyNextWork": "F04-B range/RCP edge-case evidence; coordinate new join ownership with F08-B. Fine-view responsiveness and crowded short labels stay open.",
+      "legacyDependencies": "F01, F02",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 6
+    },
+    {
+      "id": "F05",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Verify and extend",
+      "rustAssessment": "Test joined-wall sections separately from imported/family-form sectioning; do not inherit the Web exclusion automatically.",
+      "title": "Layer-aware wall sections and elevations",
+      "webState": "partial",
+      "webCurrentCapability": "Bounded straight-wall layer sections/elevations are adopted.",
+      "legacyGoal": "Extend existing projected views to show cut layers, cavities, membranes, openings, levels and graphic depth consistently. Keep model-derived geometry distinct from view-specific detail overlays. Done: one wall section and one elevation update after wall height, assembly and window changes, and print correctly. Break into section cut geometry, graphic presentation and update/export slices if needed.",
+      "legacyNextWork": "F05-B: perpendicular section through a wall connected to a supported join, away from the corner. Current isolation requirement excludes ordinary connected house walls. Oblique/junction/curved cuts remain later.",
+      "legacyDependencies": "F02, F04",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 7
+    },
+    {
+      "id": "F06",
+      "tracks": [
+        "R09"
+      ],
+      "decision": "Extend semantics",
+      "rustAssessment": "Flexible schedules exist; ordered layers/core/cavity/zero-membrane legend still needs proof.",
+      "title": "Assembly schedule and material legend",
+      "webState": "integrated",
+      "webCurrentCapability": "Model-derived fixed assembly schedule and material legend, nominal-mm layer records, CSV and vector exports are adopted.",
+      "legacyGoal": "Schedule type name, exterior-to-interior layer order, material, function, core status, nominal thickness, cavity ventilation and membrane designation. Include every zero-thickness layer without implying physical width or solid volume. Place a schedule/legend on a sheet and export CSV where existing infrastructure supports it. Done: edit/reorder a layer and the schedule updates; totals match the model and names resolve by stable IDs. Quantity takeoff is F21, not this card.",
+      "legacyNextWork": "F21-A defines quantities; F22-A coordinates placement/continuations. A fixed reliable table is not a generic schedule field/filter designer.",
+      "legacyDependencies": "F01, F02",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 8
+    },
+    {
+      "id": "F07",
+      "tracks": [
+        "R07"
+      ],
+      "decision": "Extend existing library",
+      "rustAssessment": "Materials/families favorites are a starting point; assembly packaging/version/dependency policy remains.",
+      "title": "Reusable project libraries",
+      "webState": "planned",
+      "webCurrentCapability": "Project materials and authored assemblies already exist; reusable cross-project package acceptance has not been delivered.",
+      "legacyGoal": "Import/export a versioned material-and-assembly package for use in another project. Include referenced materials, optional source/manufacturer notes and conflict resolution for same IDs/different content. Define copy versus update explicitly. Done: transfer a custom assembly including cavity/membranes to an empty project; no missing materials, silent replacement or resize of existing walls. Keep generic starter values separate from verified product specifications.",
+      "legacyNextWork": "Versioned material/assembly import/export, collision/dependency resolution and project isolation. Keep separate from component-family update management in F18.",
+      "legacyDependencies": "F02, F06",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F08",
+      "tracks": [
+        "R04"
+      ],
+      "decision": "Substantial gap",
+      "rustAssessment": "Automatic geometry is not explicit join permissions/order/core-priority/wrapping parity.",
+      "title": "Wall join and end-condition reliability",
+      "webState": "partial",
+      "webCurrentCapability": "A: deterministic bounded straight L/T/selected endpoint-X envelope cleanup, per-end permission/cap and three protected semantic join tools are adopted.",
+      "legacyGoal": "Extend current straight L joins to selected T/X, acute/obtuse, dissimilar-core and curved conditions. Define core-priority cleanup and explicit end caps/disallow-join controls. Separate finish wrapping at openings as its own implementation slice. Done: fixtures show no slivers or gaps for supported cases; finish changes preserve core anchors and attached dimensions. Unsupported conditions remain explicit. Coordinate integration with F04/F05 rather than editing their renderers concurrently. Planned F08-B: use Revit behavior as the reference for core butt/finish continuity, eligible butt/miter configurations and join order, contextual controls and automatic join permission. Audit layer priorities and distinguish physical/layer cleanup, view cleanup, and free-end/insert wrapping. Agree the bounded comparison matrix before implementation; wrapping at openings stays a separate slice.",
+      "legacyNextWork": "B0/B: native references then layer-aware core/finish joins and eligible choices. C: free ends later; insert wrapping in F15-B. Curves/unequal-height/interior-X/multi-floor solving stay limited.",
+      "legacyDependencies": "F02",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 13
+    },
+    {
+      "id": "F09",
+      "tracks": [
+        "R01",
+        "R05",
+        "R03"
+      ],
+      "decision": "Verify existing tools",
+      "rustAssessment": "Carry editing, host/reference, history and snapping requirements; do not transplant the Web defect as a confirmed Rust bug.",
+      "title": "Properties and Modify workflow consistency",
+      "webState": "partial",
+      "webCurrentCapability": "A: corrected shortcuts, guarded plan context menus, explicit temporary analytic wall/core/finish targets and wall_reference_resolve are adopted.",
+      "legacyGoal": "Audit existing select, move, copy, rotate, mirror, align, offset, trim/extend, split and wall-flip behavior. Fix the highest-impact residential gaps; do not rebuild working tools. Standardize multi-selection, mixed values, instance/type distinction, numeric entry, snapping and predictable undo. Add a selected-wall exterior-side indicator in plan if existing orientation feedback is inadequate. Done: a documented edit sequence preserves hosted elements, material orientation, references and type-vs-instance intent. Split missing operations into individual follow-up cards.",
+      "legacyNextWork": "B is an urgent actual repair, not accepted A feature expansion. C/D add authored-wall Move/Copy with host rules. E scopes snap overrides/cycling/context behavior; broader Modify tools remain disabled/unimplemented.",
+      "legacyDependencies": "F02, F08",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 18
+    },
+    {
+      "id": "F10",
+      "tracks": [
+        "R06",
+        "R02"
+      ],
+      "decision": "Retain discovery",
+      "rustAssessment": "Start with the real-house roof omissions and existing Rust operations.",
+      "title": "Roof workflow and intersection spike",
+      "webState": "planned",
+      "webCurrentCapability": "Existing automatic roof and manual-plane modules are inherited; no new roof discovery acceptance is recorded.",
+      "legacyGoal": "Exercise existing automatic roofs and manual planes before choosing an extension strategy. Use two intersecting planes at different pitches and bearing heights, then an offset porch and dormer case. Compare analytic intersection/trim against existing code; capture failure cases and define supported geometry. Done: a design note, reproducible fixtures and the smallest implementation plan for F11–F13. No general-purpose Rhino replacement or new kernel selection by assumption.",
+      "legacyNextWork": "Exercise different pitches/bearings and a porch intersection before selecting extension architecture. Reuse existing roof functionality.",
+      "legacyDependencies": "F02, F03",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F11",
+      "tracks": [
+        "R06"
+      ],
+      "decision": "Verify and extend",
+      "rustAssessment": "Prove pitch/rise-run, bearing, elevation, overhang, thickness and reference stability.",
+      "title": "Precise roof-plane editing",
+      "webState": "planned",
+      "webCurrentCapability": "Existing roof plane controls are a starting point, not accepted precise-plane feature delivery.",
+      "legacyGoal": "Extend plane Properties and direct manipulation: explicit bearing line/height, pitch (rise/run and angle), slope direction, polygon edges, overhang and thickness. Done: edit either plane's pitch/bearing independently with accurate numeric feedback, consistent roof geometry and one undo operation; invalid/degenerate inputs are rejected.",
+      "legacyNextWork": "After F10: explicit bearing/pitch/height/overhang, numeric edit and stable dependent references with Undo/reopen proof.",
+      "legacyDependencies": "F10",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F12",
+      "tracks": [
+        "R06"
+      ],
+      "decision": "Verify and extend",
+      "rustAssessment": "Persistent roof joining exists; test ridge/hip/valley/trim relationships and invalid cases.",
+      "title": "Persistent roof intersections, joins and trim",
+      "webState": "planned",
+      "webCurrentCapability": "Existing roof generation does not establish accepted persistent intersection relationships.",
+      "legacyGoal": "Create ridge/hip/valley intersections with persistent relationships and an explicit join/unjoin or trim workflow. Begin with the two-plane acceptance case, then selected multiple-plane conditions. Done: differing-pitch/bearing planes meet without gaps or overlaps in supported cases; later edits recompute the seam and survive undo/reopen. Keep stable plane/edge identities for future annotation. Unsupported ambiguous joins must not silently choose a result.",
+      "legacyNextWork": "After F11: bounded ridge/hip/valley and explicit trim/join/unjoin; verify persistence, failed relationships and actual outputs.",
+      "legacyDependencies": "F11",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F13",
+      "tracks": [
+        "R06",
+        "R09"
+      ],
+      "decision": "Verify and extend",
+      "rustAssessment": "Test top/base attachment and eave/rake/fascia/soffit details and quantities.",
+      "title": "Roof/wall attachment and roof detail output",
+      "webState": "planned",
+      "webCurrentCapability": "Some inherited roof/wall tools exist; roof attachment/detail acceptance is not complete.",
+      "legacyGoal": "Attach appropriate wall tops to roof undersides, support selected eave/rake/fascia/soffit conditions, and expose useful cut geometry to details. Done: moving a bearing or changing pitch updates attached walls and the roof section; a roof detail and sheet show consistent dimensions. Dormers and complex compound intersections may require additional cards after the first working case.",
+      "legacyNextWork": "After F12/F05: supported wall-top attachment, eave/rake/fascia/soffit and coherent details/quantities. No blanket attachment guarantee.",
+      "legacyDependencies": "F05, F12",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F14",
+      "tracks": [
+        "R06"
+      ],
+      "decision": "Retain fixtures",
+      "rustAssessment": "Cross-gable, dormer, unequal-overhang and shed-to-main-roof cases remain.",
+      "title": "Expanded residential roof cases",
+      "webState": "planned",
+      "webCurrentCapability": "Broader roof cases remain proposed.",
+      "legacyGoal": "Add verified cross-gable, unequal overhang, porch, dormer and shed-to-main-roof cases from the user's projects. Prioritize explicit plane/edge editing, snapping and intersections before unconstrained freeform surfaces. Done: each accepted case has an editable fixture and a regression test; changes propagate without requiring deletion/recreation.",
+      "legacyNextWork": "Expand only after the first roof chain: cross-gable, unequal overhang, porch/dormer/shed cases using selected residential references.",
+      "legacyDependencies": "F13",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F15",
+      "tracks": [
+        "R05",
+        "R04"
+      ],
+      "decision": "Verify and extend",
+      "rustAssessment": "Host lifecycle and insert wrapping remain separate requirements.",
+      "title": "Residential host and opening reliability",
+      "webState": "planned",
+      "webCurrentCapability": "Hosted doors/windows and openings already work in tested bounded edits. Audit retained9 opening identities through a type edit and one height change.",
+      "legacyGoal": "Audit existing doors/windows and improve host placement, rough openings, sill/head controls, flip/hand/orientation and type changes. Define host deletion/replacement and changed wall-thickness behavior. Done: doors/windows stay correctly placed and cut the intended wall across supported wall edits and round trips. No dangling opening voids or duplicated cuts.",
+      "legacyNextWork": "A: move/flip/thickness/rehost/replace/delete durability matrix; B: separate insert wrapping. Basic survival does not establish the entire host lifecycle.",
+      "legacyDependencies": "F02, F08",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F16",
+      "tracks": [
+        "R07"
+      ],
+      "decision": "Adapt architecture study",
+      "rustAssessment": "Extend the existing Rust forms/formulas system; no new geometry engine presumed.",
+      "title": "Parametric modeler architecture spike",
+      "webState": "planned",
+      "webCurrentCapability": "A family editor, parameter/formula machinery and primitive operations are inherited.",
+      "legacyGoal": "Assess the existing family editor, parameter/formula engine and extrude/revolve/sweep/boolean operations. Compare extending the in-app editor, an embedded module and a separate local application sharing a component format. Evaluate constrained sketching, feature history, dependency graphs, stable topology references, host-cut contracts, browser/native costs and recovery. Done: a short decision record and experimental component transfer; recommend a default, but record assumptions and user tradeoffs. Do not commit to full CAD-kernel replacement or external proprietary-format compatibility.",
+      "legacyNextWork": "Architecture spike should assess and extend that system. Decide stable references and recompute before broad new modeling; no whole-engine rewrite assumed.",
+      "legacyDependencies": "F02, F03",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F17",
+      "tracks": [
+        "R07"
+      ],
+      "decision": "Retain acceptance proof",
+      "rustAssessment": "One hosted parametric window in two sizes, across editing/history/drawings/reopen.",
+      "title": "One editable parametric window end to end",
+      "webState": "planned",
+      "webCurrentCapability": "Existing door/window types and family primitives are starting points.",
+      "legacyGoal": "Build a residential window with editable width, height, frame depth and a host-cut definition; leverage existing primitives where sufficient. Expose user-facing parameters in Properties and distinguish type/instance changes. Done: place two sizes, edit parameters, verify wall cuts and plan/section/schedule output, then undo/reopen without losing parameters. Includes a focused host acceptance check; broader host reliability remains F15.",
+      "legacyNextWork": "One editable hosted residential window end to end: dimensions/frame/closure/cut, two sizes, type/instance intent, history/persistence and drawings. Full F23 is not a prerequisite.",
+      "legacyDependencies": "F16, F02",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F18",
+      "tracks": [
+        "R07"
+      ],
+      "decision": "Extend existing library",
+      "rustAssessment": "Versioned components and safe updates preserving overrides and hosts.",
+      "title": "Component library and version updates",
+      "webState": "planned",
+      "webCurrentCapability": "Libraries exist in the wider suite; this fork has no accepted component-version/update workflow for the proposed scope.",
+      "legacyGoal": "Package reusable doors/windows and a small set of residential components with names, previews, defaults and versions. Define local edit versus library update behavior. Done: updates have a reviewable effect on placed instances and preserve per-instance overrides/hosts; missing or incompatible versions are explicit. Avoid silently changing every project when a shared definition changes.",
+      "legacyNextWork": "Version/dependency management, local edits versus updates, reviewable effects and preservation of placed-instance overrides/hosts.",
+      "legacyDependencies": "F15, F17",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F19",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Audit existing capability",
+      "rustAssessment": "Rust chains, witness references and constraints exceed the initial Web scope; evaluate rather than recreate.",
+      "title": "Associative dimensions beyond the prototype",
+      "webState": "planned",
+      "webCurrentCapability": "Persistent two-reference nondriving wall dimensions to six analytic references already exist in plans/RCP/callouts; seven master dimensions resolve in the audit.",
+      "legacyGoal": "Start with chained plan dimensions and practical witness-line editing. Then add supported section/elevation, opening and roof references in separate slices. Allow selection cycling among finish/core/center references with visible feedback. Done: deleting/replacing a referenced object produces explicit unresolved status; editing geometry updates values on screen and sheets. Driving geometry by changing dimension text is deferred until a constraint strategy is approved.",
+      "legacyNextWork": "A: chains and witness editing. Add opening/section/elevation references in later bounded slices. Locks/equality/driving require a separate constraint decision.",
+      "legacyDependencies": "F02, F05, F09; opening references also require F15",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F20",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Retain workflows",
+      "rustAssessment": "Model-linked callouts and wall-base/window/eave detail examples.",
+      "title": "Residential detailing workspace",
+      "webState": "planned",
+      "webCurrentCapability": "Drafting, annotations and callouts already exist; C improves access but is not adopted.",
+      "legacyGoal": "Extend existing drafting into usable model-linked callouts and independent drafting details. Prioritize detail lines, filled/masking regions, text/leaders, reusable detail components and lineweight/pattern styles. Define model-derived versus manually drafted geometry clearly. Done: produce and revise a wall base, window opening and roof eave detail with correct paper-scaled text and vector output. No full general CAD application requirement.",
+      "legacyNextWork": "Practical model-linked and independent details, region/text/component styles and reusable house details. Avoid rebuilding existing drafting unnecessarily.",
+      "legacyDependencies": "F05",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F21",
+      "tracks": [
+        "R09"
+      ],
+      "decision": "Retain definitions",
+      "rustAssessment": "Gross/net, membrane/cavity, coverage and non-uniform framing semantics.",
+      "title": "Material/assembly quantity semantics",
+      "webState": "planned",
+      "webCurrentCapability": "Assembly/legend records and envelope quantities are available; comprehensive net material semantics are not accepted.",
+      "legacyGoal": "Define gross/net wall-envelope areas and volumes separately from material coverage/volume. Handle cavities, zero-thickness membrane coverage, openings and shared boundaries explicitly. Do not treat a framing/insulation assembly layer as a homogeneous solid quantity without a declared calculation method. Done: hand-checkable fixtures reconcile totals; cavities carry no solid material volume, membranes have optional coverage area but zero nominal volume, and reports state their measurement method.",
+      "legacyNextWork": "A: hand-check gross/net opening/cavity/membrane quantities. Explicit framing/insulation calculation methods; do not imply material volumes from a homogeneous envelope.",
+      "legacyDependencies": "F06, F08, F15",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F22",
+      "tracks": [
+        "R08",
+        "R09"
+      ],
+      "decision": "Retain end-to-end acceptance",
+      "rustAssessment": "Coordinate model edits, sheets, scales, references, schedules and actual PDF output.",
+      "title": "Coordinated sheet set and print QA",
+      "webState": "planned",
+      "webCurrentCapability": "Existing sheets/vector exports and bounded documentation are usable; a complete revised house set has not been accepted.",
+      "legacyGoal": "Extend existing sheets/PDF with reusable title blocks, placed view titles/scales, detail/section references, numbering and a useful drawing index. Audit existing tags/notes and schedule placement. Done: one coordinated residential set exports at correct scale, with readable lineweights, linked view references and no clipped annotations; a subsequent model revision updates every affected placed view. This is drawing-set readiness for human review, not automated permit/code certification.",
+      "legacyNextWork": "A: a small coordinated drawing-set proof, then M3 breadth/title blocks/index/references/print QA. Include real non-ASCII label/glyph validation with F26-I18N.",
+      "legacyDependencies": "F05, F06, F13, F17, F19, F20",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F23",
+      "tracks": [
+        "R07"
+      ],
+      "decision": "Later extension",
+      "rustAssessment": "Graphical constrained sketches and feature history remain beyond the largely text-based family editor.",
+      "title": "Constrained sketches and feature-history component editor",
+      "webState": "planned",
+      "webCurrentCapability": "Constrained sketch/feature-history component workflow remains proposed.",
+      "legacyGoal": "Deliver the chosen modeler architecture incrementally: sketch constraints and dimensions; then feature history/recompute; then selected extrude/revolve/cut/sweep editing and reusable parameters. Stable references and failed-feature recovery are first-class acceptance criteria. Done: a user builds and edits the F17 window through the new workflow without manually repairing dependent faces after a parameter change. Split into several feature chats; full Fusion 360 parity is outside this card.",
+      "legacyNextWork": "Stage sketch constraints, recompute/history and selected operations after F16–F18. Preserve failed-feature recovery and stable references; avoid importing full modeler parity into the first window proof.",
+      "legacyDependencies": "F16–F18",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F24",
+      "tracks": [
+        "R05"
+      ],
+      "decision": "Audit category coverage",
+      "rustAssessment": "Verify foundations/slabs/beams/stairs/railings/levels/rooms before adding gaps.",
+      "title": "Residential structure coverage audit and gap closure",
+      "webState": "planned",
+      "webCurrentCapability": "Levels, floors/ceilings/roofs, foundations/stairs/framing modules are inherited. The audit created73 framing parts and retained them through history/reopen.",
+      "legacyGoal": "Audit existing foundations, slabs/floors, beams/posts, framing, stairs/railings, levels and rooms against the reference house. Produce a supported/partial/missing matrix with demonstrations, then create narrowly scoped child cards for blocking gaps. Prioritize modeling/documentation of core structure, not structural design calculations. Done: the chosen house's foundation, floors, vertical circulation and primary structural objects can be modeled and documented at the agreed detail level; unneeded commercial systems do not enter the critical path.",
+      "legacyNextWork": "A: coverage and level-cascade inventory against the reference house; fill demonstrated gaps. Module presence and a framing proof do not certify all residential construction behavior.",
+      "legacyDependencies": "F02, F09; complete before M3",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F25",
+      "tracks": [
+        "R11"
+      ],
+      "decision": "Supersede obsolete task",
+      "rustAssessment": "Retire Web-to-Rust/WASM decision; retain targeted native performance work.",
+      "title": "Targeted performance work and Rust decision",
+      "webState": "planned",
+      "webCurrentCapability": "Measurements exist; target optimization and any Rust/WASM adoption remain proposed.",
+      "legacyGoal": "Profile the real bottleneck. First evaluate algorithmic improvements, caching, incremental regeneration and workers in the current stack. Compare a narrow Rust/WASM prototype only for an identified expensive operation; consider native Rust separately if desktop integration warrants it. Measure conversion/copy overhead, cold start, memory, responsiveness and numerical equivalence on the same fixtures/hardware. Done: a decision record says stay with JavaScript, adopt a bounded Rust module, or gather more evidence. Require a meaningful end-to-end improvement to justify build/debug/interoperability costs. Whole-application rewriting is not the default deliverable.",
+      "legacyNextWork": "Profile algorithm/caching/regeneration/worker options first, then compare a bounded acceleration spike only for an identified bottleneck. Preserve outputs; a language change is not itself a performance result.",
+      "legacyDependencies": "F03 and at least one measured F12/F22 workload",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F26",
+      "tracks": [
+        "R11",
+        "R02"
+      ],
+      "decision": "Verify and extend",
+      "rustAssessment": "Existing packaging does not close migration/recovery/large-file/locale acceptance.",
+      "title": "Packaging, recovery and release readiness",
+      "webState": "planned",
+      "webCurrentCapability": "Development startup, saving and selected recovery paths are tested; reviewed end-user distribution/release readiness is incomplete.",
+      "legacyGoal": "Verify offline installation/startup, save/recovery, migrations, distribution and upgrade behavior on the chosen initial platform. Capture a reference drawing set and release checklist. Before distribution, review the repository's existing LICENSE/NOTICE/THIRD_PARTY/TRADEMARKS documentation and track fork naming/assets as release work. Done: install/open/revise/export/recover is demonstrated on a fresh setup, limitations are documented and the user has reviewed the residential set. Choose other platforms later from actual need.",
+      "legacyNextWork": "Fresh install/recovery/upgrades/platform matrix, licenses/naming/distribution and locale/export QA. Keep missing sibling, client setup and cross-platform limits explicit.",
+      "legacyDependencies": "F22, F24; independent of whether Rust is adopted",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F27",
+      "tracks": [
+        "R12"
+      ],
+      "decision": "Keep deferred",
+      "rustAssessment": "Capture-assisted reconstruction remains deferred with uncertainty/measurement controls.",
+      "title": "Capture to Parametric BIM",
+      "webState": "deferred",
+      "webCurrentCapability": "Capture-to-editable-BIM concept is retained as a deferred future epic.",
+      "legacyGoal": "Preserve a room capture as evidence, generate semantic review drawings, confirm individual measurements and approved types/hosts, then reconstruct editable native IFC through existing operations. Begin with one room, straight walls and rectangular openings; later prove bounded cabinet/window template replacement. Approximate inch-level capture is a pilot hypothesis, not a measurement guarantee. Keep scan uncertainty, physical confirmation and authored precision separate.\n\nSequence: discovery → evidence/review drawing → native shell → bounded component replacement. Reuse F02 contracts and F03 measurement methodology; coordinate drawing presentation with F04/F05 and hosting/templates with F15–F18. This epic does not block current features or add an M0–M3 release requirement. Architecture considerations, acceptance principles and the preserved source brief are in [F27 planning notes](features/F27-CAPTURE-TO-PARAMETRIC-BIM.md). No implementation or schedule is authorized.",
+      "legacyNextWork": "No active implementation or new milestone gate. Future discovery separates uncertain measured capture, reviewed evidence drawings and precise native reconstruction.",
+      "legacyDependencies": "Discovery first; low priority",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": null
+    },
+    {
+      "id": "F28",
+      "tracks": [
+        "R01",
+        "R08",
+        "R03"
+      ],
+      "decision": "Transfer workflows; retire Web rewrite",
+      "rustAssessment": "Existing ribbon/properties/browser are starting points. Web layout implementation and merge reconciliation are not Rust work.",
+      "title": "Revit-familiar workspace and menu redesign",
+      "webState": "partial",
+      "webCurrentCapability": "A/B workspace and wall workflows are adopted; established layout remains the default/fallback.",
+      "legacyGoal": "Use the supplied Revit layout as the direct structural baseline: quick-access toolbar, grouped ribbon and contextual options, Properties above Project Browser on the left, drawing tabs, central workspace, bottom view controls and status bar. Adapt to BimCraft panels and features incrementally. Keep implemented tools enabled; grey out unavailable tools with accessible hover, keyboard and touch explanations. Map planned tools to verified feature IDs and names. Unmapped tools say “Not currently on the roadmap — decision needed” and enter an Add / Cut list. Distinguish partial support and flag uncertain mappings. Deliver a clickable mockup, capability inventory, decision list and inspected desktop/narrow-window screenshots. Following design approval, implement in bounded slices with existing model/save/export behavior preserved.",
+      "legacyNextWork": "C is the only open draft PR. It supplies documentation MCP but needs new-main reconciliation, DI/DL/context integration and reliable native-download testing. D handles inherited narrow usability/accessibility.",
+      "legacyDependencies": "Inventory current capabilities and F01–F27 scope; user review of mockup before application implementation.",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/followups/PROJECT-STATE-2026-10-30.md#feature-by-feature-status",
+      "webPR": 11
+    },
+    {
+      "id": "F29",
+      "tracks": [
+        "R10"
+      ],
+      "decision": "Retain coordinated goal",
+      "rustAssessment": "Studs/bays/openings/outlet/niche intent and deterministic regeneration remain a major gap.",
+      "title": "3D wall assemblies and framing coordination",
+      "webState": "planned",
+      "webCurrentCapability": "Planned assembly/framing coordination; existing73-part framing proof is a reusable starting point.",
+      "legacyGoal": "Keep one logical wall as the source of truth for layers, core, orientation, openings and derived framing. Audit and extend existing framing and reveal tools first. Configure representative member sizes, spacing, origin, plates and opening rules; derive inspectable members and clear bays deterministically. Preserve placement intent, valid identities and compatible overrides; report missing/split bays and conflicts rather than leaving stale geometry.\n\nProposed first proof: one straight vertical timber wall sketched in 3D, one rectangular opening, generated framing, one outlet and one shower niche. Check box/clearance and niche width/height/depth envelopes; no silent stud cutting. Finished/core/framing views use the same model. Edits, Undo/Redo and save/reopen preserve relationships or explain conflicts. Manual and semantic MCP actions share validation and operations.\n\nStage richer overrides, assembly switching, supported junctions, scoped review/field-verification records and project-scale performance after the proof. Engineered sizing, fabrication, automatic quantities, full MEP routing, broad building systems and advanced animated reveals are outside the initial slice. Generated framing is design/coordination information with explicit assumptions, not automatic field or compliance verification.",
+      "legacyNextWork": "A: one straight timber wall/opening/outlet/niche with deterministic supported bays, conflict reporting and real agent parity. Richer assemblies/overrides/junctions and field verification remain later.",
+      "legacyDependencies": "F02/F03 and existing assemblies; agreed F09 input contracts; focused framing/host audit coordinated with F08, F15 and F24. Discovery before implementation.",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/features/F29-WALL-ASSEMBLY-FRAMING.md",
+      "webPR": null
+    },
+    {
+      "id": "F30",
+      "tracks": [
+        "R03"
+      ],
+      "decision": "Harden existing foundation",
+      "rustAssessment": "Use shared CLI/MCP/core; prove reproducible jobs, receipts, atomicity, permission and outputs.",
+      "title": "Headless BimCraft execution and batch automation",
+      "webState": "planned",
+      "webCurrentCapability": "Existing headless IfcSession/CLI and packaged MCP already reuse application operations. A complete supported batch-job product is not yet accepted.",
+      "legacyGoal": "Promote existing browser-free IfcSession/application operations into a supported local execution path. First inventory capability, packaged closure, live-only actions and real test coverage. Then prove one explicit Test Lab edit/check/export recipe using direct core calls and MCP with equivalent saved results. Keep one geometry/history/validation authority shared by GUI, direct SDK/CLI and MCP. Define job/revision/history receipts, no-op and failure behavior, file outputs and chosen atomicity/resume policy before implementation. Measure actual time/memory and agent round trips; headless execution is not an automatic geometry speedup. Begin locally; hosting, a service deployment, a new geometry engine and full parity are not implied.",
+      "legacyNextWork": "A: capability/parity inventory. B: one deterministic Test Lab recipe through direct core and MCP, saved outputs/receipts and measured time/memory. Single geometry/history authority; live UI activation remains live-only.",
+      "legacyDependencies": "Inventory current headless/CLI/MCP capabilities; F02/F03 and accepted operations. F28-C adoption for its additional documentation/export scope.",
+      "legacyBrief": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/features/F30-HEADLESS-EXECUTION.md",
+      "webPR": null
+    }
+  ]
+}

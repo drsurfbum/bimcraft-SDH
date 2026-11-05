@@ -1,0 +1,279 @@
+{
+  "metadata": {
+    "decisionDate": "2026-11-04",
+    "timezone": "America/Chicago",
+    "remoteCheckedAt": "2026-11-05T02:02:36.521Z",
+    "direction": "BIMCraft Rust is the primary development foundation. New BIMCraft Web development is frozen; preserve existing work for handoff.",
+    "webAcceptedMain": "75af81b49a3f472de734b0229f64e2140bbcbb10",
+    "rustInstalledRelease": {
+      "version": "0.10.0",
+      "commit": "f47a6c94281555728d6a61229355f037d1a464b3"
+    },
+    "rustSourceAuditedMain": "dde24e240b7ca39fb040057c452175e3f3a0bf45",
+    "rustNewerObservedMain": "f418d8505939925a4fb30b848d8f944e614b6ec5",
+    "newerObservedAheadOfSourceAudit": 6,
+    "newerObservedScope": "Wireframe DirectX shader/edge changes, palette behavior and associated tests/translations. Observed, not runtime accepted or adopted.",
+    "implementationStartedByThisRoadmap": false,
+    "nativeRevitObserved": false,
+    "evidencePolicy": "Separate existing source capability, bounded release runtime evidence, reported upstream work and proposed acceptance. No entire Revit-parity claim.",
+    "publicationScope": "Sanitized documentation only. No house models, images, local inventories, app code or maintainer messages."
+  },
+  "slices": [
+    {
+      "id": "F09-B",
+      "title": "Repair join Properties after history",
+      "tracks": [
+        "R03",
+        "R05"
+      ],
+      "decision": "Keep Web defect in handoff. Reuse regression intent; not a confirmed Rust defect.",
+      "legacyScope": "Repair AUD-DEF-01: refresh actual end values after history and preserve the untouched end during a partial edit. No new join configuration.",
+      "legacyAcceptance": "Pristine Lab08: Disallow A → Undo → Redo → Square B leaves A disallowed in visible form, authoritative record and actual saved/reopened IFC. Repeat inverse ends/caps and both layouts; include native/semantic interleaving, one owned step, stale/dirty refusal and no human-work Undo.",
+      "legacyDependencies": "Current main75af; F08/F02 retained controls; coordinate F28 adapter",
+      "legacyStatus": "OPEN defect; reproduced on current main"
+    },
+    {
+      "id": "F28-C",
+      "title": "Reconcile documentation candidate with current main",
+      "tracks": [
+        "R08",
+        "R03"
+      ],
+      "decision": "Retire Web merge work from Rust scope; preserve unadopted PR #12 and transfer documentation/agent requirements.",
+      "legacyScope": "Existing PR12, not a new implementation epic. Reconcile five conflicts, preserve accepted tools and wire DI/DL/context actions to real documentation availability. Stabilize actual live downloads.",
+      "legacyAcceptance": "Published combined head retains all fourteen applicable workflow types, source/package/live catalogs and refusal/history tests; C/B/F09 native checks and independent actual outputs. Add the new history repair regression when its baseline lands.",
+      "legacyDependencies": "Current accepted main; F09-B coordination; existing C owner",
+      "legacyStatus": "Existing draft; blocked for adoption"
+    },
+    {
+      "id": "F08-B0",
+      "title": "Capture the intended native Revit join behavior",
+      "tracks": [
+        "R04"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "One synthetic equal/mixed L, controlled T and opening. Record Revit version, type/core/material/function/independent priority, orientation, join mode/order, permission, cleanup and control tooltip.",
+      "legacyAcceptance": "Labeled golden observations distinguish core/finish meeting, Butt/Miter/order, automatic permission, view cleanup and free-end/insert wrapping. Mark unavailable modes. Agree first-slice behavior before schema/solver commitments.",
+      "legacyDependencies": "User/native Revit evidence; versioned Autodesk references",
+      "legacyStatus": "Discovery required"
+    },
+    {
+      "id": "F08-B",
+      "title": "Layered 90-degree L corners and explicit join choices",
+      "tracks": [
+        "R04"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Two straight vertical equal-height walls; equal/mixed assemblies, both directions/orientations. Core butt/finish continuity, material seams and eligible agreed Butt/order/Miter.",
+      "legacyAcceptance": "No gaps/double ownership; stable references/hosts; cavities keep width and membranes stay zero; deterministic regeneration, preview/cancel, Undo/reopen; independent IFC/plan/section/vector output and manual/source/package/live semantic parity. Retain T/X negative controls.",
+      "legacyDependencies": "F09-B; F08-B0; F02 schema; coordinate F04/F05/F28",
+      "legacyStatus": "Planned after discovery"
+    },
+    {
+      "id": "F05-B",
+      "title": "Sections through joined straight walls",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Perpendicular cut through a supported wall away from an existing supported junction. Do not solve a cut through the corner itself.",
+      "legacyAcceptance": "Equal/mixed L plus house wall with opening: layers, cavity/membranes and voids remain correct after type/height/opening edit, Undo and reopen; inspect actual vector PDF. Oblique/junction cuts still refuse honestly.",
+      "legacyDependencies": "F05-A/F08-A; shared layer contract with F08-B",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F15-A",
+      "title": "Focused door/window host durability",
+      "tracks": [
+        "R05"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "One door and one window across supported host move/thickness/height/flip, then bounded replacement/rehost/deletion decisions.",
+      "legacyAcceptance": "Exact wall/opening/void identities and extents; valid dimensions or explicit unresolved references; atomic refusal, native/MCP parity and independent saved-file readback. Define copy behavior before Copy.",
+      "legacyDependencies": "F02/F08; coordinate F09-C/D",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F09-C",
+      "title": "Move one authored wall predictably",
+      "tracks": [
+        "R05"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "One straight wall with supported hosted door/window, numeric displacement and noncommitting preview.",
+      "legacyAcceptance": "Move preserves wall/host IDs and agreed references; dependent joins/openings/dimensions update or refuse visibly; Escape cancels; one owned Undo; real save/reopen and registered semantic transport.",
+      "legacyDependencies": "F09-B; focused F15-A host contract; F02/F08",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F09-D",
+      "title": "Copy one authored wall with explicit host rules",
+      "tracks": [
+        "R05"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Follow Move with one-wall Copy; preview/cancel and clear include/exclude-host behavior. No blanket implementation of all Modify commands.",
+      "legacyAcceptance": "New unique wall/selected-copy IDs, original unchanged; no accidental source-dimension rebinding; supported joins/hosts and per-instance values preserved; one operation/history receipt and actual saved-output parity.",
+      "legacyDependencies": "F09-C/F15-A; identity/reference copy decision",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F19-A",
+      "title": "Chained plan dimensions and witness editing",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Chains of supported straight-wall analytic references in plan/callout; nondriving. Add/edit/remove/rebind witnesses with clear unresolved states.",
+      "legacyAcceptance": "Type/geometry changes, Undo/Redo and reopen preserve supported references and equal displayed/vector values. Keep locks/equality/driving visibly unavailable until a constraint strategy is approved.",
+      "legacyDependencies": "F02/F09 input; coordinate C adapter; opening references follow F15",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F09-E",
+      "title": "Operation-specific snapping and contextual input",
+      "tracks": [
+        "R05",
+        "R01"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Agree temporary snap overrides, candidate cycling and core/finish priority during a small set of real operations; extend the contextual menu inventory from user examples.",
+      "legacyAcceptance": "Visible candidate identity/ambiguity and temporary-versus-persistent intent; preserve native text/Tab/focus, numeric entry, cancel and analytic-reference contracts. Match agreed Revit workflows rather than blindly enabling every shortcut.",
+      "legacyDependencies": "F09-A/B; native interaction examples; coordinate F19",
+      "legacyStatus": "Discovery required"
+    },
+    {
+      "id": "F08-C",
+      "title": "Free-end compound-wall wrapping",
+      "tracks": [
+        "R04"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Separate one straight free-end wrapping rule from corner join cleanup and independent cap choice.",
+      "legacyAcceptance": "Explicit eligible layers/material extents, cavity/membrane behavior and coherent saved plan/section/IFC outputs, with Undo and MCP parity.",
+      "legacyDependencies": "F08-B layer representation; native wrapping evidence",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F15-B",
+      "title": "Door/window insert wrapping",
+      "tracks": [
+        "R04",
+        "R05"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "One rectangular hosted insert with explicit wall layer eligibility and supported closure references.",
+      "legacyAcceptance": "Preserve opening/host/void IDs and extents, correct layer returns across type/sill/size changes and actual exported sections; unsupported families refuse clearly.",
+      "legacyDependencies": "F15-A; F08 wrapping contract; F17 closure proof",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F04-B",
+      "title": "Plan/RCP range edge-case acceptance",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Explicitly exercise raised, spanning and low walls; below/through/above openings; independent plan/RCP values and templates. Expand only gaps the evidence establishes.",
+      "legacyAcceptance": "Same view-owned range/detail/scale values produce coherent screen/vector results across levels, edits, history and reopen; unavailable Revit view-region/underlay cases remain declared.",
+      "legacyDependencies": "F04/F02; coordinate C source ownership",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F28-D",
+      "title": "Narrow-window layout and command accessibility",
+      "tracks": [
+        "R01"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Repair inherited drawing-area loss with both palettes expanded; legible short labels, keyboard/touch explanations and discoverable controls.",
+      "legacyAcceptance": "Agreed narrow desktop viewport preserves a usable canvas, independent palette scrolling, focus/selection and command availability in both layouts. Inspect real screenshots; retain established default/fallback.",
+      "legacyDependencies": "F28-C/input framework; preserve model behavior",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F21-A",
+      "title": "Hand-checkable material quantities",
+      "tracks": [
+        "R09"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Separate gross/net wall envelope, openings, solid-layer volume, cavity width and zero-membrane coverage before generalized totals.",
+      "legacyAcceptance": "Small fixtures reconcile every quantity to declared methods; cavities contribute no solid material volume; membranes may have coverage but zero nominal volume; framing is not silently a homogeneous solid.",
+      "legacyDependencies": "F06/F08/F15; coordinate F29 later",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F22-A",
+      "title": "One coordinated small-house drawing set",
+      "tracks": [
+        "R08"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Use existing plans, section, callout, dimensions, schedules/legend and sheet tools on a bounded reference house. Keep roof/window completeness in M2/M3 phases.",
+      "legacyAcceptance": "Revise a wall/window and verify every affected placed view, title/scale/reference/continuation and inspected vector output. Clear incomplete-view reporting, no clipping or stale dimensions.",
+      "legacyDependencies": "F05-B/F19-A; F06; F28-C; coordinated F20",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F24-A",
+      "title": "Residential coverage and level-cascade audit",
+      "tracks": [
+        "R05"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Inventory current floors/ceilings, levels, foundations, stairs and framing against the house; verify level-height propagation. Reuse roof discovery F10.",
+      "legacyAcceptance": "Supported/partial/missing matrix and selected level edit preserve upper levels, constrained/fixed walls, hosts, dimensions and drawings or explain limits. Existing modules are starting points, not automatic acceptance.",
+      "legacyDependencies": "F02/F09; roof F10; retained Test Lab",
+      "legacyStatus": "Proposed; not started"
+    },
+    {
+      "id": "F29-A",
+      "title": "Framing coordination discovery and first proof",
+      "tracks": [
+        "R10"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Reuse existing framing (audit produced73 parts). One straight timber wall, rectangular opening, derived bays, one outlet and niche; 3D sketch/reveal only within agreed input scope.",
+      "legacyAcceptance": "Deterministic supported framing/clear-bay extents; no silent member cutting; explicit conflicts and assumptions; supported identities/overrides, Undo/reopen and authoritative semantic parity.",
+      "legacyDependencies": "F24 framing inventory; F09 input; F15 hosts; F08/F02",
+      "legacyStatus": "Discovery required"
+    },
+    {
+      "id": "F30-A",
+      "title": "Headless capability and parity inventory",
+      "tracks": [
+        "R03"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Audit current IfcSession, CLI and packaged MCP execution; distinguish domain operations from live-only source activation. No second model/history engine.",
+      "legacyAcceptance": "Capability matrix marks source implementation, direct-call usability, registration, package closure, permissions/history, export/file output and actual test evidence separately. Choose one local job interface and measure where overhead occurs.",
+      "legacyDependencies": "Current accepted core/MCP contracts; C adoption only for its documentation features",
+      "legacyStatus": "Proposed discovery; no owner assigned"
+    },
+    {
+      "id": "F30-B",
+      "title": "One reproducible browser-free Test Lab job",
+      "tracks": [
+        "R03"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Open a working copy, run an explicit recipe of supported edits/checks and write new IFC plus structured report and supported exports to disk. Compare direct core and MCP execution.",
+      "legacyAcceptance": "Same resulting semantic model/identities/precision and actual output checks; deterministic job/revision/error/history receipts; explicit failure/resume/overwrite policy; measured time/memory on same fixtures. GUI activation remains live-only; no service deployment required.",
+      "legacyDependencies": "F30-A; accepted operations; F28-C for proposed documentation export breadth",
+      "legacyStatus": "Proposed after discovery"
+    },
+    {
+      "id": "F26-I18N",
+      "title": "Locale, export-text and platform acceptance",
+      "tracks": [
+        "R11"
+      ],
+      "decision": "Transfer requirement; re-scope around existing Rust behavior before implementation.",
+      "legacyScope": "Retain existing catalogs and fork labels; test units/plurals/fills, meaningful PDF glyphs and basic Mac/Windows startup/save behavior. Watch upstream translation PRs after their own review.",
+      "legacyAcceptance": "Actual user-visible strings and exported text work in chosen languages; missing keys/glyphs fail or report limits honestly. Browser/PHP/catalog/platform boundaries are recorded; no full Unicode/platform certification from one passing language test.",
+      "legacyDependencies": "F22 output; existing F28 language coverage; selected release platforms/languages",
+      "legacyStatus": "Proposed; not started"
+    }
+  ]
+}

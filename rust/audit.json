@@ -1,0 +1,312 @@
+{
+  "metadata": {
+    "decisionDate": "2026-11-04",
+    "timezone": "America/Chicago",
+    "remoteCheckedAt": "2026-11-05T02:02:36.521Z",
+    "direction": "BIMCraft Rust is the primary development foundation. New BIMCraft Web development is frozen; preserve existing work for handoff.",
+    "webAcceptedMain": "75af81b49a3f472de734b0229f64e2140bbcbb10",
+    "rustInstalledRelease": {
+      "version": "0.10.0",
+      "commit": "f47a6c94281555728d6a61229355f037d1a464b3"
+    },
+    "rustSourceAuditedMain": "dde24e240b7ca39fb040057c452175e3f3a0bf45",
+    "rustNewerObservedMain": "f418d8505939925a4fb30b848d8f944e614b6ec5",
+    "newerObservedAheadOfSourceAudit": 6,
+    "newerObservedScope": "Wireframe DirectX shader/edge changes, palette behavior and associated tests/translations. Observed, not runtime accepted or adopted.",
+    "implementationStartedByThisRoadmap": false,
+    "nativeRevitObserved": false,
+    "evidencePolicy": "Separate existing source capability, bounded release runtime evidence, reported upstream work and proposed acceptance. No entire Revit-parity claim.",
+    "publicationScope": "Sanitized documentation only. No house models, images, local inventories, app code or maintainer messages."
+  },
+  "runtimeSmoke": {
+    "move_undo_redo_exact_model": {
+      "moved": true,
+      "undo": true,
+      "redo": true
+    },
+    "atomic_rollback": {
+      "refused": true,
+      "same_model": true
+    },
+    "hosted_wall_copy": {
+      "result": {
+        "ids": [
+          100007,
+          100008
+        ]
+      },
+      "counts": {
+        "level": 2,
+        "wall": 5,
+        "door": 2
+      }
+    },
+    "gable_roof": {
+      "id": 100007
+    },
+    "imperial": {
+      "length": "ft-in"
+    },
+    "wall_schedule": {
+      "columns": [
+        "Id",
+        "Type",
+        "Level",
+        "Length",
+        "Height",
+        "Thickness"
+      ],
+      "rows_count": 4,
+      "error": null
+    },
+    "native_reopen_exact_model": true
+  },
+  "houseImport": {
+    "evidence": "Installed release runtime; source exports and logs kept private",
+    "originalIFC4Bytes": 311382884,
+    "originalIFC2X3Bytes": 609135208,
+    "compactIFC4Bytes": 268216722,
+    "imported": {
+      "levels": 4,
+      "walls": 85,
+      "doors": 24,
+      "windows": 16,
+      "floors": 5,
+      "roofs": 1,
+      "columns": 4,
+      "rooms": 30,
+      "shafts": 1,
+      "components": 521
+    },
+    "omissions": [
+      "One roof with unsupported slopes",
+      "Three mesh-heavy components exceeding the per-component triangle cap",
+      "Nine IFC covering products",
+      "Sixteen IFC distribution elements",
+      "Three IFC geographic elements"
+    ],
+    "limits": "Opening and element counts do not establish full geometry/material fidelity or native Revit parity. Compaction preserved source geometry/storage semantics; originals remain unchanged."
+  },
+  "fileSizeLimit": {
+    "bytes": 268435456,
+    "unit": "256 MiB (approximately 268 MB decimal)",
+    "comparison": "size >= MAX_FILE is refused",
+    "code": "const MAX_FILE: u64 = 256 << 20;",
+    "releaseSource": "https://github.com/IPedrax/BIMCraft/blob/f47a6c94281555728d6a61229355f037d1a464b3/crates/core/src/commands.rs#L2417",
+    "auditedSource": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/crates/core/src/commands.rs#L2612",
+    "observedBehavior": "Original IFC4 and IFC2X3 exports were refused before parsing. Compacted IFC4 under the threshold opened.",
+    "documentedContext": "Project rules require bounding hostile file/input sizes. The open path reads the complete IFC into memory.",
+    "inference": "A conservative resource/robustness guard is the supported interpretation; no documented rationale for the exact 256 MiB threshold was found. Peak memory can exceed disk size, but no multiplier was measured here.",
+    "notAFormatLimit": "This is an application policy, not an IFC format or Rust language limit.",
+    "lifecycleFinding": "In inspected release and source, open/recovery and autosave enforce the cap; ordinary native save has no corresponding size check. A project saved over the threshold may not reopen. Source finding, not reproduced by generating an oversized native file in this audit.",
+    "roadmapSlice": "R02-C",
+    "issue": "https://github.com/IPedrax/BIMCraft/issues/264"
+  },
+  "webPRs": [
+    {
+      "number": 19,
+      "title": "Integrate BimCraft 0.8 while preserving the SDH foundation",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/19",
+      "state": "open",
+      "draft": true,
+      "mergedAt": null,
+      "head": "59f31aa702fb6e4c31c58b2c8e0f015e887b1591",
+      "base": "75af81b49a3f472de734b0229f64e2140bbcbb10"
+    },
+    {
+      "number": 18,
+      "title": "F09-A: guarded shortcuts, plan context menus and analytic wall targeting",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/18",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-28T20:31:59Z",
+      "head": "731fa6604418b20eaea7253a8e331ba5b4049450",
+      "base": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee"
+    },
+    {
+      "number": 17,
+      "title": "0.7 foundation candidate: preserve accepted contracts on pinned upstream",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/17",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-26T14:12:15Z",
+      "head": "90782a41b00c90bcc93c435e693360d3c3353ef9",
+      "base": "1afe80e78a42aa27ee9af5d1ac937cd38cd1b711"
+    },
+    {
+      "number": 16,
+      "title": "MCP-01: materials and wall parity on integrated 0.7",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/16",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-26T18:26:02Z",
+      "head": "35e3fb5a86949a66a7eab138f7bb5bf13a52fd2c",
+      "base": "82da107dfd760199bc943249590812978c1a6082"
+    },
+    {
+      "number": 15,
+      "title": "Align main with upstream using a validated, history-preserving adoption branch",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/15",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-24T21:06:25Z",
+      "head": "8e48d64ef16fc3628f112cfd17adb2031be498c8",
+      "base": "3e42c21e33e642d1e07bea2fc3356344f91db00e"
+    },
+    {
+      "number": 14,
+      "title": "Adopt verified MCP acceptance and reconcile current project guidance",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/14",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-27T12:51:19Z",
+      "head": "16958e8bebc3d5d5e350354b5247ecf2993a4104",
+      "base": "a1c177a3a3cfe232b9f8df905915e188a8b0b428"
+    },
+    {
+      "number": 13,
+      "title": "F08-A: semantic join MCP and protected records on approved 0.7 main",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/13",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-27T01:06:06Z",
+      "head": "b3e768e9c2e45ce47e62f35f4befc687dcca2cdf",
+      "base": "21ff2842e1925f148e9b75c404476b59333f7475"
+    },
+    {
+      "number": 12,
+      "title": "F28-C compatibility: documentation on the 0.7 shared workspace",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/12",
+      "state": "open",
+      "draft": true,
+      "mergedAt": null,
+      "head": "aa75a6f9261e6f2d79e4fe805a287d35cf272d28",
+      "base": "60dbd3abff0d1d98ce1a85375de7b6087709c8ee"
+    },
+    {
+      "number": 11,
+      "title": "F28-B: Wall placement and type editing in the live workspace",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/11",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-23T21:38:49Z",
+      "head": "138df9f6bf593bfc677d3d468426a03beb727e59",
+      "base": "0ccb30d735554b012cf21e02252ded4612fd2f54"
+    },
+    {
+      "number": 10,
+      "title": "Update current project instructions for renamed GitHub account",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/10",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-27T12:45:25Z",
+      "head": "5430f586783b251caa1feaae13020224afb764e6",
+      "base": "9667b3c48977ff772c2a4c4785238cb3c4603e0e"
+    },
+    {
+      "number": 9,
+      "title": "F28-A: opt-in live IFC workspace and core commands",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/9",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-23T18:27:39Z",
+      "head": "36691442b521c0a6ada366210bf6c065b02367f6",
+      "base": "9667b3c48977ff772c2a4c4785238cb3c4603e0e"
+    },
+    {
+      "number": 8,
+      "title": "F06: Assembly schedules and project material legends",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/8",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-23T03:20:55Z",
+      "head": "1d21d5d7d8cbd6ee1374a5b4f258dc813009a3a6",
+      "base": "2eb43b109f8d2a93b55796b0092815aaa6f2054a"
+    },
+    {
+      "number": 7,
+      "title": "F05: layer-aware straight-wall sections and elevations",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/7",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-22T20:54:02Z",
+      "head": "d281e25f6ec27a6b3c716bac39ac4b53fe18e293",
+      "base": "ff0344b46ca1c29962772528c23f62d175c6d2ea"
+    },
+    {
+      "number": 6,
+      "title": "F04: Layered plan graphics and consistent vector output",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/6",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-22T18:31:05Z",
+      "head": "7a12a083356eb8aae6a16bd473db4f59cc8a8091",
+      "base": "91b907f4ba1edf7fe781eab44135f22ebc65fa0c"
+    },
+    {
+      "number": 5,
+      "title": "F03: performance baseline and profiling harness",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/5",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-22T15:06:18Z",
+      "head": "a036d0bdcb6e004ca2ec5dfc399a2d47acb0f377",
+      "base": "656d46236ff32b444cbd5a2b4ebe5164858c3848"
+    },
+    {
+      "number": 4,
+      "title": "F02: Preserve precision, reference identity and unsupported records",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/4",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-21T22:23:18Z",
+      "head": "e50de2d6516dd5c6ca649b83173c506a3e00ff1f",
+      "base": "1c35f47d69af2214b4747f541703224d0a4a4742"
+    },
+    {
+      "number": 3,
+      "title": "Record prototype integration and accepted follow-ups",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/3",
+      "state": "closed",
+      "draft": true,
+      "mergedAt": null,
+      "head": "f4ef65435c5b8e2e994525e938d61f1cae8ceb6e",
+      "base": "1c35f47d69af2214b4747f541703224d0a4a4742"
+    },
+    {
+      "number": 2,
+      "title": "F01: explicit standalone baseline, residential fixture and integration evidence",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/2",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-21T19:40:13Z",
+      "head": "6c77bceaa24d244a659b619221725bf8aee07844",
+      "base": "72664187a1cc2694d1f8972fd2e1aa5b46106bc3"
+    },
+    {
+      "number": 1,
+      "title": "Residential wall prototype and verified standalone integration baseline",
+      "url": "https://github.com/drsurfbum/bimcraft-SDH/pull/1",
+      "state": "closed",
+      "draft": false,
+      "mergedAt": "2026-10-21T19:43:35Z",
+      "head": "994e4168609316d17ada992bb0dbef473f52ed18",
+      "base": "5d0e2b1cb59e3f28e72fed8c5fc6004d44564832"
+    }
+  ],
+  "sources": {
+    "releaseCommands": "https://github.com/IPedrax/BIMCraft/blob/f47a6c94281555728d6a61229355f037d1a464b3/crates/core/src/commands.rs",
+    "releaseRules": "https://github.com/IPedrax/BIMCraft/blob/f47a6c94281555728d6a61229355f037d1a464b3/CLAUDE.md",
+    "sourceModel": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/crates/core/src/model.rs",
+    "sourceCommands": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/crates/core/src/commands.rs",
+    "sourceWalls": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/crates/core/src/walls.rs",
+    "sourceRoofs": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/docs/areas/levels-walls-roofs.md",
+    "sourceFamilies": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/docs/areas/families.md",
+    "sourceViews": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/docs/areas/views-and-graphics.md",
+    "sourceSchedules": "https://github.com/IPedrax/BIMCraft/blob/dde24e240b7ca39fb040057c452175e3f3a0bf45/docs/areas/schedules.md",
+    "largeFileIssue": "https://github.com/IPedrax/BIMCraft/issues/264",
+    "hostHeightIssue": "https://github.com/IPedrax/BIMCraft/issues/215",
+    "webState": "https://drsurfbum.github.io/bimcraft-SDH/state/2026-10-30/",
+    "revitStandard": "https://github.com/drsurfbum/bimcraft-SDH/blob/gh-pages/features/REVIT-BEHAVIOR-STANDARD.md"
+  }
+}
